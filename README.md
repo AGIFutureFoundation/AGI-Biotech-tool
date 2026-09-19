@@ -1,4 +1,6 @@
-# AGI BioXR
+# biodao.blockchain
+
+*powered by AGI Corp*
 
 A molecular workspace for drug discovery that runs in a headset or an ordinary browser, in the spirit of
 Nanome: pick up a protein, drop a compound into its pocket, pull the compound around while the physics
@@ -10,6 +12,11 @@ Everything runs locally. No accounts, no API keys, no data leaves the machine ex
 lookups you trigger.
 
 ---
+
+## Watch it first
+
+`docs/biodao-walkthrough.mp4` is a two-minute walkthrough the app renders of itself, with every number on
+screen coming from a real run. `docs/DEMO.md` has the demo running order and the talking points.
 
 ## Quick start
 
@@ -113,6 +120,16 @@ dropped rather than guessed at.
 **Disease explorer.** Ask Open Targets which targets are associated with a disease and load any of them.
 Amyotrophic lateral sclerosis alone returns over six thousand ranked associations.
 
+**Evidence in one click.** The Evidence tab gathers, for the loaded target: InterPro domains, Reactome
+pathways, STRING interaction partners, Human Protein Atlas expression, gnomAD population constraint,
+Pharos development level, a gene summary from NCBI, ClinicalTrials.gov trials and Europe PMC literature.
+Partners and trials are clickable, so a target opens its neighbours.
+
+**Provenance ledger.** Every docking run, screen, simulation, import and evidence sweep is written into a
+SHA-256 hash chain, each record covering the one before it. Verify re-hashes the chain and names the first
+record that does not match; Export writes it out so the head hash can be anchored on-chain or in a DAO
+proposal. It is a local hash chain, not a blockchain: nothing is broadcast and no consensus is involved.
+
 **Known drugs.** For the loaded target, the app lists clinical drugs and candidates from Open Targets with
 mechanism and trial stage, plus potent measured actives from ChEMBL. Click any of them and its 3D
 structure comes from PubChem, ready to dock beside your own compound.
@@ -163,6 +180,35 @@ parts that can be automated: it writes job files and reads results back.
 - **Import AF3 result** reads the predicted structure back in, shows its confidence, and puts any predicted
   ligand in the same workspace as your docked pose for comparison. Predictions from Boltz or Chai load the
   same way.
+
+## The databases
+
+All free, none needing an account or key:
+
+| Source | What it gives |
+| --- | --- |
+| RCSB PDB | experimental structures, ligands with bond orders, full-text and sequence search |
+| AlphaFold DB | predicted structures for essentially every human protein, plus AlphaMissense |
+| UniProt | sequences, accessions, gene names |
+| Open Targets | disease-target associations, clinical drugs and candidates |
+| ChEMBL | measured bioactivities and similarity search |
+| PubChem | 100M+ known compounds, 3D conformers, similarity, exact-match novelty checks |
+| Foldseek | structure search against AlphaFold DB and the whole PDB |
+| InterPro | domains and families |
+| Reactome | curated pathways |
+| STRING | functional interaction partners |
+| Human Protein Atlas | tissue and subcellular expression |
+| gnomAD | population constraint (pLI, observed/expected loss of function) |
+| Pharos / NCATS | target development level and druggability |
+| ClinicalTrials.gov | trials by condition or intervention |
+| Europe PMC | open literature, including preprints |
+| openFDA | adverse event counts and label text for approved drugs |
+| BioThings (MyGene, MyChem) | aggregated gene and chemical annotation |
+| UniChem, KEGG, BindingDB, PDBe | cross-references, pathways, affinities, residue mappings |
+
+A few of these send no CORS headers, so the browser cannot call them directly. The local server carries a
+read-only proxy with a fixed allowlist of those hosts, and the app falls back to it automatically. Without
+the server running, those specific sources are the ones that go quiet.
 
 ## Google datasets
 

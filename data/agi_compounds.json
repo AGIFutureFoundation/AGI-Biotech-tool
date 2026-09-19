@@ -1,5 +1,5 @@
 {
- "saved": "2026-09-19T23:04:10.421Z",
+ "saved": "2026-09-19T23:10:05.223Z",
  "compounds": [
   {
    "agiId": "REF-001",
@@ -46,7 +46,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -4.8,
+   "dockScore": -5.45,
    "dockTarget": "2YXJ"
   },
   {
@@ -94,7 +94,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -4.08,
+   "dockScore": -5.08,
    "dockTarget": "2YXJ"
   },
   {
@@ -142,7 +142,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -4.09,
+   "dockScore": -4.8,
    "dockTarget": "2YXJ"
   },
   {
@@ -190,7 +190,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -4.09,
+   "dockScore": -4.29,
    "dockTarget": "2YXJ"
   },
   {
@@ -238,7 +238,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -5.96,
+   "dockScore": -3.98,
    "dockTarget": "2YXJ"
   },
   {
@@ -285,7 +285,9 @@
      }
     ],
     "nearest": []
-   }
+   },
+   "dockScore": -3.9,
+   "dockTarget": "2YXJ"
   },
   {
    "agiId": "REF-007",
@@ -331,7 +333,9 @@
      }
     ],
     "nearest": []
-   }
+   },
+   "dockScore": -4.9,
+   "dockTarget": "2YXJ"
   },
   {
    "agiId": "REF-008",
@@ -377,7 +381,9 @@
      }
     ],
     "nearest": []
-   }
+   },
+   "dockScore": -5.67,
+   "dockTarget": "2YXJ"
   },
   {
    "agiId": "REF-009",
@@ -1222,8 +1228,9 @@
    "added": "2026-09-19",
    "profile": {
     "desc": {
-     "mw": 291.38,
-     "clogp": 1.22,
+     "mw": 291.376,
+     "exactMass": 291.10414,
+     "clogp": 1.21879,
      "tpsa": 62.3,
      "hbd": 1,
      "hba": 4,
@@ -1231,8 +1238,9 @@
      "heavy": 20,
      "rings": 3,
      "aromRings": 2,
-     "fsp3": 0.357,
-     "stereo": 0
+     "fsp3": 0.35714,
+     "stereo": 0,
+     "heteroatoms": 6
     },
     "rules": {
      "lipinskiViolations": 0,
