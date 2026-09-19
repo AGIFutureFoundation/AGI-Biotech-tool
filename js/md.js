@@ -8,6 +8,7 @@
 //   * Langevin thermostat; user steering spring for "grab the ligand and pull" interactive MD.
 // Units: Å, ps, amu, kcal/mol.  Acceleration factor F/m -> Å/ps² is 418.4.
 import { vdwRadius, covRadius, mass as elMass } from './elements.js';
+import { contactRadius } from './dock.js';
 
 const ACC = 418.4;
 const KB = 0.0019872041;
@@ -226,12 +227,16 @@ export class MDEngine {
       const r2 = dx * dx + dy * dy + dz * dz;
       if (r2 > 64) continue;
       const hb = (L.donor[i] && Pr.acceptor[j]) || (L.acceptor[i] && Pr.donor[j]);
-      const rm = hb ? 2.9 : (this.lr[i] + vdwRadius(Pr.element[j])) * 0.95;
+      // Equilibrium separation follows the scoring function's contact radii, so a pose that docks well
+      // also sits at the energy minimum here instead of registering as a permanent clash.
+      const rm = hb ? 2.9 : contactRadius(L.element[i]) + contactRadius(Pr.element[j]);
       const eps = hb ? 1.6 : (L.hydrophobic[i] && Pr.hydrophobic[j] ? 0.28 : 0.14);
       const s2 = (rm * rm) / Math.max(r2, 0.64), s6 = s2 * s2 * s2, s12 = s6 * s6;
       E += eps * (s12 - 2 * s6);
       let f = 12 * eps * (s12 - s6) / Math.max(r2, 0.64);
-      if (f > 60) f = 60; else if (f < -60) f = -60;
+      // Cap high enough that a deep overlap is still pushed apart hard (a low cap lets big flexible
+      // ligands sink into the protein), but finite so the integrator stays stable.
+      if (f > 400) f = 400; else if (f < -80) f = -80;
       F[i * 3] += f * dx; F[i * 3 + 1] += f * dy; F[i * 3 + 2] += f * dz;
       const c = this.atomCa[j];
       if (c >= 0 && !this.frozenProtein) { CF[c * 3] -= f * dx; CF[c * 3 + 1] -= f * dy; CF[c * 3 + 2] -= f * dz; }
@@ -297,6 +302,30 @@ export class MDEngine {
       this.time += dt;
     }
     if (this.protein && !this.frozenProtein) this.syncProtein();
+    if (this.ligand && this.protein) this.stericGuard();
+  }
+
+  // Safety net: no ligand atom may end a frame buried inside a protein atom. Anything deeper than
+  // `tolerance` is pushed back out along the contact normal and its inward velocity removed. Without
+  // this, a large flexible ligand can tunnel into the protein over a long interactive session.
+  stericGuard(tolerance = 0.8, maxShift = 0.25) {
+    const L = this.ligand, P = this.protein.pos, lp = this.lp, NL = this.nlist;
+    if (!NL) return;
+    let fixed = 0;
+    for (let k = 0; k < NL.length; k += 2) {
+      const i = NL[k], j = NL[k + 1];
+      const dx = lp[i * 3] - P[j * 3], dy = lp[i * 3 + 1] - P[j * 3 + 1], dz = lp[i * 3 + 2] - P[j * 3 + 2];
+      const r2 = dx * dx + dy * dy + dz * dz;
+      const rm = contactRadius(L.element[i]) + contactRadius(this.protein.element[j]) - tolerance;
+      if (r2 >= rm * rm || r2 < 1e-6) continue;
+      const r = Math.sqrt(r2), push = Math.min(maxShift, rm - r);
+      const ux = dx / r, uy = dy / r, uz = dz / r;
+      lp[i * 3] += ux * push; lp[i * 3 + 1] += uy * push; lp[i * 3 + 2] += uz * push;
+      const vn = this.lv[i * 3] * ux + this.lv[i * 3 + 1] * uy + this.lv[i * 3 + 2] * uz;
+      if (vn < 0) { this.lv[i * 3] -= vn * ux; this.lv[i * 3 + 1] -= vn * uy; this.lv[i * 3 + 2] -= vn * uz; }
+      fixed++;
+    }
+    this.lastGuardFixes = fixed;
   }
 
   syncProtein() {

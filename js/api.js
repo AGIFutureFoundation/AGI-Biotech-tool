@@ -9,12 +9,20 @@ async function http(url, { json = true, body = null, headers = {}, timeout = 450
   const key = url + (body ? JSON.stringify(body) : '');
   if (cache.has(key)) return cache.get(key);
   const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), timeout);
+  const read = async (r) => {
+    if (r.status === 204) return json ? null : '';
+    if (!r.ok) throw new Error(`${new URL(url).host} ${r.status}`);
+    return json ? r.json() : r.text();
+  };
   const p = fetch(url, { method: method || (body ? 'POST' : 'GET'), body: body ? JSON.stringify(body) : undefined,
     headers: body ? { 'Content-Type': 'application/json', ...headers } : headers, signal: ctl.signal })
-    .then(async (r) => {
-      if (r.status === 204) return json ? null : '';
-      if (!r.ok) throw new Error(`${new URL(url).host} ${r.status}`);
-      return json ? r.json() : r.text();
+    .then(read)
+    // Several public APIs send no CORS headers. When the browser refuses the direct call, retry through the
+    // local server's allowlisted read-only proxy, which is the only way those sources are reachable here.
+    .catch(async (e) => {
+      if (body || method === 'POST' || /abort/i.test(e.name || '')) throw e;
+      const r = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
+      return read(r);
     })
     .finally(() => clearTimeout(t));
   cache.set(key, p);
@@ -136,9 +144,25 @@ export const pubchem = {
     const r = await cache.get(key);
     return (r?.PropertyTable?.Properties || []).map((p) => ({ cid: p.CID, title: p.Title, smiles: smilesOf(p), mw: +p.MolecularWeight }));
   },
+  // Patent families that mention this compound (PubChem cross-references, free, no key).
+  async patents(cid, limit = 40) {
+    const r = await http(`${PC}/compound/cid/${cid}/xrefs/PatentID/JSON`).catch(() => null);
+    const list = r?.InformationList?.Information?.[0]?.PatentID || [];
+    return { total: list.length, ids: list.slice(0, limit) };
+  },
   async exact(smiles) {
     const r = await http(`${PC}/compound/fastidentity/smiles/${encodeURIComponent(smiles)}/property/Title/JSON`).catch(() => null);
     return r?.PropertyTable?.Properties || [];
+  },
+};
+
+// UniChem: the same molecule's id in every other chemical database.
+export const unichem = {
+  async xrefs(inchikey) {
+    const r = await http(`https://www.ebi.ac.uk/unichem/rest/inchikey/${inchikey}`).catch(() => []);
+    const SRC = { 1: 'ChEMBL', 2: 'DrugBank', 3: 'PDBe', 4: 'Guide to Pharmacology', 6: 'KEGG', 7: 'ChEBI',
+      14: 'FDA SRS', 15: 'Selleck', 21: 'PubChem DOTF', 22: 'PubChem', 31: 'BindingDB', 34: 'DrugCentral', 41: 'SureChEMBL' };
+    return (r || []).map((x) => ({ source: SRC[+x.src_id] || `source ${x.src_id}`, id: x.src_compound_id }));
   },
 };
 
@@ -154,6 +178,91 @@ export const chembl = {
   async similar(smiles, sim = 70) {
     const r = await http(`${CH}/similarity/${encodeURIComponent(smiles)}/${sim}.json?limit=20&only=molecule_chembl_id,pref_name,similarity,max_phase,molecule_structures`, { timeout: 30000 });
     return r.molecules.map((m) => ({ chembl: m.molecule_chembl_id, name: m.pref_name, similarity: +m.similarity, phase: m.max_phase, smiles: m.molecule_structures?.canonical_smiles }));
+  },
+};
+
+// ---------------------------------------------------------------- ClinicalTrials.gov (v2, no key)
+export const trials = {
+  async search({ cond, spons, intr, status, size = 25 } = {}) {
+    const q = new URLSearchParams({ pageSize: String(size), countTotal: 'true',
+      fields: 'NCTId,BriefTitle,OverallStatus,Phase,LeadSponsorName,Condition,InterventionName,StartDate,StudyType' });
+    if (cond) q.set('query.cond', cond);
+    if (spons) q.set('query.spons', spons);
+    if (intr) q.set('query.intr', intr);
+    if (status) q.set('filter.overallStatus', status);
+    const r = await http(`https://clinicaltrials.gov/api/v2/studies?${q}`);
+    return { total: r.totalCount ?? (r.studies || []).length, studies: (r.studies || []).map((s) => {
+      const ps = s.protocolSection || {};
+      return { nct: ps.identificationModule?.nctId, title: ps.identificationModule?.briefTitle,
+        status: ps.statusModule?.overallStatus, phase: (ps.designModule?.phases || []).join('/'),
+        sponsor: ps.sponsorCollaboratorsModule?.leadSponsor?.name,
+        conditions: ps.conditionsModule?.conditions || [],
+        interventions: (ps.armsInterventionsModule?.interventions || []).map((i) => i.name).slice(0, 4),
+        start: ps.statusModule?.startDateStruct?.date };
+    }) };
+  },
+};
+
+// ---------------------------------------------------------------- protein annotation (EBI, Reactome, STRING, gnomAD, HPA)
+export const interpro = {
+  async domains(acc) {
+    const r = await http(`https://www.ebi.ac.uk/interpro/api/entry/InterPro/protein/uniprot/${acc}/?page_size=20`).catch(() => null);
+    return ((r && r.results) || []).map((e) => ({ id: e.metadata.accession, name: e.metadata.name, type: e.metadata.type,
+      locations: (e.proteins?.[0]?.entry_protein_locations || []).flatMap((l) => l.fragments.map((f) => [f.start, f.end])) }));
+  },
+};
+
+export const reactome = {
+  async pathways(acc) {
+    const r = await http(`https://reactome.org/ContentService/data/mapping/UniProt/${acc}/pathways?species=9606`).catch(() => []);
+    return (r || []).map((p) => ({ id: p.stId, name: p.displayName }));
+  },
+};
+
+export const stringdb = {
+  async partners(symbol, limit = 15) {
+    const r = await http(`https://string-db.org/api/json/interaction_partners?identifiers=${encodeURIComponent(symbol)}&species=9606&limit=${limit}`).catch(() => []);
+    return (r || []).map((x) => ({ symbol: x.preferredName_B, score: x.score }));
+  },
+};
+
+export const gnomad = {
+  async constraint(symbol) {
+    const r = await http('https://gnomad.broadinstitute.org/api', { body: { query:
+      `{ gene(gene_symbol: "${symbol}", reference_genome: GRCh38) { gene_id gnomad_constraint { pLI oe_lof oe_lof_upper mis_z syn_z } } }` } }).catch(() => null);
+    const c = r?.data?.gene?.gnomad_constraint;
+    return c ? { pLI: c.pLI, oeLof: c.oe_lof, loeuf: c.oe_lof_upper, misZ: c.mis_z } : null;
+  },
+};
+
+export const proteinAtlas = {
+  async expression(symbol) {
+    const r = await http(`https://www.proteinatlas.org/api/search_download.php?search=${encodeURIComponent(symbol)}&format=json&columns=g,gs,rnatsm,rnabs,scl&compress=no`).catch(() => []);
+    const row = (r || []).find((x) => (x.Gene || '').toUpperCase() === symbol.toUpperCase()) || (r || [])[0];
+    if (!row) return null;
+    const tissue = row['RNA tissue specific nTPM'] || {};
+    const brain = row['RNA brain regional specific nTPM'] || {};
+    const top = Object.entries(tissue).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    return { topTissues: top, brain: Object.entries(brain).sort((a, b) => b[1] - a[1]).slice(0, 5),
+      location: row['Subcellular location'] || row.scl || null };
+  },
+};
+
+// PDBe SIFTS: which UniProt residue each PDB residue is, so UniProt-numbered data (AlphaMissense,
+// disease variants) can be painted onto an experimental structure.
+export const pdbe = {
+  async sifts(pdbId) {
+    const r = await http(`https://www.ebi.ac.uk/pdbe/api/mappings/uniprot_segments/${pdbId.toLowerCase()}`).catch(() => null);
+    const entry = r && r[pdbId.toLowerCase()];
+    if (!entry) return null;
+    const out = [];
+    for (const [acc, data] of Object.entries(entry.UniProt || {})) {
+      for (const m of data.mappings || []) {
+        out.push({ uniprot: acc, chain: m.chain_id, pdbStart: m.start.author_residue_number,
+          pdbEnd: m.end.author_residue_number, uniStart: m.unp_start, uniEnd: m.unp_end });
+      }
+    }
+    return out;
   },
 };
 
@@ -187,6 +296,87 @@ export const foldseek = {
           tm: a.alntmscore ?? a.qtmscore ?? null, uniprot: afMatch ? afMatch[1] : null, pdb: pdbMatch ? pdbMatch[1].toUpperCase() : null };
       }) };
     });
+  },
+};
+
+
+
+
+
+
+// Europe PMC: open literature search, including preprints.
+export const europepmc = {
+  async search(query, limit = 15) {
+    const r = await http(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encodeURIComponent(query)}&format=json&pageSize=${limit}&sort=CITED%20desc`).catch(() => null);
+    return ((r && r.resultList?.result) || []).map((x) => ({ id: x.id, source: x.source, title: x.title, authors: x.authorString,
+      journal: x.journalTitle, year: x.pubYear, cited: x.citedByCount, doi: x.doi, open: x.isOpenAccess === 'Y' }));
+  },
+};
+
+
+
+
+// openFDA: adverse event reports and label text for an approved drug.
+export const openfda = {
+  async adverseEvents(drug, limit = 10) {
+    const q = `https://api.fda.gov/drug/event.json?search=patient.drug.medicinalproduct:"${encodeURIComponent(drug)}"&count=patient.reaction.reactionmeddrapt.exact&limit=${limit}`;
+    const r = await http(q).catch(() => null);
+    return ((r && r.results) || []).map((x) => ({ reaction: x.term.toLowerCase(), reports: x.count }));
+  },
+  async label(drug) {
+    const r = await http(`https://api.fda.gov/drug/label.json?search=openfda.generic_name:"${encodeURIComponent(drug)}"&limit=1`).catch(() => null);
+    const l = r?.results?.[0];
+    return l ? { indications: (l.indications_and_usage || [])[0]?.slice(0, 400), warnings: (l.warnings || l.boxed_warning || [])[0]?.slice(0, 300),
+      route: (l.openfda?.route || []).join(', ') } : null;
+  },
+};
+
+// Pharos / NCATS: how well studied and how druggable a target is (Tclin, Tchem, Tbio, Tdark).
+export const pharos = {
+  async target(symbol) {
+    const q = { query: `query($q:String!){ target(q:{sym:$q}) { name sym tdl fam novelty
+      ppiCount: ppiCounts { value } diseaseCounts { name value } } }`, variables: { q: symbol } };
+    const r = await http('https://pharos-api.ncats.io/graphql', { body: q }).catch(() => null);
+    const t = r?.data?.target;
+    return t ? { name: t.name, symbol: t.sym, developmentLevel: t.tdl, family: t.fam, novelty: t.novelty,
+      diseases: (t.diseaseCounts || []).slice(0, 6).map((d) => `${d.name} (${d.value})`) } : null;
+  },
+};
+
+// BioThings (MyChem / MyGene): aggregated annotation across dozens of chemical and gene databases.
+export const biothings = {
+  async chem(inchikey) {
+    const r = await http(`https://mychem.info/v1/chem/${inchikey}?fields=drugbank.name,drugbank.groups,drugbank.indication,chebi.name,chembl.max_phase,unii.unii,pharmgkb.name`).catch(() => null);
+    if (!r) return null;
+    return { drugbank: r.drugbank?.name, groups: [].concat(r.drugbank?.groups || []), indication: (r.drugbank?.indication || '').slice(0, 300),
+      chebi: r.chebi?.name, maxPhase: r.chembl?.max_phase, unii: r.unii?.unii };
+  },
+  async gene(symbol) {
+    const r = await http(`https://mygene.info/v3/query?q=symbol:${encodeURIComponent(symbol)}&species=human&fields=name,summary,entrezgene,genomic_pos,go.BP,pathway.kegg`).catch(() => null);
+    const h = r?.hits?.[0];
+    return h ? { name: h.name, summary: (h.summary || '').slice(0, 600), entrez: h.entrezgene,
+      kegg: [].concat(h.pathway?.kegg || []).slice(0, 8).map((k) => k.name),
+      processes: [].concat(h.go?.BP || []).slice(0, 8).map((g) => g.term) } : null;
+  },
+};
+
+// KEGG: pathway membership, via the local proxy (KEGG sends no CORS headers).
+export const kegg = {
+  async pathways(entrezId) {
+    const txt = await http(`https://rest.kegg.jp/link/pathway/hsa:${entrezId}`, { json: false }).catch(() => '');
+    const ids = (txt || '').split('\n').map((l) => l.split('\t')[1]).filter(Boolean);
+    if (!ids.length) return [];
+    const names = await http(`https://rest.kegg.jp/list/${ids.slice(0, 12).join('+')}`, { json: false }).catch(() => '');
+    return (names || '').split('\n').filter(Boolean).map((l) => { const [id, name] = l.split('\t'); return { id, name }; });
+  },
+};
+
+// BindingDB: measured binding affinities for a target, via the proxy.
+export const bindingdb = {
+  async byUniprot(acc, cutoffNm = 1000) {
+    const r = await http(`https://bindingdb.org/axis2/services/BDBService/getLigandsByUniprot?uniprot=${acc}&code=0&response=application/json&cutoff=${cutoffNm}`).catch(() => null);
+    const hits = r?.getLigandsByUniprotResponse?.affinities || [];
+    return [].concat(hits).slice(0, 40).map((h) => ({ smiles: h.smile, type: h.affinity_type, value: h.affinity, monomer: h.monomerid }));
   },
 };
 

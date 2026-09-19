@@ -4,6 +4,8 @@
 
 const XS = { C: 1.9, N: 1.8, O: 1.7, S: 2.0, P: 2.1, F: 1.5, CL: 1.8, BR: 2.0, I: 2.2, SE: 2.1 };
 const xs = (e) => XS[e] || 1.2; // metals & others
+// Shared with the dynamics engine so simulation contact distances match what the score expects.
+export const contactRadius = xs;
 const W = { g1: -0.0356, g2: -0.00516, rep: 0.84, hyd: -0.0351, hb: -0.587, rot: 0.0585 };
 const CUT = 8;
 

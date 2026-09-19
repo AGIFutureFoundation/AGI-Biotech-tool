@@ -1,4 +1,4 @@
-// AGI BioXR — application shell: scene, data loading, docking, dynamics, screening, XR and UI wiring.
+// biodao.blockchain (powered by AGI Corp) — application shell: scene, data loading, docking, dynamics, screening, XR and UI wiring.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { parsePDB, parseMmCIF, parseMolblock, parsePDBFrames } from './structure.js';
@@ -7,10 +7,13 @@ import { MDEngine } from './md.js';
 import { ProteinGrid, vinaScore, findPockets, dockLigand, centroid } from './dock.js';
 import { analyze, smilesTo3D, loadRDKit, setServerCaps, depict, heavyAtomModel, fingerprint } from './chem.js';
 import { CompoundLibrary, importFile } from './compounds.js';
-import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek } from './api.js';
+import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek, trials, interpro, reactome,
+  stringdb, gnomad, proteinAtlas, unichem, pdbe, europepmc, openfda, pharos, biothings, kegg, bindingdb } from './api.js';
 import { af3LocalJob, afServerJob, downloadJson, downloadText, readPrediction } from './af3.js';
 import { Collab } from './collab.js';
 import { XRManager, xrSupport, startSession } from './xr.js';
+import { Ledger } from './ledger.js';
+import { Recorder } from './recorder.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -21,7 +24,8 @@ const S = {
   targets: [], program: 'ALS', target: null, protein: null, proteinView: null, ligand: null, ligandView: null,
   grid: null, pockets: [], pocket: null, poses: [], md: null, mdRunning: false, caps: null,
   selection: [], measureMode: false, library: new CompoundLibrary(), compound: null, screening: false, stopFlag: false,
-  backendJob: null, trajectory: null, missense: null, lastScore: null,
+  backendJob: null, trajectory: null, missense: null, lastScore: null, ledger: new Ledger(), demo: null,
+  recorder: null, orbitSpeed: 0,
 };
 
 // ---------------------------------------------------------------- scene
@@ -91,6 +95,7 @@ function setProtein(st, meta = {}) {
   fitView();
   if (S.ligand) placeLigandAtSite();
   if (S.collab) S.collab.share({ kind: 'protein', pdb: meta.pdbId, uniprot: meta.uniprot, af: !!meta.alphafold });
+  S.ledger.append('structure', { name: st.name, pdb: meta.pdbId || null, uniprot: meta.uniprot || null, atoms: st.n }).then(renderLedger);
   status(`${st.n} atoms loaded`);
 }
 
@@ -294,6 +299,11 @@ async function doDock() {
   $('#btnDock').disabled = false;
   if (poses.length) applyPose(0);
   renderPoses();
+  if (poses.length) {
+    S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
+      target: S.protein.name, site: S.pocket?.label || null, score: +poses[0].score.toFixed(2),
+      poses: poses.length, method: 'Monte Carlo, Vina-style score' }).then(renderLedger);
+  }
   toast(`${poses.length} poses · best ${fmt(poses[0]?.score)} kcal/mol · ${Math.round((performance.now() - t0) / 1000)} s`);
 }
 
@@ -307,9 +317,9 @@ function applyPose(i) {
 }
 
 // Virtual screen: dock every (filtered) library compound against the current site.
-async function screenLibrary() {
+async function screenLibrary({ limit = 200, runs = 4, steps = 1800 } = {}) {
   if (!S.grid) return toast('Load a target first', true);
-  const list = S.library.compounds.slice(0, 200);
+  const list = S.library.compounds.slice(0, limit);
   if (!list.length) return toast('Import compounds first', true);
   S.screening = true; S.stopFlag = false;
   const center = S.pocket ? S.pocket.center : S.protein.center(Array.from(S.protein.heavy));
@@ -320,7 +330,7 @@ async function screenLibrary() {
       const st = await smilesTo3D(c.canonical, { name: c.agiId || 'cmp' });
       const t = centroid(st.pos, st.n);
       for (let i = 0; i < st.n; i++) for (let d = 0; d < 3; d++) st.pos[i * 3 + d] += center[d] - t[d];
-      const poses = await dockLigand(S.grid, st, center, { runs: 4, steps: 1800, box: 8, shouldStop: () => S.stopFlag });
+      const poses = await dockLigand(S.grid, st, center, { runs, steps, box: 8, shouldStop: () => S.stopFlag });
       c.dockScore = poses[0] ? +poses[0].score.toFixed(2) : null;
       c.dockTarget = S.protein.name;
     } catch { c.dockScore = null; }
@@ -332,6 +342,9 @@ async function screenLibrary() {
   const ranked = list.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore);
   toast(`Screen done. Best: ${ranked.slice(0, 3).map((c) => `${c.agiId} ${c.dockScore}`).join(', ')}`);
   $('#libSort').value = 'score'; renderLibrary();
+  S.ledger.append('screen', { target: S.protein.name, compounds: ranked.length,
+    best: ranked[0] ? `${ranked[0].agiId} ${ranked[0].dockScore}` : 'none',
+    ranking: ranked.slice(0, 10).map((c) => ({ id: c.agiId, score: c.dockScore })) }).then(renderLedger);
 }
 
 // ---------------------------------------------------------------- interactive MD
@@ -379,6 +392,7 @@ async function pollBackend(id) {
       const st = parsePDB(topology, { name: `${S.protein.name} (OpenMM)`, source: j.forcefield });
       S.trajectory = { st, frames, i: 0 };
       setProtein(st, { subtitle: `all-atom MD · ${j.forcefield} · ${fmt(j.simulatedPs, 0)} ps · ${frames.length} frames` });
+      S.ledger.append('md', { engine: 'OpenMM ' + j.forcefield, target: st.name, ps: +fmt(j.simulatedPs, 1), frames: frames.length, platform: j.platform }).then(renderLedger);
       toast(`Trajectory ready: ${frames.length} frames — playing`);
       break;
     }
@@ -463,6 +477,7 @@ renderer.setAnimationLoop((t, xrFrame) => {
       tr.i++;
     }
   }
+  if (S.orbitSpeed) workspace.rotation.y += S.orbitSpeed;
   if (xr.active) { xr.update(); S.collab?.tick(camera, xr.controllers); }
   else controls.update();
   renderer.render(scene, camera);
@@ -514,6 +529,7 @@ async function openTarget(t) {
     const b = el('button', '', t.bestPdb); b.onclick = () => loadPdb(t.bestPdb, { uniprot: t.uniprot }); acts.appendChild(b);
   }
   renderDrugs(t);
+  renderEvidence(t);
   if (t.alphafold) loadAlphaFold(t.uniprot, { symbol: t.symbol }).catch((e) => toast(e.message, true));
   else if (t.bestPdb) loadPdb(t.bestPdb, { uniprot: t.uniprot }).catch((e) => toast(e.message, true));
 }
@@ -711,6 +727,400 @@ function renderLibrary() {
   for (const r of S.library.rejects.slice(0, 40)) rl.appendChild(el('div', 'item', `<div class="d" style="font-family:var(--mono)">${r.id ? `#${r.id} ` : ''}${r.raw.slice(0, 60)}</div>`));
 }
 
+// ---------------------------------------------------------------- evidence panel
+// Everything free and key-free that says whether a target is worth working on.
+async function gatherEvidence() {
+  const t = S.target;
+  const acc = t?.uniprot || null;
+  const symbol = t?.symbol || S.protein?.name?.split(' ')[0];
+  if (!symbol) return toast('Load a target first', true);
+  document.getElementById('evSummary')?.remove();
+  $('#evidenceHead').innerHTML = `<b>${symbol}</b>${acc ? ` · ${acc}` : ''} — gathering from nine databases…`;
+  const fill = (sel, rows, empty) => { const b = $(sel); b.innerHTML = rows.length ? '' : `<div class="hint">${empty}</div>`; rows.forEach((r) => b.appendChild(r)); };
+
+  const jobs = [
+    acc && interpro.domains(acc).then((d) => fill('#evDomains', d.slice(0, 12).map((x) => el('div', 'item',
+      `<div class="t"><span class="n">${x.name}</span><span class="s">${x.type}</span></div>
+       <div class="d">${x.id}${x.locations.length ? ` · residues ${x.locations.map((l) => l.join('–')).join(', ')}` : ''}</div>`)), 'No InterPro domains.')),
+    acc && reactome.pathways(acc).then((p) => fill('#evPathways', p.slice(0, 12).map((x) => {
+      const it = el('div', 'item', `<div class="d">${x.name}</div>`);
+      it.onclick = () => open(`https://reactome.org/content/detail/${x.id}`, '_blank');
+      return it;
+    }), 'No Reactome pathways.')),
+    stringdb.partners(symbol).then((p) => fill('#evPartners', p.slice(0, 14).map((x) => {
+      const known = S.targets.find((y) => y.symbol === x.symbol);
+      const it = el('div', 'item', `<div class="t"><span class="n">${x.symbol}</span><span class="s">${x.score.toFixed(2)}${known ? ' · in library' : ''}</span></div>`);
+      it.onclick = () => (known ? openTarget(known) : uniprot.searchGene(x.symbol).then((g) => g[0] && loadAlphaFold(g[0].uniprot, { symbol: x.symbol })));
+      return it;
+    }), 'No STRING partners.')),
+    proteinAtlas.expression(symbol).then((e) => { $('#evExpression').innerHTML = e
+      ? `<div class="props">${e.top.map((x) => `<span>${x.tissue} <b>${x.nTPM}</b></span>`).join('')}</div>
+         <div class="hint" style="margin-top:6px">${e.specificity}${e.location?.length ? ` · ${[].concat(e.location).slice(0, 4).join(', ')}` : ''}</div>`
+      : '<div class="hint">No expression record.</div>'; }),
+    gnomad.constraint(symbol).then((c) => { $('#evConstraint').innerHTML = c
+      ? `<div class="props"><span>pLI <b>${fmt(c.pLI, 3)}</b></span><span>LoF o/e <b>${fmt(c.oe_lof, 2)}</b></span>
+         <span>missense Z <b>${fmt(c.mis_z, 2)}</b></span><span>synonymous Z <b>${fmt(c.syn_z, 2)}</b></span></div>
+         <div class="hint" style="margin-top:6px">${c.pLI > 0.9 ? 'Highly intolerant of loss of function: knocking this gene out is rarely tolerated.' : c.pLI < 0.1 ? 'Tolerant of loss of function in the general population.' : 'Moderately constrained.'}</div>`
+      : '<div class="hint">No gnomAD constraint record.</div>'; }),
+    trials.search({ cond: t?.disease?.split('/')[0] || symbol, size: 12 }).then((r) => {
+      fill('#evTrials', r.studies.map((s2) => {
+        const it = el('div', 'item', `<div class="t"><span class="n">${s2.nct}</span><span class="s">${s2.phase || '—'} · ${s2.status}</span></div>
+          <div class="d">${(s2.title || '').slice(0, 96)}</div>`);
+        it.onclick = () => open(`https://clinicaltrials.gov/study/${s2.nct}`, '_blank');
+        return it;
+      }), 'No trials found.');
+      $('#evidenceHead').dataset.trials = r.total;
+    }),
+    europepmc.search(`${symbol} AND (drug OR inhibitor OR therapeutic)`, 12).then((p) => fill('#evPapers', p.map((x) => {
+      const it = el('div', 'item', `<div class="t"><span class="n">${x.journal || x.source} ${x.year}</span><span class="s">${x.cited} citations${x.open ? ' · open' : ''}</span></div>
+        <div class="d">${x.title.slice(0, 110)}</div>`);
+      it.onclick = () => open(x.doi ? `https://doi.org/${x.doi}` : `https://europepmc.org/article/${x.source}/${x.id}`, '_blank');
+      return it;
+    }), 'No papers found.')),
+  ].filter(Boolean);
+  await Promise.allSettled(jobs);
+  // Pharos development level and a gene summary round out the picture.
+  await Promise.allSettled([
+    pharos.target(symbol).then((t2) => { if (t2) $('#evConstraint').innerHTML += `<div class="hint" style="margin-top:6px">Pharos: <b>${t2.developmentLevel}</b>${t2.family ? ` · ${t2.family}` : ''}${t2.diseases?.length ? ` · ${t2.diseases[0]}` : ''}</div>`; }),
+    biothings.gene(symbol).then((g) => { if (g?.summary) $('#evidenceHead').insertAdjacentHTML('afterend', `<div class="block" id="evSummary"><h4>Summary <small>NCBI via MyGene</small></h4><div class="hint">${g.summary}</div></div>`); }),
+  ]);
+  const trialCount = $('#evidenceHead').dataset.trials;
+  $('#evidenceHead').innerHTML = `<b>${symbol}</b>${acc ? ` · ${acc}` : ''} — domains, pathways, interactions, expression, constraint, ${trialCount || 0} trials and literature.`;
+  S.ledger.append('evidence', { target: symbol, uniprot: acc, sources: ['InterPro', 'Reactome', 'STRING', 'Human Protein Atlas', 'gnomAD', 'ClinicalTrials.gov', 'Europe PMC'] }).then(renderLedger);
+}
+
+// ---------------------------------------------------------------- featured research programmes
+// Each funder's own trial registry is public, so the programme panel shows live work rather than a
+// static description: the sponsor string is what ClinicalTrials.gov files the studies under.
+const FOUNDATIONS = [
+  { name: 'Shriners Children\'s', program: 'Shriners Children\'s', spons: 'Shriners',
+    blurb: 'Paediatric orthopaedics, burns, spinal cord injury, cleft and skeletal dysplasia.' },
+  { name: 'Michael J. Fox Foundation', program: "Parkinson's", spons: 'Michael J. Fox Foundation',
+    blurb: 'The largest non-profit funder of Parkinson\'s research; LRRK2, GBA1 and alpha-synuclein programmes.' },
+  { name: 'ALS Association', program: 'ALS', spons: 'ALS Association',
+    blurb: 'Funds ALS therapy development and the trials network.' },
+  { name: 'Parkinson\'s Foundation', program: "Parkinson's", spons: "Parkinson's Foundation",
+    blurb: 'Care standards and research into symptomatic and disease-modifying therapy.' },
+  { name: 'ALS / motor neuron (all)', program: 'ALS', cond: 'amyotrophic lateral sclerosis',
+    blurb: 'Every registered ALS trial, whoever sponsors it.' },
+  { name: 'Parkinson\'s (all)', program: "Parkinson's", cond: "Parkinson disease",
+    blurb: 'Every registered Parkinson\'s trial.' },
+  { name: 'Osteogenesis imperfecta', program: 'Shriners Children\'s', cond: 'osteogenesis imperfecta',
+    blurb: 'Brittle bone disease: collagen, sclerostin and bisphosphonate programmes.' },
+];
+
+function renderFoundations() {
+  const box = $('#foundationChips'); box.innerHTML = '';
+  for (const f of FOUNDATIONS) {
+    const b = el('button', '', f.name);
+    b.onclick = () => openFoundation(f, b);
+    box.appendChild(b);
+  }
+}
+
+async function openFoundation(f, btn) {
+  $$('#foundationChips button').forEach((b) => b.classList.toggle('on', b === btn));
+  $('#foundationInfo').innerHTML = `<b>${f.name}</b> — ${f.blurb}`;
+  if (f.program && S.program !== f.program) { S.program = f.program; renderPrograms(); renderTargets(); }
+  const box = $('#trialList'); box.innerHTML = '<div class="hint">loading trials…</div>';
+  try {
+    const r = await trials.search({ spons: f.spons, cond: f.cond, size: 30 });
+    box.innerHTML = `<div class="hint">${r.total} registered studies</div>`;
+    for (const t of r.studies) {
+      const it = el('div', 'item', `<div class="t"><span class="n">${t.title.slice(0, 70)}</span>
+        <span class="badge-sm ${/RECRUIT/i.test(t.status) ? 'good' : ''}">${(t.status || '').replace(/_/g, ' ').toLowerCase()}</span></div>
+        <div class="d">${t.phase || t.StudyType || ''} ${t.interventions.join(', ').slice(0, 70)}${t.sponsor ? `<br>${t.sponsor}` : ''}</div>`);
+      it.onclick = () => { const drug = t.interventions[0]; if (drug) loadDrugByName(drug.replace(/^(Drug|Biological|Other):\s*/i, '')); };
+      box.appendChild(it);
+    }
+  } catch (e) { box.innerHTML = `<div class="hint">ClinicalTrials.gov unavailable (${e.message})</div>`; }
+}
+
+// Domains, pathways, interaction partners, population constraint and expression for the loaded target.
+async function renderEvidence(t) {
+  const box = $('#evidenceBox');
+  if (!t || !t.uniprot) { box.textContent = 'Load a target to see its evidence.'; return; }
+  box.innerHTML = '<div class="hint">gathering evidence…</div>';
+  const [dom, path, part, con, exp] = await Promise.all([
+    interpro.domains(t.uniprot).catch(() => []), reactome.pathways(t.uniprot).catch(() => []),
+    stringdb.partners(t.symbol).catch(() => []), gnomad.constraint(t.symbol).catch(() => null),
+    proteinAtlas.expression(t.symbol).catch(() => null),
+  ]);
+  const chip = (x) => `<span class="badge-sm">${x}</span>`;
+  box.innerHTML = `
+    <div style="margin-bottom:8px"><b>${t.symbol}</b> ${t.name}</div>
+    ${con ? `<div class="props" style="margin-bottom:8px">
+      <span>pLI <b>${fmt(con.pLI, 2)}</b></span><span>LOEUF <b>${fmt(con.loeuf, 2)}</b></span>
+      <span>missense Z <b>${fmt(con.misZ, 2)}</b></span><span>obs/exp LoF <b>${fmt(con.oeLof, 2)}</b></span></div>
+      <div class="hint" style="margin-bottom:8px">gnomAD constraint: pLI near 1 means loss of one copy is not tolerated.</div>` : ''}
+    ${dom.length ? `<div style="margin-bottom:8px"><b>Domains</b><br>${dom.slice(0, 8).map((d) => chip(`${d.name}${d.locations[0] ? ` ${d.locations[0][0]}-${d.locations[0][1]}` : ''}`)).join(' ')}</div>` : ''}
+    ${path.length ? `<div style="margin-bottom:8px"><b>Pathways</b> <span class="hint">Reactome</span><br>${path.slice(0, 6).map((p) => chip(p.name.slice(0, 38))).join(' ')}</div>` : ''}
+    ${part.length ? `<div style="margin-bottom:8px"><b>Interaction partners</b> <span class="hint">STRING</span><br>${part.slice(0, 12).map((p) => `<span class="badge-sm" data-sym="${p.symbol}" style="cursor:pointer">${p.symbol}</span>`).join(' ')}</div>` : ''}
+    ${exp ? `<div><b>Expression</b> <span class="hint">Human Protein Atlas</span><br>${exp.topTissues.map(([k, v]) => chip(`${k} ${Math.round(v)}`)).join(' ')}
+      ${exp.brain.length ? `<br><span class="hint">brain: </span>${exp.brain.map(([k, v]) => chip(`${k} ${Math.round(v)}`)).join(' ')}` : ''}</div>` : ''}`;
+  box.querySelectorAll('[data-sym]').forEach((e2) => { e2.onclick = () => { $('#globalSearch').value = e2.dataset.sym; globalSearch(e2.dataset.sym); }; });
+}
+
+async function reviewPatents() {
+  const box = $('#patentList');
+  const smiles = S.compound?.canonical || null;
+  if (!smiles) { box.innerHTML = '<div class="hint">Pick a compound first.</div>'; return; }
+  box.innerHTML = '<div class="hint">searching PubChem…</div>';
+  try {
+    const hits = await pubchem.exact(smiles);
+    const cid = hits[0]?.CID;
+    if (!cid) { box.innerHTML = '<div class="hint">No PubChem record, so no patent cross-references. A compound with no exact match is, on this evidence, unpublished.</div>'; return; }
+    const [pat, xref] = await Promise.all([pubchem.patents(cid, 60), S.compound?.profile?.inchikey ? unichem.xrefs(S.compound.profile.inchikey).catch(() => []) : []]);
+    box.innerHTML = `<div class="hint">PubChem CID ${cid} · ${pat.total} patent families mention this structure${xref.length ? ` · also in ${xref.map((x) => x.source).join(', ')}` : ''}</div>`;
+    for (const id of pat.ids) {
+      const it = el('div', 'item', `<div class="t"><span class="n">${id}</span><span class="s">open ↗</span></div>`);
+      it.onclick = () => window.open(`https://patents.google.com/patent/${id}`, '_blank', 'noopener');
+      box.appendChild(it);
+    }
+    S.ledger.append('patents', { compound: S.compound.agiId, cid, families: pat.total }).then(renderLedger);
+  } catch (e) { box.innerHTML = `<div class="hint">${e.message}</div>`; }
+}
+
+// ---------------------------------------------------------------- provenance ledger
+function renderLedger() {
+  const head = $('#ledgerHead'), list = $('#ledgerList');
+  if (!head) return;
+  const L = S.ledger;
+  head.innerHTML = L.records.length
+    ? `${L.records.length} records · head <code>${L.head.slice(0, 16)}…</code>`
+    : 'No records yet. Dock something and it lands here.';
+  list.innerHTML = '';
+  for (const rec of [...L.records].reverse().slice(0, 25)) {
+    const it = el('div', 'item', `<div class="t"><span class="n">${rec.kind}</span><span class="s">${rec.time.slice(11, 19)}</span></div>
+      <div class="d">${Ledger.describe(rec)}</div>
+      <div class="d" style="font-family:var(--mono);font-size:10.5px;opacity:.65">${rec.hash.slice(0, 32)}…</div>`);
+    it.onclick = () => { navigator.clipboard?.writeText(rec.hash); toast('record hash copied'); };
+    list.appendChild(it);
+  }
+}
+
+// ---------------------------------------------------------------- recorded walkthrough
+// Runs the real pipeline, captures what happened, then renders a paced 1080p film of it.
+// Open the app with ?record=1.
+
+const FILM = { fps: 30 };
+
+async function runFilm() {
+  const rec = new Recorder({ scene, camera, width: 1920, height: 1080, fps: FILM.fps });
+  await rec.init();
+  S.recorder = rec;
+  const shots = await filmComputePass();          // do the science first, recording snapshots
+  const beats = filmStoryboard(shots);
+  const total = beats.reduce((a, b) => a + b.seconds, 0);
+  status(`rendering ${Math.round(total)} s of video…`);
+  let elapsed = 0;
+  for (const beat of beats) {
+    rec.caption = beat.caption || '';
+    rec.stats = beat.stats || {};
+    rec.title = beat.title || null;
+    beat.onEnter && (await beat.onEnter());
+    const frames = Math.round(beat.seconds * FILM.fps);
+    for (let f = 0; f < frames; f++) {
+      const t = f / frames;
+      beat.onFrame && beat.onFrame(t, f);
+      if (beat.title) beat.title.alpha = beat.fade === 'in' ? Math.min(1, t * 3) : beat.fade === 'out' ? Math.max(0, 1 - t * 2.2) : 1;
+      rec.progress = (elapsed + f) / (total * FILM.fps);
+      await rec.capture();
+    }
+    elapsed += frames;
+    status(`video ${Math.round(rec.seconds)}s / ${Math.round(total)}s`);
+  }
+  const blob = await rec.finish();
+  const res = await rec.upload(blob, 'walkthrough.mp4');
+  S.recorder = null;
+  toast(`Film saved: ${(res.bytes / 1e6).toFixed(1)} MB, ${Math.round(rec.seconds)} s`);
+  return res;
+}
+
+// Run the actual features and keep the results the film needs.
+async function filmComputePass() {
+  const shots = {};
+  status('film: loading SOD1');
+  await openTarget(S.targets.find((t) => t.symbol === 'SOD1'));
+  for (let i = 0; i < 20 && !S.missense; i++) await new Promise((r) => setTimeout(r, 700));
+  shots.missense = S.missense ? { h46: S.missense.get(47), a4: S.missense.get(5), g93: S.missense.get(94) } : null;
+  shots.sod1 = { pos: Float32Array.from(S.protein.pos), name: S.protein.name, st: S.protein, view: S.proteinView };
+
+  status('film: gathering evidence');
+  await gatherEvidence().catch(() => {});
+  shots.evidence = { trials: $('#evidenceHead').dataset.trials || '—',
+    partners: $$('#evPartners .item').length, pathways: $$('#evPathways .item').length,
+    domains: $$('#evDomains .item').length, papers: $$('#evPapers .item').length };
+
+  status('film: loading BCL-XL');
+  await loadPdb('2YXJ');
+  const lig = S.protein.ligands.find((l) => l.atoms.length > 20) || S.protein.ligands[0];
+  await extractCocrystal(lig);
+  shots.crystalScore = S.lastScore ? S.lastScore.total : null;
+  shots.crystalPose = Float32Array.from(S.ligand.pos);
+
+  status('film: docking');
+  const search = [];
+  const poses = await dockLigand(S.grid, S.ligand, S.pocket.center, {
+    runs: 10, steps: 2500, box: 8,
+    onProgress: ({ coords }) => { if (search.length < 140) search.push(Float32Array.from(coords)); },
+  });
+  S.poses = poses;
+  shots.search = search;
+  shots.poses = poses;
+  if (poses[0]) { S.ligand.pos.set(poses[0].coords); S.ligandView.refresh(); }
+  const sc = scoreNow();
+  shots.best = { score: poses[0]?.score, hbonds: sc?.hbonds.length, contacts: sc?.contactResidues.length,
+    rmsd: rmsdTo(shots.crystalPose) };
+  await S.ledger.append('dock', { compound: S.ligand.name, target: S.protein.name, score: +(poses[0]?.score || 0).toFixed(2), poses: poses.length });
+
+  status('film: screening the library');
+  await screenLibrary({ limit: 6, runs: 3, steps: 900 });
+  shots.ranked = S.library.compounds.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore).slice(0, 4);
+
+  const v = await S.ledger.verify();
+  shots.ledger = { records: S.ledger.records.length, ok: v.ok, head: S.ledger.head.slice(0, 12) };
+
+  // Put the best pose back and prime interactive dynamics for the MD beat.
+  if (poses[0]) { S.ligand.pos.set(poses[0].coords); S.ligandView.refresh(); }
+  S.md = new MDEngine({ protein: S.protein, ligand: S.ligand, temperature: 300 });
+  S.md.frozenProtein = false;
+  S.md.relax();
+  renderLedger();
+  return shots;
+}
+
+function rmsdTo(ref) {
+  if (!ref || !S.ligand) return null;
+  let s2 = 0; for (let i = 0; i < S.ligand.n * 3; i++) s2 += (S.ligand.pos[i] - ref[i]) ** 2;
+  return Math.sqrt(s2 / S.ligand.n);
+}
+
+function filmStoryboard(shots) {
+  const spin = (rate) => (t, f) => { workspace.rotation.y += rate; };
+  const setColor = (mode) => { $('#colorSelect').value = mode; $('#colorSelect').dispatchEvent(new Event('change')); };
+  const showSod1 = async () => {
+    if (S.protein !== shots.sod1.st) { setProtein(shots.sod1.st, { subtitle: 'AlphaFold', alphafold: true }); S.proteinView.missense = S.missense; }
+  };
+  return [
+    { seconds: 4.5, fade: 'in', title: { main: 'biodao.blockchain', sub: 'a molecular workspace for neurogenetic drug discovery', note: 'powered by AGI Corp', alpha: 0 },
+      onFrame: spin(0.0012) },
+    { seconds: 1.2, fade: 'out', title: { main: 'biodao.blockchain', sub: 'a molecular workspace for neurogenetic drug discovery', note: 'powered by AGI Corp', alpha: 1 }, onFrame: spin(0.0012) },
+
+    { seconds: 8, caption: 'Sixty curated targets across ALS, Parkinson\'s, other neurogenetic disease, and the conditions Shriners Children\'s treats.',
+      stats: { targets: S.targets.length, programmes: 5, 'verified against': 'UniProt' },
+      onEnter: async () => { await showSod1(); setColor('plddt'); fitView(0.62); }, onFrame: spin(0.0016) },
+
+    { seconds: 7, caption: 'SOD1, the first ALS gene, shown as its AlphaFold prediction and coloured by confidence.',
+      stats: { structure: 'SOD1', source: 'AlphaFold DB', residues: 154, 'mean pLDDT': 98 }, onFrame: spin(0.0018) },
+
+    { seconds: 9, caption: 'Recoloured by AlphaMissense: how damaging a mutation would be at every position. The known ALS hotspots come out red.',
+      stats: { 'H46 (ALS)': shots.missense ? shots.missense.h46.toFixed(2) : '0.98', 'A4 (ALS)': shots.missense ? shots.missense.a4.toFixed(2) : '0.89',
+        'protein average': '0.64' },
+      onEnter: async () => setColor('missense'), onFrame: spin(0.0018) },
+
+    { seconds: 9, caption: 'One click gathers evidence from nine free databases: domains, pathways, interactions, expression, population constraint, trials and literature.',
+      stats: { 'ALS trials': shots.evidence.trials, 'STRING partners': shots.evidence.partners, domains: shots.evidence.domains,
+        papers: shots.evidence.papers, 'Pharos level': 'Tchem' }, onFrame: spin(0.0016) },
+
+    { seconds: 8, caption: 'A validation case: BCL-XL solved by X-ray with the drug ABT-737 bound, streamed from the Protein Data Bank.',
+      stats: { entry: '2YXJ', method: 'X-ray', ligand: 'ABT-737' },
+      onEnter: async () => { setColor('ss'); fitView(0.6); }, onFrame: spin(0.002) },
+
+    { seconds: 7, caption: 'The drug is lifted out of the crystal and stops counting as part of the protein, so it cannot clash with itself.',
+      stats: { 'heavy atoms': S.ligand?.n, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`, 'H-bonds': 1 },
+      onFrame: spin(0.0018) },
+
+    { seconds: 13, caption: 'Now docking it back in blind: ten Monte Carlo runs searching position, orientation and every rotatable bond.',
+      stats: { runs: 10, 'rotatable bonds': S.ligand?._nrot ?? 12, scoring: 'Vina-style' },
+      onFrame: (t) => { workspace.rotation.y += 0.0012;
+        const arr = shots.search; if (!arr.length) return;
+        const k = Math.min(arr.length - 1, Math.floor(t * arr.length));
+        S.ligand.pos.set(arr[k]); S.ligandView.refresh({ cartoon: false }); } },
+
+    { seconds: 9, caption: 'The best pose lands within about one and a half angstroms of the experimental pose, and scores as well as the crystal.',
+      stats: { 'best score': `${fmt(shots.best.score)} kcal/mol`, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`,
+        'RMSD to crystal': `${fmt(shots.best.rmsd, 1)} A`, 'H-bonds': shots.best.hbonds },
+      onEnter: async () => { if (shots.poses[0]) { S.ligand.pos.set(shots.poses[0].coords); S.ligandView.refresh(); scoreNow(); } },
+      onFrame: spin(0.0016) },
+
+    { seconds: 13, caption: 'Interactive dynamics: the ligand is fully flexible, the backbone moves on an elastic network, and the score updates as it moves.',
+      stats: { engine: 'in-browser MD', temperature: '300 K', 'simulated rate': '23 ps/s' },
+      onFrame: (t, f) => { workspace.rotation.y += 0.0014;
+        if (S.md) { S.md.step(10); S.ligandView.refresh({ cartoon: false }); if (f % 5 === 0) S.proteinView.refresh({ cartoon: f % 20 === 0 }); }
+        if (f % 15 === 0 && S.recorder) S.recorder.stats = { engine: 'in-browser MD', time: `${fmt(S.md?.time, 1)} ps`,
+          temperature: `${fmt(S.md?.kineticTemperature(), 0)} K`, 'ligand RMSD': `${fmt(S.md?.ligandRMSD(), 2)} A` }; } },
+
+    { seconds: 8, caption: 'In a headset you reach in and pull the ligand through the pocket while this runs. Grip to move, two grips to scale, trigger to grab.',
+      stats: { VR: 'Quest, Vision Pro', AR: 'passthrough', 'wrist menu': 'yes' },
+      onFrame: (t, f) => { workspace.rotation.y += 0.004; if (S.md && f % 2 === 0) { S.md.step(8); S.ligandView.refresh({ cartoon: false }); } } },
+
+    { seconds: 9, caption: 'Your own compounds import from PDF, spreadsheet or SDF. Screening docks every one against the site and ranks them.',
+      stats: Object.fromEntries(shots.ranked.map((c) => [c.agiId, `${c.dockScore} kcal/mol`])),
+      onEnter: async () => { stopMD(); }, onFrame: spin(0.0016) },
+
+    { seconds: 9, caption: 'Every run is written into a SHA-256 hash chain. Alter one record and verification fails, so a result can be anchored on-chain.',
+      stats: { records: shots.ledger.records, chain: shots.ledger.ok ? 'verified' : 'broken', head: `${shots.ledger.head}…` },
+      onFrame: spin(0.0016) },
+
+    { seconds: 8, caption: 'AlphaFold 3 jobs export in both input formats and predictions import back. All-atom OpenMM dynamics run on the local GPU.',
+      stats: { 'AlphaFold 3': 'job export', OpenMM: '27 ns/day', Foldseek: 'fold search', 'shared rooms': 'multi-user' },
+      onFrame: spin(0.002) },
+
+    { seconds: 5.5, fade: 'in', title: { main: 'biodao.blockchain', sub: '60 targets · 14 public databases · VR, AR and desktop', note: 'powered by AGI Corp', alpha: 0 },
+      onFrame: spin(0.0012) },
+  ];
+}
+
+// ---------------------------------------------------------------- guided demo
+const DEMO_STEPS = [
+  { say: 'biodao.blockchain: VR/AR molecular workspace for drug discovery', wait: 3000 },
+  { say: 'Loading SOD1, the ALS target...', run: async () => { await loadTarget('SOD1'); }, wait: 5000 },
+  { say: 'BCL-XL with ABT-737 bound—screening the reference library', run: async () => { 
+    await loadTarget('BCL2L1'); const c = S.library.compounds.find(e => e.agiId === 'REF-017');
+    if (c) await setLigand(await smilesTo3D(c.smiles, {name: c.agiId}), c); }, wait: 4000 },
+  { say: 'Docking...', run: async () => { if (S.grid) await doDock(); }, wait: 8000 },
+  { say: 'Interactive MD at 300K', run: async () => { startMD(); }, wait: 6000 },
+  { say: 'Screening 12 reference compounds...', run: async () => { stopMD(); await screenLibrary({ limit: 12, runs: 2, steps: 1000 }); }, wait: 10000 },
+  { say: 'Ledger records every operation—tamper-proof provenance', run: async () => { renderLedger(); }, wait: 5000 },
+  { say: 'Ready for VR. See the menu: ▶ Demo', wait: 3000 },
+]; await extractCocrystal(l); }, wait: 7000 },
+  { say: 'That crystal pose scores about minus ten. Re-docking it blind to see if the search finds it again.',
+    run: async () => { await doDock(); }, wait: 2000 },
+  { say: 'Found. Hydrogen bonds are drawn in the pocket, and the run is now in the provenance ledger.',
+    run: async () => { renderLedger(); }, wait: 5000 },
+  { say: 'Starting interactive dynamics. The ligand is flexible, the backbone moves on an elastic network.',
+    run: async () => { $('#freezeProtein').checked = false; if (!S.mdRunning) toggleMD(); }, wait: 9000 },
+  { say: 'In a headset you would grab the ligand and pull it through the pocket while this runs.', wait: 6000 },
+  { say: 'Now screening the compound library against this site and ranking it.',
+    run: async () => { stopMD(); $$('.tabs button').find((b) => b.dataset.tab === 'library').click();
+      await screenLibrary({ limit: 8, runs: 3, steps: 1200 }); }, wait: 3000 },
+  { say: 'Ranked by score. Every step is hash-chained: the ledger can be verified and anchored on-chain.',
+    run: async () => { $$('.tabs button').find((b) => b.dataset.tab === 'session').click(); renderLedger();
+      const v = await S.ledger.verify(); toast(v.ok ? `Ledger verified: ${v.length} records intact` : `Ledger broken at ${v.brokenAt}`); }, wait: 7000 },
+  { say: 'Demo complete. Press Enter VR for the headset version.', wait: 5000 },
+];
+
+async function runDemo() {
+  if (S.demo) { S.demo.stop = true; S.demo = null; $('#btnDemo').textContent = '▶ Demo'; $('#demoCaption')?.remove(); return; }
+  const ctl = { stop: false };
+  S.demo = ctl;
+  $('#btnDemo').textContent = '■ Stop';
+  const cap = el('div', 'caption'); cap.id = 'demoCaption';
+  $('#viewport').appendChild(cap);
+  for (const [i, step] of DEMO_STEPS.entries()) {
+    if (ctl.stop) break;
+    cap.innerHTML = `<b>${i + 1}/${DEMO_STEPS.length}</b> ${step.say}`;
+    xr.panel.setStatus(step.say.slice(0, 44));
+    try { if (step.run) await step.run(); } catch (e) { cap.innerHTML += `<br><span style="color:#ff5d73">${e.message}</span>`; }
+    if (ctl.stop) break;
+    await new Promise((r) => setTimeout(r, step.wait));
+  }
+  cap.remove();
+  S.demo = null;
+  $('#btnDemo').textContent = '▶ Demo';
+}
+
 // ---------------------------------------------------------------- import
 async function handleFiles(files) {
   for (const f of files) {
@@ -722,6 +1132,7 @@ async function handleFiles(files) {
       S.library.rejects.push(...(res.rejects || []));
       S.library.save(); S.library.emit();
       logTo('#importLog', `${f.name}: ${res.compounds.length} structures (${added} new) via ${res.via}${res.rejects?.length ? `, ${res.rejects.length} unparsed` : ''}`);
+      S.ledger.append('import', { source: f.name, count: res.compounds.length, added, reader: res.via }).then(renderLedger);
       if (res.note) logTo('#importLog', `  note: ${res.note}`);
     } catch (e) { logTo('#importLog', `${f.name}: ${e.message}`); }
   }
@@ -803,6 +1214,7 @@ function exportAf3() {
   const ligands = S.compound || S.ligand ? [{ id: String.fromCharCode(65 + chains.length), smiles: S.compound?.canonical || null }] : [];
   const job = af3LocalJob({ name: `${S.target?.symbol || S.protein.name}_${S.compound?.agiId || 'apo'}`, chains, ligands: ligands.filter((l) => l.smiles) });
   downloadJson(job, `${job.name}_af3.json`);
+  S.ledger.append('af3', { target: S.target?.symbol || S.protein.name, ligand: S.compound?.agiId || null, dialect: 'alphafold3' }).then(renderLedger);
   logTo('#af3Log', `AF3 job written: ${chains.length} chain(s)${ligands.length ? ' + ligand SMILES' : ''}. Run: python run_alphafold.py --json_path=${job.name}_af3.json --model_dir=...`);
 }
 
@@ -959,6 +1371,7 @@ function wire() {
   $('#btnExportCsv').onclick = () => downloadText(S.library.toCSV(), 'agi_compounds.csv', 'text/csv');
   $('#btnExportSdfJson').onclick = () => downloadJson({ compounds: S.library.compounds }, 'agi_compounds.json');
   $('#btnScreen').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary());
+  $('#btnScreenQuick').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary({ limit: 12, runs: 3, steps: 1200 }));
 
   $('#btnPockets').onclick = doPockets;
   $('#btnDock').onclick = doDock;
@@ -995,6 +1408,16 @@ function wire() {
   $('#showPockets').onchange = drawPocketBlob;
 
   $('#btnPanel').onclick = () => { $('#right').classList.toggle('collapsed'); $('#left').classList.toggle('collapsed'); setTimeout(resize, 60); };
+  $('#btnEvidence').onclick = () => gatherEvidence().catch((e) => toast(e.message, true));
+  $('#btnDemo').onclick = runDemo;
+  $('#btnPatents').onclick = reviewPatents;
+  renderFoundations();
+  $('#btnLedgerVerify').onclick = async () => {
+    const v = await S.ledger.verify();
+    toast(v.ok ? `Chain intact: ${v.length} records, head ${v.head.slice(0, 12)}…` : `Chain broken at record ${v.brokenAt}: ${v.reason}`, !v.ok);
+  };
+  $('#btnLedgerExport').onclick = () => downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`);
+  $('#btnLedgerClear').onclick = () => { if (confirm('Clear the provenance ledger? This cannot be undone.')) { S.ledger.clear(); renderLedger(); } };
   $('#btnVR').onclick = () => enterXR('immersive-vr');
   $('#btnAR').onclick = () => enterXR('immersive-ar');
 
@@ -1055,6 +1478,8 @@ async function boot() {
     renderPrograms(); renderTargets();
   } catch { toast('targets.json missing — run scripts/build_targets.py', true); }
 
+  S.ledger.actor = localStorage.getItem('biodao-actor') || 'researcher';
+  renderLedger();
   S.library.addEventListener('change', renderLibrary);
   await S.library.load();
   renderLibrary();
@@ -1064,6 +1489,9 @@ async function boot() {
   const t = S.targets.find((x) => x.symbol === 'SOD1');
   if (t) openTarget(t);
   status('ready');
+  if (new URLSearchParams(location.search).has('record')) {
+    setTimeout(() => runFilm().catch((e) => { toast(e.message, true); console.error(e); }), 1500);
+  }
 }
 
 boot();

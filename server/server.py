@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AGI BioXR local server.
+"""biodao.blockchain local server (powered by AGI Corp).
 
 Serves the WebXR app and adds the compute that a browser cannot do well:
 
@@ -31,6 +31,7 @@ import sys
 import threading
 import time
 import traceback
+import urllib.parse
 import urllib.request
 import uuid
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -111,7 +112,7 @@ JOBS = {}
 
 
 def _fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "agi-bioxr/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "biodao-blockchain/1.0"})
     with urllib.request.urlopen(req, timeout=120) as r:
         return r.read().decode()
 
@@ -209,6 +210,29 @@ def run_md(job_id, spec):
         job["stage"] = "error"
         job["error"] = f"{type(e).__name__}: {e}"
         traceback.print_exc()
+
+
+# --------------------------------------------------------------------------- read-only proxy
+# Some public scientific APIs send no CORS headers, so a browser cannot call them directly.
+# This forwards GET requests to a fixed allowlist of them, and to nothing else.
+PROXY_HOSTS = {
+    "www.ebi.ac.uk", "ebi.ac.uk", "www.europepmc.org", "europepmc.org", "reactome.org",
+    "string-db.org", "www.proteinatlas.org", "clinicaltrials.gov", "gnomad.broadinstitute.org",
+    "rest.uniprot.org", "data.rcsb.org", "files.rcsb.org", "search.rcsb.org", "models.rcsb.org",
+    "alphafold.ebi.ac.uk", "pubchem.ncbi.nlm.nih.gov", "eutils.ncbi.nlm.nih.gov", "rest.kegg.jp",
+    "bindingdb.org", "www.bindingdb.org", "api.fda.gov", "pharos-api.ncats.io", "mychem.info",
+    "mygene.info", "myvariant.info", "mydisease.info", "api.platform.opentargets.org",
+    "search.foldseek.com", "www.guidetopharmacology.org", "rest.ensembl.org",
+}
+
+
+def proxy_get(url):
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in PROXY_HOSTS:
+        raise ValueError(f"{parsed.hostname} is not on the proxy allowlist")
+    req = urllib.request.Request(url, headers={"User-Agent": "biodao-blockchain/1.0", "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return r.read(), r.headers.get("Content-Type", "application/json")
 
 
 # --------------------------------------------------------------------------- collaboration rooms
@@ -309,6 +333,18 @@ class Handler(SimpleHTTPRequestHandler):
             if since:
                 out.pop("topology", None)
             return self._json(out)
+        if p == "/api/proxy":
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            target = (qs.get("url") or [""])[0]
+            try:
+                body, ctype = proxy_get(target)
+            except Exception as e:  # noqa: BLE001
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 400)
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            return self.wfile.write(body)
         if p.startswith("/api/room/") and p.endswith("/events"):
             return self._sse(p.split("/")[3])
         return super().do_GET()
@@ -366,6 +402,16 @@ class Handler(SimpleHTTPRequestHandler):
                 if job:
                     job["cancel"] = True
                 return self._json({"ok": bool(job)})
+            if p == "/api/recording":
+                qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                name = os.path.basename((qs.get("name") or ["demo.webm"])[0])
+                out = os.path.join(ROOT, "docs", name)
+                os.makedirs(os.path.dirname(out), exist_ok=True)
+                data = self._body()
+                with open(out, "wb") as f:
+                    f.write(data)
+                print(f"saved recording {out} ({len(data)/1e6:.1f} MB)")
+                return self._json({"ok": True, "path": out, "bytes": len(data)})
             if p == "/api/library":
                 lib = json.loads(self._body())
                 path = os.path.join(ROOT, "data", "agi_compounds.json")
@@ -431,7 +477,7 @@ def main():
         ctx.load_cert_chain(crt, key)
         srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
         scheme = "https"
-    print(f"AGI BioXR  ->  {scheme}://localhost:{a.port}   (LAN: {scheme}://{lan_ip()}:{a.port})")
+    print(f"biodao.blockchain  ->  {scheme}://localhost:{a.port}   (LAN: {scheme}://{lan_ip()}:{a.port})")
     print("engines:", ", ".join(f"{k}={'yes' if v else 'no'}" for k, v in HAVE.items()))
     srv.serve_forever()
 

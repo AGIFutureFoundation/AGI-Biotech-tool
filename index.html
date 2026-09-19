@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AGI BioXR — molecular workspace</title>
+<title>biodao.blockchain — molecular workspace</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🧬</text></svg>">
 <link rel="stylesheet" href="css/app.css">
 <script type="importmap">
@@ -16,7 +16,7 @@
 <body>
 <div id="app">
   <header id="topbar">
-    <div class="brand"><span class="dot"></span> AGI <strong>BioXR</strong></div>
+    <div class="brand"><span class="dot"></span> biodao<strong>.blockchain</strong><small>powered by AGI Corp</small></div>
     <div class="search">
       <input id="globalSearch" type="search" placeholder="Gene (SOD1), PDB id (2YXJ), UniProt (P00441), disease (ALS), or SMILES" autocomplete="off">
       <div id="searchResults" class="results hidden"></div>
@@ -26,14 +26,17 @@
       <button id="btnPanel" title="Show or hide the side panels">Panels</button>
       <button id="btnVR" class="primary" disabled>Enter VR</button>
       <button id="btnAR" disabled>Enter AR</button>
+      <button id="btnDemo" class="primary" title="Run the guided demo">▶ Demo</button>
     </div>
   </header>
 
   <aside id="left">
     <nav class="tabs">
       <button data-tab="targets" class="active">Targets</button>
-      <button data-tab="library">AGI library</button>
+      <button data-tab="library">Compounds</button>
       <button data-tab="drugs">Known drugs</button>
+      <button data-tab="evidence">Evidence</button>
+      <button data-tab="programs">Programs</button>
       <button data-tab="session">Session</button>
     </nav>
 
@@ -73,6 +76,7 @@
         <button id="btnExportCsv">CSV</button>
         <button id="btnExportSdfJson">JSON</button>
         <button id="btnScreen">Screen vs target</button>
+        <button id="btnScreenQuick">Quick screen (12)</button>
       </div>
       <div id="libStats" class="hint"></div>
       <div id="libList" class="list compounds"></div>
@@ -89,12 +93,51 @@
       <div class="block"><h4>Ligands in this structure</h4><div id="cocrystalList" class="list small"></div></div>
     </section>
 
+    <section data-panel="evidence" class="panel hidden">
+      <div id="evidenceHead" class="hint">Load a target to gather its evidence.</div>
+      <div class="row"><button id="btnEvidence" class="primary">Gather evidence</button></div>
+      <div class="block"><h4>Domains <small>InterPro</small></h4><div id="evDomains" class="list small"></div></div>
+      <div class="block"><h4>Pathways <small>Reactome</small></h4><div id="evPathways" class="list small"></div></div>
+      <div class="block"><h4>Interaction partners <small>STRING</small></h4><div id="evPartners" class="list small"></div></div>
+      <div class="block"><h4>Expression <small>Human Protein Atlas</small></h4><div id="evExpression" class="hint"></div></div>
+      <div class="block"><h4>Population constraint <small>gnomAD</small></h4><div id="evConstraint" class="hint"></div></div>
+      <div class="block"><h4>Clinical trials <small>ClinicalTrials.gov</small></h4><div id="evTrials" class="list small"></div></div>
+      <div class="block"><h4>Literature <small>Europe PMC</small></h4><div id="evPapers" class="list small"></div></div>
+    </section>
+
+    <section data-panel="programs" class="panel hidden">
+      <div class="block">
+        <h4>Featured research programmes</h4>
+        <p class="hint">Each programme loads its target set and pulls that funder's live trial registry from ClinicalTrials.gov.</p>
+        <div class="programs" id="foundationChips"></div>
+        <div id="foundationInfo" class="hint"></div>
+      </div>
+      <div class="block"><h4>Trials <small>ClinicalTrials.gov</small></h4><div id="trialList" class="list small"></div></div>
+      <div class="block">
+        <h4>Target evidence</h4>
+        <div id="evidenceBox" class="hint">Load a target to see domains, pathways, interactions, constraint and expression.</div>
+      </div>
+      <div class="block">
+        <h4>Patent review <small>PubChem cross-references</small></h4>
+        <p class="hint">Select a compound, then review every patent family that mentions it.</p>
+        <div class="row"><button id="btnPatents">Review patents for current compound</button></div>
+        <div id="patentList" class="list small"></div>
+      </div>
+    </section>
+
     <section data-panel="session" class="panel hidden">
       <div class="block">
         <h4>Shared session</h4>
         <div class="row"><input id="roomName" placeholder="room name" value="agi-lab"><input id="userName" placeholder="your name" value="researcher"></div>
         <div class="row"><button id="btnJoin" class="primary">Join room</button><button id="btnLeave">Leave</button></div>
         <div id="peerList" class="hint">Not connected.</div>
+      </div>
+      <div class="block">
+        <h4>Provenance ledger <small>SHA-256 hash chain</small></h4>
+        <p class="hint">Every docking run, screen, simulation and import is chained to the one before it, so the record cannot be edited afterwards without breaking it. Export the chain to anchor its head hash on-chain or in a DAO proposal.</p>
+        <div class="row wrap"><button id="btnLedgerVerify">Verify chain</button><button id="btnLedgerExport">Export</button><button id="btnLedgerClear">Clear</button></div>
+        <div id="ledgerHead" class="hint"></div>
+        <div id="ledgerList" class="list small"></div>
       </div>
       <div class="block">
         <h4>AlphaFold 3</h4>

@@ -196,7 +196,7 @@ export class Structure {
   }
 
   toMolblock() {
-    const L = [this.name, '  AGI-BioXR', ''];
+    const L = [this.name, '  biodao.chain', ''];
     L.push(`${String(this.n).padStart(3)}${String(this.bonds.length / 3).padStart(3)}  0  0  0  0  0  0  0  0999 V2000`);
     for (let i = 0; i < this.n; i++) {
       const e = this.element[i]; const sym = e.length > 1 ? e[0] + e.slice(1).toLowerCase() : e;

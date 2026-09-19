@@ -34,7 +34,7 @@ export class WristPanel {
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = 'rgba(10,15,24,0.92)'; ctx.fillRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#39d98a'; ctx.font = '600 26px system-ui, sans-serif';
-    ctx.fillText('AGI BioXR', 16, 34);
+    ctx.fillText('biodao.blockchain', 16, 34);
     ctx.fillStyle = '#9fb3c8'; ctx.font = '20px system-ui, sans-serif';
     ctx.fillText(this.status.slice(0, 44), 16, 58);
     for (const { b, x, y, w, h } of this.layout()) {
