@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AGI BioXR — molecular workspace</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🧬</text></svg>">
+<link rel="stylesheet" href="css/app.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="brand"><span class="dot"></span> AGI <strong>BioXR</strong></div>
+    <div class="search">
+      <input id="globalSearch" type="search" placeholder="Gene (SOD1), PDB id (2YXJ), UniProt (P00441), disease (ALS), or SMILES" autocomplete="off">
+      <div id="searchResults" class="results hidden"></div>
+    </div>
+    <div class="topactions">
+      <span id="serverChip" class="chip" title="Local compute server">server: checking…</span>
+      <button id="btnPanel" title="Show or hide the side panels">Panels</button>
+      <button id="btnVR" class="primary" disabled>Enter VR</button>
+      <button id="btnAR" disabled>Enter AR</button>
+    </div>
+  </header>
+
+  <aside id="left">
+    <nav class="tabs">
+      <button data-tab="targets" class="active">Targets</button>
+      <button data-tab="library">AGI library</button>
+      <button data-tab="drugs">Known drugs</button>
+      <button data-tab="session">Session</button>
+    </nav>
+
+    <section data-panel="targets" class="panel">
+      <div class="programs" id="programChips"></div>
+      <div id="targetList" class="list"></div>
+      <div class="block">
+        <h4>Disease explorer <small>Open Targets</small></h4>
+        <div class="row"><input id="diseaseQuery" placeholder="amyotrophic lateral sclerosis"><button id="btnDisease">Find targets</button></div>
+        <div id="diseaseResults" class="list small"></div>
+      </div>
+    </section>
+
+    <section data-panel="library" class="panel hidden">
+      <div class="block">
+        <div class="row">
+          <button id="btnImport" class="primary">Import compounds…</button>
+          <button id="btnPaste">Paste SMILES</button>
+        </div>
+        <input id="fileInput" type="file" multiple accept=".pdf,.csv,.tsv,.smi,.txt,.sdf,.mol,.json" hidden>
+        <div id="importDrop" class="drop">Drop PDF / CSV / SDF / SMILES files here<br><small>AGI compound sheets, SMILES agent lists, patents</small></div>
+        <div id="importLog" class="log"></div>
+      </div>
+      <div class="row">
+        <input id="libSearch" placeholder="Search id, name, SMILES">
+        <select id="libSort"><option value="id">by id</option><option value="mw">by MW</option><option value="clogp">by cLogP</option><option value="cns">by CNS score</option><option value="score">by dock score</option></select>
+      </div>
+      <div class="row">
+        <input id="libSmarts" placeholder="Substructure SMARTS or SMILES">
+        <button id="btnSmarts">Filter</button>
+      </div>
+      <div class="programs" id="scaffoldChips"></div>
+      <div class="row wrap">
+        <button id="btnProfile">Profile all</button>
+        <button id="btnNovelty">Novelty check</button>
+        <button id="btnAutoNumber">Auto-number</button>
+        <button id="btnExportCsv">CSV</button>
+        <button id="btnExportSdfJson">JSON</button>
+        <button id="btnScreen">Screen vs target</button>
+      </div>
+      <div id="libStats" class="hint"></div>
+      <div id="libList" class="list compounds"></div>
+      <div id="rejectBox" class="block hidden">
+        <h4>Needs a human eye <small>unparseable strings</small></h4>
+        <div id="rejectList" class="list small"></div>
+      </div>
+    </section>
+
+    <section data-panel="drugs" class="panel hidden">
+      <div id="drugTargetName" class="hint">Load a target to see its drugs.</div>
+      <div class="block"><h4>Clinical drugs &amp; candidates <small>Open Targets</small></h4><div id="drugList" class="list"></div></div>
+      <div class="block"><h4>Potent actives <small>ChEMBL</small></h4><div id="activeList" class="list small"></div></div>
+      <div class="block"><h4>Ligands in this structure</h4><div id="cocrystalList" class="list small"></div></div>
+    </section>
+
+    <section data-panel="session" class="panel hidden">
+      <div class="block">
+        <h4>Shared session</h4>
+        <div class="row"><input id="roomName" placeholder="room name" value="agi-lab"><input id="userName" placeholder="your name" value="researcher"></div>
+        <div class="row"><button id="btnJoin" class="primary">Join room</button><button id="btnLeave">Leave</button></div>
+        <div id="peerList" class="hint">Not connected.</div>
+      </div>
+      <div class="block">
+        <h4>AlphaFold 3</h4>
+        <p class="hint">AlphaFold 3 has no public API. Export a job, run it on AlphaFold Server or a local AF3 install, then drop the result back in.</p>
+        <div class="row"><button id="btnAf3Local">Export AF3 job (protein + ligand)</button></div>
+        <div class="row"><button id="btnAfServer">Export AlphaFold Server job</button><button id="btnAf3Import">Import AF3 result…</button></div>
+        <input id="af3File" type="file" accept=".cif,.mmcif,.json" hidden>
+        <div id="af3Log" class="log"></div>
+      </div>
+      <div class="block">
+        <h4>Backend simulation <small>OpenMM</small></h4>
+        <div class="row"><label>steps <input id="mdSteps" type="number" value="20000" min="1000" step="1000"></label><label>K <input id="mdTemp" type="number" value="310" min="100" max="400"></label></div>
+        <div class="row"><button id="btnBackendMd" class="primary">Run all-atom MD</button><button id="btnBackendStop">Stop</button></div>
+        <div id="backendMdLog" class="log"></div>
+      </div>
+      <div class="block">
+        <h4>Google BigQuery <small>public datasets</small></h4>
+        <p class="hint">Needs <code>google-cloud-bigquery</code> on the server plus <code>gcloud auth application-default login</code>. Queries the AlphaFold DB metadata table.</p>
+        <div class="row"><input id="bqGene" placeholder="gene symbol e.g. SOD1"><button id="btnBq">Query</button></div>
+        <div id="bqLog" class="log"></div>
+      </div>
+      <div class="block">
+        <h4>Display</h4>
+        <div class="row"><label>representation <select id="repSelect"></select></label></div>
+        <div class="row"><label>colour <select id="colorSelect"></select></label></div>
+        <div class="row wrap"><label><input type="checkbox" id="showH"> hydrogens</label><label><input type="checkbox" id="showWater"> water</label><label><input type="checkbox" id="showPockets"> pocket blobs</label></div>
+      </div>
+    </section>
+  </aside>
+
+  <main id="viewport">
+    <canvas id="gl"></canvas>
+    <div id="hud">
+      <div id="hudTitle">No structure loaded</div>
+      <div id="hudSub"></div>
+    </div>
+    <div id="mdBadge" class="badge hidden"></div>
+    <div id="toast" class="toast hidden"></div>
+  </main>
+
+  <aside id="right">
+    <section class="block" id="structureBlock">
+      <h4>Structure</h4>
+      <div id="structInfo" class="hint">Pick a target on the left, or search above.</div>
+      <div class="row wrap" id="structActions"></div>
+    </section>
+
+    <section class="block" id="ligandBlock">
+      <h4>Ligand</h4>
+      <div id="ligandCard" class="hint">No ligand. Choose a compound from the AGI library or a known drug.</div>
+    </section>
+
+    <section class="block">
+      <h4>Binding site &amp; docking</h4>
+      <div class="row wrap">
+        <button id="btnPockets">Find pockets</button>
+        <button id="btnDock" class="primary">Dock ligand</button>
+        <button id="btnStopDock">Stop</button>
+      </div>
+      <div id="pocketList" class="list small"></div>
+      <div id="dockResult" class="hint">Scores use a Vina-style empirical function (lower is better).</div>
+      <div id="poseList" class="list small"></div>
+    </section>
+
+    <section class="block">
+      <h4>Interactive dynamics</h4>
+      <div class="row wrap">
+        <button id="btnMd" class="primary">Start MD</button>
+        <label>K <input id="liveTemp" type="number" value="300" min="1" max="600" step="10"></label>
+        <label><input type="checkbox" id="freezeProtein" checked> rigid protein</label>
+      </div>
+      <div id="mdStats" class="stats"></div>
+      <div class="hint">In VR: grip to move the workspace, two grips to scale, trigger on the ligand to pull it through the pocket.</div>
+    </section>
+
+    <section class="block">
+      <h4>Measure &amp; select</h4>
+      <div class="row wrap"><button id="btnMeasure">Measure mode</button><button id="btnClearSel">Clear</button></div>
+      <div id="selInfo" class="hint">Click an atom to select. Two atoms give a distance, three give an angle.</div>
+    </section>
+  </aside>
+
+  <footer id="statusbar"><span id="status">Loading…</span><span id="perf"></span></footer>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

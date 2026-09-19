@@ -1,0 +1,4765 @@
+{
+ "generated": "2026-09-19",
+ "targets": [
+  {
+   "symbol": "SOD1",
+   "uniprot": "P00441",
+   "program": "ALS",
+   "disease": "Familial ALS (ALS1)",
+   "rationale": "Toxic gain-of-function misfolding; tofersen (ASO) approved for SOD1-ALS.",
+   "name": "Superoxide dismutase [Cu-Zn]",
+   "length": 154,
+   "sequence": "MATKAVCVLKGDGPVQGIINFEQKESNGPVKVWGSIKGLTEGLHGFHVHEFGDNTAGCTSAGPHFNPLSRKHGGPKDEERHVGDLGNVTADKDGVADVSIEDSVISLSGDHCIIGRTLVVHEKADDLGKGGNEESTKTGNAGSRLACGVIGIAQ",
+   "ensembl": "ENSG00000142168",
+   "alphafold": {
+    "id": "AF-P00441-F1",
+    "plddt": 97.94,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P00441-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P00441-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P00441-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 156,
+   "bestPdb": "2C9V",
+   "structures": [
+    {
+     "id": "4A7U",
+     "title": "Structure of human I113T SOD1 complexed with adrenaline in the p21 space group.",
+     "resolution": 0.98,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ALE",
+       "name": "L-EPINEPHRINE"
+      }
+     ]
+    },
+    {
+     "id": "4A7V",
+     "title": "Structure of human I113T SOD1 mutant complexed with dopamine in the p21 space group",
+     "resolution": 1.0,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "LDP",
+       "name": "L-DOPAMINE"
+      }
+     ]
+    },
+    {
+     "id": "4A7S",
+     "title": "Structure of human I113T SOD1 mutant complexed with 5-Fluorouridine in the p21 space group",
+     "resolution": 1.06,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "5UD",
+       "name": "5-FLUOROURIDINE"
+      }
+     ]
+    },
+    {
+     "id": "4A7Q",
+     "title": "Structure of human I113T SOD1 mutant complexed with 4-(4-methyl-1,4- diazepan-1-yl)quinazoline in the p21 space group.",
+     "resolution": 1.22,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "4MQ",
+       "name": "4-(4-METHYL-1,4-DIAZEPAN-1-YL)QUINAZOLINE"
+      }
+     ]
+    },
+    {
+     "id": "4A7G",
+     "title": "Structure of human I113T SOD1 mutant complexed with 4-methylpiperazin- 1-yl)quinazoline in the p21 space group.",
+     "resolution": 1.24,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "12I",
+       "name": "4-(4-METHYLPIPERAZIN-1-YL)QUINAZOLINE"
+      }
+     ]
+    },
+    {
+     "id": "6Z3V",
+     "title": "A4V mutant of human SOD1 bound with N-aryl benzoisoselenazolone derivative 13 in P21 space group",
+     "resolution": 1.25,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "Q6H",
+       "name": "5-fluoranyl-~{N}-(3-morpholin-4-ylcarbonylphenyl)-2-selanyl-benzamide"
+      }
+     ]
+    },
+    {
+     "id": "5O3Y",
+     "title": "SOD1 bound to Ebsulfur",
+     "resolution": 1.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "9JK",
+       "name": "~{N}-phenyl-2-sulfanyl-benzamide"
+      }
+     ]
+    },
+    {
+     "id": "7T8G",
+     "title": "G93A mutant of human SOD1 bound with MR6-8-2 in P21 space group",
+     "resolution": 1.35,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "SE",
+       "name": "SELENIUM ATOM"
+      },
+      {
+       "id": "Q8H",
+       "name": "~{N}-(pyridin-3-ylmethyl)-2-selanyl-benzamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "TARDBP",
+   "uniprot": "Q13148",
+   "program": "ALS",
+   "disease": "ALS / FTD (TDP-43 proteinopathy)",
+   "rationale": "TDP-43 aggregates in ~97% of ALS cases; RRM domains are druggable RNA-binding surfaces.",
+   "name": "TAR DNA-binding protein 43",
+   "length": 414,
+   "sequence": "MSEYIRVTEDENDEPIEIPSEDDGTVLLSTVTAQFPGACGLRYRNPVSQCMRGVRLVEGILHAPDAGWGNLVYVVNYPKDNKRKMDETDASSAVKVKRAVQKTSDLIVLGLPWKTTEQDLKEYFSTFGEVLMVQVKKDLKTGHSKGFGFVRFTEYETQVKVMSQRHMIDGRWCDCKLPNSKQSQDEPLRSRKVFVGRCTEDMTEDELREFFSQYGDVMDVFIPKPFRAFAFVTFADDQIAQSLCGEDLIIKGISVHISNAEPKHNSNRQLERSGRFGGNPGGFGNQGGFGNSRGGGAGLGNNQGSNMGGGMNFGAFSINPAMMAAAQAALQSSWGMMGMLASQQNQSGPSGNNQNQGNMQREPNQAFGSGNNSYSGSNSGAAIGWGSASNAGSGSGFNGGFGSSMDSKSSGWGM",
+   "ensembl": "ENSG00000120948",
+   "alphafold": {
+    "id": "AF-Q13148-F1",
+    "plddt": 65.19,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13148-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13148-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13148-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 44,
+   "bestPdb": "6CF4",
+   "structures": [
+    {
+     "id": "6CF4",
+     "title": "Segment NFGTFS, with familial mutation A315T and phosphorylated threonine, from the low complexity domain of TDP-43, residues 312-317",
+     "resolution": 0.75,
+     "method": "EM",
+     "ligands": []
+    },
+    {
+     "id": "5WHP",
+     "title": "Crystal structure of the segment, NFGTFS, from the A315T familial variant of the low complexity domain of TDP-43, residues 312-317",
+     "resolution": 1.0,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "5WKB",
+     "title": "MicroED structure of the segment, NFGEFS, from the A315E familial variant of the low complexity domain of TDP-43, residues 312-317",
+     "resolution": 1.0,
+     "method": "EM",
+     "ligands": []
+    },
+    {
+     "id": "5WIA",
+     "title": "Crystal structure of the segment, GNNSYS, from the low complexity domain of TDP-43, residues 370-375",
+     "resolution": 1.002,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "FUS",
+   "uniprot": "P35637",
+   "program": "ALS",
+   "disease": "Juvenile / familial ALS (ALS6)",
+   "rationale": "Phase-separation driver; mutations cause aggressive juvenile ALS.",
+   "name": "RNA-binding protein FUS",
+   "length": 526,
+   "sequence": "MASNDYTQQATQSYGAYPTQPGQGYSQQSSQPYGQQSYSGYSQSTDTSGYGQSSYSSYGQSQNTGYGTQSTPQGYGSTGGYGSSQSSQSSYGQQSSYPGYGQQPAPSSTSGSYGSSSQSSSYGQPQSGSYSQQPSYGGQQQSYGQQQSYNPPQGYGQQNQYNSSSGGGGGGGGGGNYGQDQSSMSSGGGSGGGYGNQDQSGGGGSGGYGQQDRGGRGRGGSGGGGGGGGGGYNRSSGGYEPRGRGGGRGGRGGMGGSDRGGFNKFGGPRDQGSRHDSEQDNSDNNTIFVQGLGENVTIESVADYFKQIGIIKTNKKTGQPMINLYTDRETGKLKGEATVSFDDPPSAKAAIDWFDGKEFSGNPIKVSFATRRADFNRGGGNGRGGRGRGGPMGRGGYGGGGSGGGGRGGFPSGGGGGGGQQRAGDWKCPNPTCENMNFSWRNECNQCKAPKPDGPGGGPGGSHMGGNYGDDRRGGRGGYDRGGYRGRGGDRGGFRGGRGGGDRGGFGPGKMDSRGEHRQDRRERPY",
+   "ensembl": "ENSG00000089280",
+   "alphafold": {
+    "id": "AF-P35637-F1",
+    "plddt": 53.59,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P35637-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P35637-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P35637-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 23,
+   "bestPdb": "6BZP",
+   "structures": [
+    {
+     "id": "6BZP",
+     "title": "STGGYG from low-complexity domain of FUS, residues 77-82",
+     "resolution": 1.1,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "TOE",
+       "name": "2-[2-(2-METHOXY-ETHOXY)-ETHOXY]-ETHOXYL"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "C9orf72",
+   "uniprot": "Q96LT7",
+   "program": "ALS",
+   "disease": "C9-ALS / FTD",
+   "rationale": "Most common genetic cause of ALS; G4C2 repeat expansion and DPR toxicity.",
+   "name": "Guanine nucleotide exchange factor C9orf72",
+   "length": 481,
+   "sequence": "MSTLCPPPSPAVAKTEIALSGKSPLLAATFAYWDNILGPRVRHIWAPKTEQVLLSDGEITFLANHTLNGEILRNAESGAIDVKFFVLSEKGVIIVSLIFDGNWNGDRSTYGLSIILPQTELSFYLPLHRVCVDRLTHIIRKGRIWMHKERQENVQKIILEGTERMEDQGQSIIPMLTGEVIPVMELLSSMKSHSVPEEIDIADTVLNDDDIGDSCHEGFLLNAISSHLQTCGCSVVVGSSAEKVNKIVRTLCLFLTPAERKCSRLCEAESSFKYESGLFVQGLLKDSTGSFVLPFRQVMYAPYPTTHIDVDVNTVKQMPPCHEHIYNQRRYMRSELTAFWRATSEEDMAQDTIIYTDESFTPDLNIFQDVLHRDTLVKAFLDQVFQLKPGLSLRSTFLAQFLLVLHRKALTLIKYIEDDTQKGKKPFKSLRNLKIDLDLTAEGDLNIIMALAEKIKPGLHSFIFGRPFYTSVQERDVLMTF",
+   "ensembl": "ENSG00000147894",
+   "alphafold": {
+    "id": "AF-Q96LT7-F1",
+    "plddt": 83.44,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96LT7-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96LT7-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96LT7-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 4,
+   "bestPdb": "7MGE",
+   "structures": [
+    {
+     "id": "7MGE",
+     "title": "Structure of C9orf72:SMCR8:WDR41 in complex with ARF1",
+     "resolution": 3.94,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "BEF",
+       "name": "BERYLLIUM TRIFLUORIDE ION"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "TBK1",
+   "uniprot": "Q9UHD2",
+   "program": "ALS",
+   "disease": "ALS / FTD",
+   "rationale": "Kinase in autophagy and innate immunity; haploinsufficiency causes ALS.",
+   "name": "Serine/threonine-protein kinase TBK1",
+   "length": 729,
+   "sequence": "MQSTSNHLWLLSDILGQGATANVFRGRHKKTGDLFAIKVFNNISFLRPVDVQMREFEVLKKLNHKNIVKLFAIEEETTTRHKVLIMEFCPCGSLYTVLEEPSNAYGLPESEFLIVLRDVVGGMNHLRENGIVHRDIKPGNIMRVIGEDGQSVYKLTDFGAARELEDDEQFVSLYGTEEYLHPDMYERAVLRKDHQKKYGATVDLWSIGVTFYHAATGSLPFRPFEGPRRNKEVMYKIITGKPSGAISGVQKAENGPIDWSGDMPVSCSLSRGLQVLLTPVLANILEADQEKCWGFDQFFAETSDILHRMVIHVFSLQQMTAHKIYIHSYNTATIFHELVYKQTKIISSNQELIYEGRRLVLEPGRLAQHFPKTTEENPIFVVSREPLNTIGLIYEKISLPKVHPRYDLDGDASMAKAITGVVCYACRIASTLLLYQELMRKGIRWLIELIKDDYNETVHKKTEVVITLDFCIRNIEKTVKVYEKLMKINLEAAELGEISDIHTKLLRLSSSQGTIETSLQDIDSRLSPGGSLADAWAHQEGTHPKDRNVEKLQVLLNCMTEIYYQFKKDKAERRLAYNEEQIHKFDKQKLYYHATKAMTHFTDECVKKYEAFLNKSEEWIRKMLHLRKQLLSLTNQCFDIEEEVSKYQEYTNELQETLPQKMFTASSGIKHTMTPIYPSSNTLVEMTLGMKKLKEEMEGVVKELAENNHILERFGSLTMDGGLRNVDCL",
+   "ensembl": "ENSG00000183735",
+   "alphafold": {
+    "id": "AF-Q9UHD2-F1",
+    "plddt": 89.69,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD2-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD2-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD2-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 25,
+   "bestPdb": "4EUU",
+   "structures": [
+    {
+     "id": "4EUU",
+     "title": "Structure of BX-795 Complexed with Human TBK1 Kinase Domain Phosphorylated on Ser172",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BX7",
+       "name": "N-(3-{[5-iodo-4-({3-[(thiophen-2-ylcarbonyl)amino]propyl}amino)pyrimidin-2-yl]amino}phenyl)pyrrolidine-1-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4IM0",
+     "title": "Structure of Tank-Binding Kinase 1",
+     "resolution": 2.4001,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "1FV",
+       "name": "N-{3-[(5-cyclopropyl-2-{[3-(morpholin-4-ylmethyl)phenyl]amino}pyrimidin-4-yl)amino]propyl}cyclobutanecarboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4IM2",
+     "title": "Structure of Tank-Binding Kinase 1",
+     "resolution": 2.5001,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BX7",
+       "name": "N-(3-{[5-iodo-4-({3-[(thiophen-2-ylcarbonyl)amino]propyl}amino)pyrimidin-2-yl]amino}phenyl)pyrrolidine-1-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4EUT",
+     "title": "Structure of BX-795 Complexed with Unphosphorylated Human TBK1 Kinase-ULD Domain",
+     "resolution": 2.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BX7",
+       "name": "N-(3-{[5-iodo-4-({3-[(thiophen-2-ylcarbonyl)amino]propyl}amino)pyrimidin-2-yl]amino}phenyl)pyrrolidine-1-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4IWO",
+     "title": "Crystal structure and mechanism of activation of TBK1",
+     "resolution": 2.61,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "1H4",
+       "name": "N-{3-[(5-cyclopropyl-2-{[3-(2-oxopyrrolidin-1-yl)phenyl]amino}pyrimidin-4-yl)amino]propyl}cyclobutanecarboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6RSU",
+     "title": "TBK1 in complex with Inhibitor compound 35",
+     "resolution": 2.75,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "KJB",
+       "name": "3,3,3-tris(fluoranyl)-1-[4-[(1~{R})-1-[2-[[(2~{S})-5-(5-propan-2-yloxypyrimidin-4-yl)-2,3-dihydro-1~{H}-benzimidazol-2-yl]amino]pyridin-4-yl]ethyl]piperazin-1-yl]propan-1-one"
+      }
+     ]
+    },
+    {
+     "id": "4IWQ",
+     "title": "Crystal structure and mechanism of activation of TBK1",
+     "resolution": 3.0,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "1FV",
+       "name": "N-{3-[(5-cyclopropyl-2-{[3-(morpholin-4-ylmethyl)phenyl]amino}pyrimidin-4-yl)amino]propyl}cyclobutanecarboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4IWP",
+     "title": "Crystal structure and mechanism of activation of TBK1",
+     "resolution": 3.065,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BX7",
+       "name": "N-(3-{[5-iodo-4-({3-[(thiophen-2-ylcarbonyl)amino]propyl}amino)pyrimidin-2-yl]amino}phenyl)pyrrolidine-1-carboxamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "OPTN",
+   "uniprot": "Q96CV9",
+   "program": "ALS",
+   "disease": "ALS12",
+   "rationale": "Autophagy receptor partnering TBK1 in mitophagy.",
+   "name": "Optineurin",
+   "length": 577,
+   "sequence": "MSHQPLSCLTEKEDSPSESTGNGPPHLAHPNLDTFTPEELLQQMKELLTENHQLKEAMKLNNQAMKGRFEELSAWTEKQKEERQFFEIQSKEAKERLMALSHENEKLKEELGKLKGKSERSSEDPTDDSRLPRAEAEQEKDQLRTQVVRLQAEKADLLGIVSELQLKLNSSGSSEDSFVEIRMAEGEAEGSVKEIKHSPGPTRTVSTGTALSKYRSRSADGAKNYFEHEELTVSQLLLCLREGNQKVERLEVALKEAKERVSDFEKKTSNRSEIETQTEGSTEKENDEEKGPETVGSEVEALNLQVTSLFKELQEAHTKLSEAELMKKRLQEKCQALERKNSAIPSELNEKQELVYTNKKLELQVESMLSEIKMEQAKTEDEKSKLTVLQMTHNKLLQEHNNALKTIEELTRKESEKVDRAVLKELSEKLELAEKALASKQLQMDEMKQTIAKQEEDLETMTILRAQMEVYCSDFHAERAAREKIHEEKEQLALQLAVLLKENDAFEDGGRQSLMEMQSRHGARTSDSDQQAYLVQRGAEDRDWRQQRNIPIHSCPKCGEVLPDIDTLQIHVMDCII",
+   "ensembl": "ENSG00000123240",
+   "alphafold": {
+    "id": "AF-Q96CV9-F1",
+    "plddt": 77.25,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96CV9-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96CV9-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96CV9-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 14,
+   "bestPdb": "3VTV",
+   "structures": [
+    {
+     "id": "3VTV",
+     "title": "Crystal structure of Optineurin LIR-fused human LC3B_2-119",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "9B0B",
+     "title": "Structure of Optineurin bound to HOIP NZF1 domain",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "9B12",
+     "title": "Structure of Optineurin bound to HOIP NZF1 domain and M1-linked diubiquitin, crystal form 1",
+     "resolution": 1.81,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "9M0O",
+     "title": "Crystal structure of OPTN 138-170 in complex with GTP-bound RAB8A1-176 (Q67L)",
+     "resolution": 1.83,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "VCP",
+   "uniprot": "P55072",
+   "program": "ALS",
+   "disease": "ALS14 / IBMPFD",
+   "rationale": "AAA+ ATPase (p97) with multiple small-molecule inhibitor series.",
+   "name": "Transitional endoplasmic reticulum ATPase",
+   "length": 806,
+   "sequence": "MASGADSKGDDLSTAILKQKNRPNRLIVDEAINEDNSVVSLSQPKMDELQLFRGDTVLLKGKKRREAVCIVLSDDTCSDEKIRMNRVVRNNLRVRLGDVISIQPCPDVKYGKRIHVLPIDDTVEGITGNLFEVYLKPYFLEAYRPIRKGDIFLVRGGMRAVEFKVVETDPSPYCIVAPDTVIHCEGEPIKREDEEESLNEVGYDDIGGCRKQLAQIKEMVELPLRHPALFKAIGVKPPRGILLYGPPGTGKTLIARAVANETGAFFFLINGPEIMSKLAGESESNLRKAFEEAEKNAPAIIFIDELDAIAPKREKTHGEVERRIVSQLLTLMDGLKQRAHVIVMAATNRPNSIDPALRRFGRFDREVDIGIPDATGRLEILQIHTKNMKLADDVDLEQVANETHGHVGADLAALCSEAALQAIRKKMDLIDLEDETIDAEVMNSLAVTMDDFRWALSQSNPSALRETVVEVPQVTWEDIGGLEDVKRELQELVQYPVEHPDKFLKFGMTPSKGVLFYGPPGCGKTLLAKAIANECQANFISIKGPELLTMWFGESEANVREIFDKARQAAPCVLFFDELDSIAKARGGNIGDGGGAADRVINQILTEMDGMSTKKNVFIIGATNRPDIIDPAILRPGRLDQLIYIPLPDEKSRVAILKANLRKSPVAKDVDLEFLAKMTNGFSGADLTEICQRACKLAIRESIESEIRRERERQTNPSAMEVEEDDPVPEIRRDHFEEAMRFARRSVSDNDIRKYEMFAQTLQQSRGFGSFRFPSGNQGGAGPSQGSGGGTGGSVYTEDNDDDLYG",
+   "ensembl": "ENSG00000165280",
+   "alphafold": {
+    "id": "AF-P55072-F1",
+    "plddt": 82.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P55072-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P55072-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P55072-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 144,
+   "bestPdb": "7PUX",
+   "structures": [
+    {
+     "id": "7PUX",
+     "title": "Structure of p97 N-D1(L198W) in complex with Fragment TROLL2",
+     "resolution": 1.73,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "6LY",
+       "name": "(1S)-2-amino-1-(4-bromophenyl)ethan-1-ol"
+      }
+     ]
+    },
+    {
+     "id": "6G2Z",
+     "title": "Crystal structure of the p97 D2 domain in a helical split-washer conformation",
+     "resolution": 1.923,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "EJW",
+       "name": "(3-phenyl-1,2-oxazol-5-yl)methylazanium"
+      }
+     ]
+    },
+    {
+     "id": "4KO8",
+     "title": "Structure of p97 N-D1 R155H mutant in complex with ATPgS",
+     "resolution": 1.98,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "AGS",
+       "name": "PHOSPHOTHIOPHOSPHORIC ACID-ADENYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "6G2X",
+     "title": "Crystal structure of the p97 D2 domain in a helical split-washer conformation",
+     "resolution": 2.078,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "EJQ",
+       "name": "~{N}-(4-fluorophenyl)-2-pyrrolidin-1-yl-ethanamide"
+      }
+     ]
+    },
+    {
+     "id": "6G2Y",
+     "title": "Crystal structure of the p97 D2 domain in a helical split-washer conformation",
+     "resolution": 2.153,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ELQ",
+       "name": "[3,4-bis(fluoranyl)phenyl]-(4-methylpiperazin-1-yl)methanone"
+      }
+     ]
+    },
+    {
+     "id": "3HU3",
+     "title": "Structure of p97 N-D1 R155H mutant in complex with ATPgS",
+     "resolution": 2.2,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "AGS",
+       "name": "PHOSPHOTHIOPHOSPHORIC ACID-ADENYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "5FTJ",
+     "title": "Cryo-EM structure of human p97 bound to UPCDC30245 inhibitor",
+     "resolution": 2.3,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "OJA",
+       "name": "1-(3-(5-FLUORO-1H-INDOL-2-YL)PHENYL)PIPERIDIN-4-YL)(2-(4-ISOPROPYL-PIPERAZIN1-YL)ETHYL)-CARBAMATE"
+      }
+     ]
+    },
+    {
+     "id": "7LMY",
+     "title": "Cryo-EM structure of human p97 in complex with NMS-873 in the presence of ATP, Npl4/Ufd1, and Ub6",
+     "resolution": 2.4,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "Y6Y",
+       "name": "3-[3-cyclopentylsulfanyl-5-[[3-methyl-4-(4-methylsulfonylphenyl)phenoxy]methyl]-1,2,4-triazol-4-yl]pyridine"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "SQSTM1",
+   "uniprot": "Q13501",
+   "program": "ALS",
+   "disease": "ALS / FTD",
+   "rationale": "p62 autophagy adaptor; clears ubiquitinated aggregates.",
+   "name": "Sequestosome-1",
+   "length": 440,
+   "sequence": "MASLTVKAYLLGKEDAAREIRRFSFCCSPEPEAEAEAAAGPGPCERLLSRVAALFPALRPGGFQAHYRDEDGDLVAFSSDEELTMAMSYVKDDIFRIYIKEKKECRRDHRPPCAQEAPRNMVHPNVICDGCNGPVVGTRYKCSVCPDYDLCSVCEGKGLHRGHTKLAFPSPFGHLSEGFSHSRWLRKVKHGHFGWPGWEMGPPGNWSPRPPRAGEARPGPTAESASGPSEDPSVNFLKNVGESVAAALSPLGIEVDIDVEHGGKRSRLTPVSPESSSTEEKSSSQPSSCCSDPSKPGGNVEGATQSLAEQMRKIALESEGRPEEQMESDNCSGGDDDWTHLSSKEVDPSTGELQSLQMPESEGPSSLDPSQEGPTGLKEAALYPHLPPEADPRLIESLSQMLSMGFSDEGGWLTRLLQTKNYDIGAALDTIQYSKHPPPL",
+   "ensembl": "ENSG00000161011",
+   "alphafold": {
+    "id": "AF-Q13501-F1",
+    "plddt": 67.25,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13501-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13501-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q13501-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 26,
+   "bestPdb": "6MJ7",
+   "structures": [
+    {
+     "id": "6MJ7",
+     "title": "Crystal structure of p62 ZZ domain in complex with free arginine",
+     "resolution": 1.412,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ARG",
+       "name": "ARGININE"
+      },
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "UBQLN2",
+   "uniprot": "Q9UHD9",
+   "program": "ALS",
+   "disease": "X-linked ALS15",
+   "rationale": "Proteasome shuttle factor; mutations impair proteostasis.",
+   "name": "Ubiquilin-2",
+   "length": 624,
+   "sequence": "MAENGESSGPPRPSRGPAAAQGSAAAPAEPKIIKVTVKTPKEKEEFAVPENSSVQQFKEAISKRFKSQTDQLVLIFAGKILKDQDTLIQHGIHDGLTVHLVIKSQNRPQGQSTQPSNAAGTNTTSASTPRSNSTPISTNSNPFGLGSLGGLAGLSSLGLSSTNFSELQSQMQQQLMASPEMMIQIMENPFVQSMLSNPDLMRQLIMANPQMQQLIQRNPEISHLLNNPDIMRQTLEIARNPAMMQEMMRNQDLALSNLESIPGGYNALRRMYTDIQEPMLNAAQEQFGGNPFASVGSSSSSGEGTQPSRTENRDPLPNPWAPPPATQSSATTSTTTSTGSGSGNSSSNATGNTVAAANYVASIFSTPGMQSLLQQITENPQLIQNMLSAPYMRSMMQSLSQNPDLAAQMMLNSPLFTANPQLQEQMRPQLPAFLQQMQNPDTLSAMSNPRAMQALMQIQQGLQTLATEAPGLIPSFTPGVGVGVLGTAIGPVGPVTPIGPIGPIVPFTPIGPIGPIGPTGPAAPPGSTGSGGPTGPTVSSAAPSETTSPTSESGPNQQFIQQMVQALAGANAPQLPNPEVRFQQQLEQLNAMGFLNREANLQALIATGGDINAAIERLLGSQPS",
+   "ensembl": "ENSG00000188021",
+   "alphafold": {
+    "id": "AF-Q9UHD9-F1",
+    "plddt": 61.03,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD9-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD9-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UHD9-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 4,
+   "bestPdb": "1J8C",
+   "structures": [
+    {
+     "id": "1J8C",
+     "title": "Solution Structure of the Ubiquitin-like Domain of hPLIC-2",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    },
+    {
+     "id": "2NBV",
+     "title": "Solution structure of the Rpn13 Pru domain engaging the hPLIC2 UBL domain",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    },
+    {
+     "id": "6MUN",
+     "title": "Structure of hRpn10 bound to UBQLN2 UBL",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    },
+    {
+     "id": "7F7X",
+     "title": "Protein complex between phosphorylated ubiquitin and Ubqln2 UBA",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "PFN1",
+   "uniprot": "P07737",
+   "program": "ALS",
+   "disease": "ALS18",
+   "rationale": "Actin-binding protein; mutant forms aggregate.",
+   "name": "Profilin-1",
+   "length": 140,
+   "sequence": "MAGWNAYIDNLMADGTCQDAAIVGYKDSPSVWAAVPGKTFVNITPAEVGVLVGKDRSSFYVNGLTLGGQKCSVIRDSLLQDGEFSMDLRTKSTGGAPTFNVTVTKTDKTLVLLMGKEGVHGGLINKKCYEMASHLRRSQY",
+   "ensembl": "ENSG00000108518",
+   "alphafold": {
+    "id": "AF-P07737-F1",
+    "plddt": 95.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P07737-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P07737-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P07737-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 22,
+   "bestPdb": "8BJH",
+   "structures": [
+    {
+     "id": "8BJH",
+     "title": "chimera of the inactive ExoY Nucleotidyl Cyclase domain from Vibrio nigripulchritudo MARTX toxin, with the double mutation K3528M and K3535I, fused to a proline-Rich-Domain (PRD) and profilin, bound to Latrunculin B-ADP-Mg-actin",
+     "resolution": 1.69,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PEO",
+       "name": "HYDROGEN PEROXIDE"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    },
+    {
+     "id": "8BJJ",
+     "title": "ExoY Nucleotidyl Cyclase domain from Vibrio nigripulchritudo MARTX toxin, bound to ATP-Mg-actin, human profilin 1 and a sulfate ion",
+     "resolution": 1.699,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PEO",
+       "name": "HYDROGEN PEROXIDE"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    },
+    {
+     "id": "8BJI",
+     "title": "chimera of ExoY Nucleotidyl Cyclase domain from Vibrio nigripulchritudo fused to a proline-Rich-Domain (PRD) and profilin, bound to ADP-Mg-actin and a sulfate ion",
+     "resolution": 1.75,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PEO",
+       "name": "HYDROGEN PEROXIDE"
+      }
+     ]
+    },
+    {
+     "id": "6NBE",
+     "title": "Ternary Complex of Ac-Alpha-Actin with Profilin and CoA-NAA80",
+     "resolution": 2.0,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "COA",
+       "name": "COENZYME A"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    },
+    {
+     "id": "8BR0",
+     "title": "ExoY Nucleotidyl Cyclase domain from Vibrio nigripulchritudo MARTX toxin (residue Q3455 to L3863) in complex with 3'deoxyCTP and two manganese cations bound to Latrunculin-B-ADP-Mn-actin",
+     "resolution": 2.218,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "CH1",
+       "name": "3'-DEOXY-CYTIDINE-5'-TRIPHOSPHATE"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    },
+    {
+     "id": "1CJF",
+     "title": "PROFILIN BINDS PROLINE-RICH LIGANDS IN TWO DISTINCT AMIDE BACKBONE ORIENTATIONS",
+     "resolution": 2.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "HOM",
+       "name": "7-HYDROXY-4-METHYL-3-(2-HYDROXY-ETHYL)COUMARIN"
+      }
+     ]
+    },
+    {
+     "id": "6NBW",
+     "title": "Ternary Complex of Beta/Gamma-Actin with Profilin and AnCoA-NAA80",
+     "resolution": 2.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "SOP",
+       "name": "[(2R,3S,4R,5R)-5-(6-AMINO-9H-PURIN-9-YL)-4-HYDROXY-3-(PHOSPHONOOXY)TETRAHYDROFURAN-2-YL]METHYL\n(3R)-3-HYDROXY-2,2-DIMETHYL-4-OXO-4-{[3-OXO-3-({2-[(2-OXOPROPYL)THIO]ETHYL}AMINO)PROPYL]AMINO}BUTYL DIHYDROGEN\nDIPHOSPHATE"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    },
+    {
+     "id": "6NAS",
+     "title": "Ternary Complex of Ac-Alpha-Actin with Profilin and AcCoA-NAA80",
+     "resolution": 2.9,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ACO",
+       "name": "ACETYL COENZYME *A"
+      },
+      {
+       "id": "LAB",
+       "name": "LATRUNCULIN B"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "KIF5A",
+   "uniprot": "Q12840",
+   "program": "ALS",
+   "disease": "ALS25",
+   "rationale": "Axonal transport kinesin; C-terminal splice mutations.",
+   "name": "Kinesin heavy chain isoform 5A",
+   "length": 1032,
+   "sequence": "MAETNNECSIKVLCRFRPLNQAEILRGDKFIPIFQGDDSVVIGGKPYVFDRVFPPNTTQEQVYHACAMQIVKDVLAGYNGTIFAYGQTSSGKTHTMEGKLHDPQLMGIIPRIARDIFNHIYSMDENLEFHIKVSYFEIYLDKIRDLLDVTKTNLSVHEDKNRVPFVKGCTERFVSSPEEILDVIDEGKSNRHVAVTNMNEHSSRSHSIFLINIKQENMETEQKLSGKLYLVDLAGSEKVSKTGAEGAVLDEAKNINKSLSALGNVISALAEGTKSYVPYRDSKMTRILQDSLGGNCRTTMFICCSPSSYNDAETKSTLMFGQRAKTIKNTASVNLELTAEQWKKKYEKEKEKTKAQKETIAKLEAELSRWRNGENVPETERLAGEEAALGAELCEETPVNDNSSIVVRIAPEERQKYEEEIRRLYKQLDDKDDEINQQSQLIEKLKQQMLDQEELLVSTRGDNEKVQRELSHLQSENDAAKDEVKEVLQALEELAVNYDQKSQEVEEKSQQNQLLVDELSQKVATMLSLESELQRLQEVSGHQRKRIAEVLNGLMKDLSEFSVIVGNGEIKLPVEISGAIEEEFTVARLYISKIKSEVKSVVKRCRQLENLQVECHRKMEVTGRELSSCQLLISQHEAKIRSLTEYMQSVELKKRHLEESYDSLSDELAKLQAQETVHEVALKDKEPDTQDADEVKKALELQMESHREAHHRQLARLRDEINEKQKTIDELKDLNQKLQLELEKLQADYEKLKSEEHEKSTKLQELTFLYERHEQSKQDLKGLEETVARELQTLHNLRKLFVQDVTTRVKKSAEMEPEDSGGIHSQKQKISFLENNLEQLTKVHKQLVRDNADLRCELPKLEKRLRATAERVKALEGALKEAKEGAMKDKRRYQQEVDRIKEAVRYKSSGKRGHSAQIAKPVRPGHYPASSPTNPYGTRSPECISYTNSLFQNYQNLYLQATPSSTSDMYFANSCTSSGATSSGGPLASYQKANMDNGNATDINDNRSDLPCGYEAEDQAKLFPLHQETAAS",
+   "ensembl": "ENSG00000155980",
+   "alphafold": {
+    "id": "AF-Q12840-F1",
+    "plddt": 75.31,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q12840-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q12840-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q12840-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 4,
+   "bestPdb": "9T17",
+   "structures": [
+    {
+     "id": "9T17",
+     "title": "Cryo-EM reconstruction of the Kinesin KIF5A motor domain decorated GMPCPP microtubule",
+     "resolution": 2.77,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "ACP",
+       "name": "PHOSPHOMETHYLPHOSPHONIC ACID ADENYLATE ESTER"
+      },
+      {
+       "id": "G2P",
+       "name": "PHOSPHOMETHYLPHOSPHONIC ACID GUANYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "4UXY",
+     "title": "Conserved mechanisms of microtubule-stimulated ADP release, ATP binding, and force generation in transport kinesins",
+     "resolution": 6.5,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "TA1",
+       "name": "TAXOL"
+      }
+     ]
+    },
+    {
+     "id": "4UXT",
+     "title": "Conserved mechanisms of microtubule-stimulated ADP release, ATP binding, and force generation in transport kinesins",
+     "resolution": 7.4,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "TA1",
+       "name": "TAXOL"
+      }
+     ]
+    },
+    {
+     "id": "4UY0",
+     "title": "Conserved mechanisms of microtubule-stimulated ADP release, ATP binding, and force generation in transport kinesins",
+     "resolution": 7.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "TA1",
+       "name": "TAXOL"
+      },
+      {
+       "id": "ALF",
+       "name": "TETRAFLUOROALUMINATE ION"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "NEK1",
+   "uniprot": "Q96PY6",
+   "program": "ALS",
+   "disease": "ALS24",
+   "rationale": "Kinase in DNA damage response and cilia.",
+   "name": "Serine/threonine-protein kinase Nek1",
+   "length": 1258,
+   "sequence": "MEKYVRLQKIGEGSFGKAILVKSTEDGRQYVIKEINISRMSSKEREESRREVAVLANMKHPNIVQYRESFEENGSLYIVMDYCEGGDLFKRINAQKGVLFQEDQILDWFVQICLALKHVHDRKILHRDIKSQNIFLTKDGTVQLGDFGIARVLNSTVELARTCIGTPYYLSPEICENKPYNNKSDIWALGCVLYELCTLKHAFEAGSMKNLVLKIISGSFPPVSLHYSYDLRSLVSQLFKRNPRDRPSVNSILEKGFIAKRIEKFLSPQLIAEEFCLKTFSKFGSQPIPAKRPASGQNSISVMPAQKITKPAAKYGIPLAYKKYGDKKLHEKKPLQKHKQAHQTPEKRVNTGEERRKISEEAARKRRLEFIEKEKKQKDQIISLMKAEQMKRQEKERLERINRAREQGWRNVLSAGGSGEVKAPFLGSGGTIAPSSFSSRGQYEHYHAIFDQMQQQRAEDNEAKWKREIYGRGLPERGILPGVRPGFPYGAAGHHHFPDADDIRKTLKRLKAVSKQANANRQKGQLAVERAKQVEEFLQRKREAMQNKARAEGHMVYLARLRQIRLQNFNERQQIKAKLRGEKKEANHSEGQEGSEEADMRRKKIESLKAHANARAAVLKEQLERKRKEAYEREKKVWEEHLVAKGVKSSDVSPPLGQHETGGSPSKQQMRSVISVTSALKEVGVDSSLTDTRETSEEMQKTNNAISSKREILRRLNENLKAQEDEKGKQNLSDTFEINVHEDAKEHEKEKSVSSDRKKWEAGGQLVIPLDELTLDTSFSTTERHTVGEVIKLGPNGSPRRAWGKSPTDSVLKILGEAELQLQTELLENTTIRSEISPEGEKYKPLITGEKKVQCISHEINPSAIVDSPVETKSPEFSEASPQMSLKLEGNLEEPDDLETEILQEPSGTNKDESLPCTITDVWISEEKETKETQSADRITIQENEVSEDGVSSTVDQLSDIHIEPGTNDSQHSKCDVDKSVQPEPFFHKVVHSEHLNLVPQVQSVQCSPEESFAFRSHSHLPPKNKNKNSLLIGLSTGLFDANNPKMLRTCSLPDLSKLFRTLMDVPTVGDVRQDNLEIDEIEDENIKEGPSDSEDIVFEETDTDLQELQASMEQLLREQPGEEYSEEEESVLKNSDVEPTANGTDVADEDDNPSSESALNEEWHSDNSDGEIASECECDSVFNHLEELRLHLEQEMGFEKFFEVYEKIKAIHEDEDENIEICSKIVQNILGNEHQHLYAKILHLVMADGAYQEDNDE",
+   "ensembl": "ENSG00000137601",
+   "alphafold": {
+    "id": "AF-Q96PY6-F1",
+    "plddt": 56.84,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96PY6-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96PY6-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96PY6-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 2,
+   "bestPdb": "4B9D",
+   "structures": [
+    {
+     "id": "4B9D",
+     "title": "Crystal Structure of Human NIMA-related Kinase 1 (NEK1) with inhibitor.",
+     "resolution": 1.9,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "CK7",
+       "name": "[4-(2-AMINO-4-METHYL-THIAZOL-5-YL)-PYRIMIDIN-2-YL]-(3-NITRO-PHENYL)-AMINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "ATXN2",
+   "uniprot": "Q99700",
+   "program": "ALS",
+   "disease": "ALS13 risk",
+   "rationale": "Intermediate polyQ expansions raise ALS risk; ASO lowering in trials.",
+   "name": "Ataxin-2",
+   "length": 1313,
+   "sequence": "MRSAAAAPRSPAVATESRRFAAARWPGWRSLQRPARRSGRGGGGAAPGPYPSAAPPPPGPGPPPSRQSSPPSASDCFGSNGNGGGAFRPGSRRLLGLGGPPRPFVVLLLPLASPGAPPAAPTRASPLGARASPPRSGVSLARPAPGCPRPACEPVYGPLTMSLKPQQQQQQQQQQQQQQQQQQQQQQQPPPAAANVRKPGGSGLLASPAAAPSPSSSSVSSSSATAPSSVVAATSGGGRPGLGRGRNSNKGLPQSTISFDGIYANMRMVHILTSVVGSKCEVQVKNGGIYEGVFKTYSPKCDLVLDAAHEKSTESSSGPKREEIMESILFKCSDFVVVQFKDMDSSYAKRDAFTDSAISAKVNGEHKEKDLEPWDAGELTANEELEALENDVSNGWDPNDMFRYNEENYGVVSTYDSSLSSYTVPLERDNSEEFLKREARANQLAEEIESSAQYKARVALENDDRSEEEKYTAVQRNSSEREGHSINTRENKYIPPGQRNREVISWGSGRQNSPRMGQPGSGSMPSRSTSHTSDFNPNSGSDQRVVNGGVPWPSPCPSPSSRPPSRYQSGPNSLPPRAATPTRPPSRPPSRPSRPPSHPSAHGSPAPVSTMPKRMSSEGPPRMSPKAQRHPRNHRVSAGRGSISSGLEFVSHNPPSEAATPPVARTSPSGGTWSSVVSGVPRLSPKTHRPRSPRQNSIGNTPSGPVLASPQAGIIPTEAVAMPIPAASPTPASPASNRAVTPSSEAKDSRLQDQRQNSPAGNKENIKPNETSPSFSKAENKGISPVVSEHRKQIDDLKKFKNDFRLQPSSTSESMDQLLNKNREGEKSRDLIKDKIEPSAKDSFIENSSSNCTSGSSKPNSPSISPSILSNTEHKRGPEVTSQGVQTSSPACKQEKDDKEEKKDAAEQVRKSTLNPNAKEFNPRSFSQPKPSTTPTSPRPQAQPSPSMVGHQQPTPVYTQPVCFAPNMMYPVPVSPGVQPLYPIPMTPMPVNQAKTYRAVPNMPQQRQDQHHQSAMMHPASAAGPPIAATPPAYSTQYVAYSPQQFPNQPLVQHVPHYQSQHPHVYSPVIQGNARMMAPPTHAQPGLVSSSATQYGAHEQTHAMYACPKLPYNKETSPSFYFAISTGSLAQQYAHPNATLHPHTPHPQPSATPTGQQQSQHGGSHPAPSPVQHHQHQAAQALHLASPQQQSAIYHAGLAPTPPSMTPASNTQSPQNSFPAAQQTVFTIHPSHVQPAYTNPPHMAHVPQAHVQSGMVPSHPTAHAPMMLMTTQPPGGPQAALAQSALQPIPVSTTAHFPYMTHPSVQAHHQQQL",
+   "ensembl": "ENSG00000204842",
+   "alphafold": {
+    "id": "AF-Q99700-F1",
+    "plddt": 45.78,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99700-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99700-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99700-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 1,
+   "bestPdb": "3KTR",
+   "structures": [
+    {
+     "id": "3KTR",
+     "title": "Structural basis of ataxin-2 recognition by poly(A)-binding protein",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "MATR3",
+   "uniprot": "P43243",
+   "program": "ALS",
+   "disease": "ALS21",
+   "rationale": "Nuclear matrix RNA-binding protein.",
+   "name": "Matrin-3",
+   "length": 847,
+   "sequence": "MSKSFQQSSLSRDSQGHGRDLSAAGIGLLAAATQSLSMPASLGRMNQGTARLASLMNLGMSSSLNQQGAHSALSSASTSSHNLQSIFNIGSRGPLPLSSQHRGDADQASNILASFGLSARDLDELSRYPEDKITPENLPQILLQLKRRRTEEGPTLSYGRDGRSATREPPYRVPRDDWEEKRHFRRDSFDDRGPSLNPVLDYDHGSRSQESGYYDRMDYEDDRLRDGERCRDDSFFGETSHNYHKFDSEYERMGRGPGPLQERSLFEKKRGAPPSSNIEDFHGLLPKGYPHLCSICDLPVHSNKEWSQHINGASHSRRCQLLLEIYPEWNPDNDTGHTMGDPFMLQQSTNPAPGILGPPPPSFHLGGPAVGPRGNLGAGNGNLQGPRHMQKGRVETSRVVHIMDFQRGKNLRYQLLQLVEPFGVISNHLILNKINEAFIEMATTEDAQAAVDYYTTTPALVFGKPVRVHLSQKYKRIKKPEGKPDQKFDQKQELGRVIHLSNLPHSGYSDSAVLKLAEPYGKIKNYILMRMKSQAFIEMETREDAMAMVDHCLKKALWFQGRCVKVDLSEKYKKLVLRIPNRGIDLLKKDKSRKRSYSPDGKESPSDKKSKTDGSQKTESSTEGKEQEEKSGEDGEKDTKDDQTEQEPNMLLESEDELLVDEEEAAALLESGSSVGDETDLANLGDVASDGKKEPSDKAVKKDGSASAAAKKKLKKVDKIEELDQENEAALENGIKNEENTEPGAESSENADDPNKDTSENADGQSDENKDDYTIPDEYRIGPYQPNVPVGIDYVIPKTGFYCKLCSLFYTNEEVAKNTHCSSLPHYQKLKKFLNKLAEERRQKKET",
+   "ensembl": "ENSG00000015479",
+   "alphafold": {
+    "id": "AF-P43243-F1",
+    "plddt": 57.06,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P43243-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P43243-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P43243-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "HNRNPA1",
+   "uniprot": "P09651",
+   "program": "ALS",
+   "disease": "ALS20 / multisystem proteinopathy",
+   "rationale": "Prion-like domain mutations drive fibrillization.",
+   "name": "Heterogeneous nuclear ribonucleoprotein A1",
+   "length": 372,
+   "sequence": "MSKSESPKEPEQLRKLFIGGLSFETTDESLRSHFEQWGTLTDCVVMRDPNTKRSRGFGFVTYATVEEVDAAMNARPHKVDGRVVEPKRAVSREDSQRPGAHLTVKKIFVGGIKEDTEEHHLRDYFEQYGKIEVIEIMTDRGSGKKRGFAFVTFDDHDSVDKIVIQKYHTVNGHNCEVRKALSKQEMASASSSQRGRSGSGNFGGGRGGGFGGNDNFGRGGNFSGRGGFGGSRGGGGYGGSGDGYNGFGNDGGYGGGGPGYSGGSRGYGSGGQGYGNQGSGYGGSGSYDSYNNGGGGGFGGGSGSNFGGGGSYNDFGNYNNQSSNFGPMKGGNFGGRSSGPYGGGGQYFAKPRNQGGYGGSSSSSSYGSGRRF",
+   "ensembl": "ENSG00000135486",
+   "alphafold": {
+    "id": "AF-P09651-F1",
+    "plddt": 67.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P09651-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P09651-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P09651-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 73,
+   "bestPdb": "9F4G",
+   "structures": [
+    {
+     "id": "9F4G",
+     "title": "UP1 in complex with Z1373445602",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "SZE",
+       "name": "4-(3-fluoranylpyridin-2-yl)-1-methyl-piperazin-2-one"
+      }
+     ]
+    },
+    {
+     "id": "9F4H",
+     "title": "UP1 in complex with Z106579662",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NUY",
+       "name": "[4-(propan-2-yl)piperazin-1-yl](thiophen-2-yl)methanone"
+      }
+     ]
+    },
+    {
+     "id": "9F4J",
+     "title": "UP1 in complex with Z416341642",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NWP",
+       "name": "(2R)-N,2-dimethyl-N-(propan-2-yl)morpholine-4-sulfonamide"
+      }
+     ]
+    },
+    {
+     "id": "9F4L",
+     "title": "UP1 in complex with Z104584152",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "WGP",
+       "name": "N,N-dimethyl-N~2~-phenylglycinamide"
+      }
+     ]
+    },
+    {
+     "id": "9F4N",
+     "title": "UP1 in complex with Z137811222",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "O3J",
+       "name": "1-[4-(3-phenylpropyl)piperazin-1-yl]ethan-1-one"
+      }
+     ]
+    },
+    {
+     "id": "9F4O",
+     "title": "UP1 in complex with Z991506900",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1H95",
+       "name": "(3~{R})-3-methyl-1-(6-methylpyridin-2-yl)piperazine"
+      }
+     ]
+    },
+    {
+     "id": "9F4P",
+     "title": "UP1 in complex with Z1217960891",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "Q49",
+       "name": "(3S)-3-(3-fluorophenoxy)-1-methylpyrrolidin-2-one"
+      }
+     ]
+    },
+    {
+     "id": "9F4Q",
+     "title": "UP1 in complex with Z641239276",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1H9S",
+       "name": "5-(2-phenylethylamino)-1H-pyrimidine-2,4-dione"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "CHCHD10",
+   "uniprot": "Q8WYQ3",
+   "program": "ALS",
+   "disease": "FTD-ALS2",
+   "rationale": "Mitochondrial cristae protein.",
+   "name": "Coiled-coil-helix-coiled-coil-helix domain-containing protein 10, mitochondrial",
+   "length": 142,
+   "sequence": "MPRGSRSAASRPASRPAAPSAHPPAHPPPSAAAPAPAPSGQPGLMAQMATTAAGVAVGSAVGHVMGSALTGAFSGGSSEPSQPAVQQAPTPAAPQPLQMGPCAYEIRQFLDCSTTQSDLSLCEGFSEALKQCKYYHGLSSLP",
+   "ensembl": "ENSG00000250479",
+   "alphafold": {
+    "id": "AF-Q8WYQ3-F1",
+    "plddt": 61.41,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q8WYQ3-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q8WYQ3-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q8WYQ3-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 5,
+   "bestPdb": "9CWW",
+   "structures": [
+    {
+     "id": "9CWW",
+     "title": "Structure of D10-NT amyloid fibrils",
+     "resolution": 2.3,
+     "method": "EM",
+     "ligands": []
+    },
+    {
+     "id": "9OYW",
+     "title": "Structure of D10-NT amyloid fibrils",
+     "resolution": 2.63,
+     "method": "EM",
+     "ligands": []
+    },
+    {
+     "id": "9OYQ",
+     "title": "Structure of D10-NT amyloid fibrils",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": []
+    },
+    {
+     "id": "9OYS",
+     "title": "Structure of S59L D10-NT amyloid fibrils",
+     "resolution": 3.06,
+     "method": "EM",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "ANG",
+   "uniprot": "P03950",
+   "program": "ALS",
+   "disease": "ALS9",
+   "rationale": "Angiogenin RNase; loss-of-function variants.",
+   "name": "Angiogenin",
+   "length": 147,
+   "sequence": "MVMGLGVLLLVFVLGLGLTPPTLAQDNSRYTHFLTQHYDAKPQGRDDRYCESIMRRRGLTSPCKDINTFIHGNKRSIKAICENKNGNPHRENLRISKSSFQVTTCKLHGGSPWPPCQYRATAGFRNVVVACENGLPVHLDQSIFRRP",
+   "ensembl": "ENSG00000214274",
+   "alphafold": {
+    "id": "AF-P03950-F1",
+    "plddt": 89.81,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P03950-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P03950-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P03950-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 56,
+   "bestPdb": "4AOH",
+   "structures": [
+    {
+     "id": "4AOH",
+     "title": "Structural snapshots and functional analysis of human angiogenin variants associated with Amyotrophic Lateral Sclerosis (ALS)",
+     "resolution": 1.041,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TLA",
+       "name": "L(+)-TARTARIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "5M9R",
+     "title": "Human angiogenin ALS variant F100I",
+     "resolution": 1.44,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TLA",
+       "name": "L(+)-TARTARIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "5M9V",
+     "title": "Human angiogenin PD/ALS variant R121C",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GSH",
+       "name": "Glutathione"
+      },
+      {
+       "id": "TLA",
+       "name": "L(+)-TARTARIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "8OO3",
+     "title": "X-ray structure of the adduct formed upon reaction of cisplatin with human angiogenin after 5 days soaking",
+     "resolution": 1.76,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PT",
+       "name": "PLATINUM (II) ION"
+      },
+      {
+       "id": "NH3",
+       "name": "AMMONIA"
+      }
+     ]
+    },
+    {
+     "id": "7NPM",
+     "title": "X-ray structure of the adduct formed upon reaction of oxaliplatin with human angiogenin",
+     "resolution": 1.86,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PT",
+       "name": "PLATINUM (II) ION"
+      }
+     ]
+    },
+    {
+     "id": "5M9J",
+     "title": "Human angiogenin PD variant K60E",
+     "resolution": 1.9,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TLA",
+       "name": "L(+)-TARTARIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "4AHM",
+     "title": "V113I - Angiogenin mutants and amyotrophic lateral sclerosis - a biochemical and biological analysis",
+     "resolution": 1.96,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TLA",
+       "name": "L(+)-TARTARIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "8OO4",
+     "title": "X-ray structure of the adduct formed upon reaction of cisplatin with human angiogenin after 1 month soaking",
+     "resolution": 1.99,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PT",
+       "name": "PLATINUM (II) ION"
+      },
+      {
+       "id": "NH3",
+       "name": "AMMONIA"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "STMN2",
+   "uniprot": "Q93045",
+   "program": "ALS",
+   "disease": "TDP-43 loss-of-function readout",
+   "rationale": "Cryptic-exon target of TDP-43; restoring STMN2 is an active therapeutic strategy.",
+   "name": "Stathmin-2",
+   "length": 179,
+   "sequence": "MAKTAMAYKEKMKELSMLSLICSCFYPEPRNINIYTYDDMEVKQINKRASGQAFELILKPPSPISEAPRTLASPKKKDLSLEEIQKKLEAAEERRKSQEAQVLKQLAEKREHEREVLQKALEENNNFSKMAEEKLILKMEQIKENREANLAAIIERLQEKERHAAEVRRNKELQVELSG",
+   "ensembl": "ENSG00000104435",
+   "alphafold": {
+    "id": "AF-Q93045-F1",
+    "plddt": 85.62,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q93045-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q93045-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q93045-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "UNC13A",
+   "uniprot": "Q9UPW8",
+   "program": "ALS",
+   "disease": "ALS / FTD risk",
+   "rationale": "Synaptic protein mis-spliced when TDP-43 is lost.",
+   "name": "Protein unc-13 homolog A",
+   "length": 1703,
+   "sequence": "MSLLCVGVKKAKFDGAQEKFNTYVTLKVQNVKSTTIAVRGSQPSWEQDFMFEINRLDLGLTVEVWNKGLIWDTMVGTVWIPLRTIRQSNEEGPGEWLTLDSQVIMADSEICGTKDPTFHRILLDTRFELPLDIPEEEARYWAKKLEQLNAMRDQDEYSFQDEQDKPLPVPSNQCCNWNYFGWGEQHNDDPDSAVDDRDSDYRSETSNSIPPPYYTTSQPNASVHQYSVRPPPLGSRESYSDSMHSYEEFSEPQALSPTGSSRYASSGELSQGSSQLSEDFDPDEHSLQGSDMEDERDRDSYHSCHSSVSYHKDSPRWDQDEEELEEDLEDFLEEEELPEDEEELEEEEEEVPDDLGSYAQREDVAVAEPKDFKRISLPPAAPGKEDKAPVAPTEAPDMAKVAPKPATPDKVPAAEQIPEAEPPKDEESFRPREDEEGQEGQDSMSRAKANWLRAFNKVRMQLQEARGEGEMSKSLWFKGGPGGGLIIIDSMPDIRKRKPIPLVSDLAMSLVQSRKAGITSALASSTLNNEELKNHVYKKTLQALIYPISCTTPHNFEVWTATTPTYCYECEGLLWGIARQGMRCTECGVKCHEKCQDLLNADCLQRAAEKSSKHGAEDRTQNIIMVLKDRMKIRERNKPEIFELIQEIFAVTKTAHTQQMKAVKQSVLDGTSKWSAKISITVVCAQGLQAKDKTGSSDPYVTVQVGKTKKRTKTIYGNLNPVWEENFHFECHNSSDRIKVRVWDEDDDIKSRVKQRFKRESDDFLGQTIIEVRTLSGEMDVWYNLDKRTDKSAVSGAIRLHISVEIKGEEKVAPYHVQYTCLHENLFHFVTDVQNNGVVKIPDAKGDDAWKVYYDETAQEIVDEFAMRYGVESIYQAMTHFACLSSKYMCPGVPAVMSTLLANINAYYAHTTASTNVSASDRFAASNFGKERFVKLLDQLHNSLRIDLSMYRNNFPASSPERLQDLKSTVDLLTSITFFRMKVQELQSPPRASQVVKDCVKACLNSTYEYIFNNCHELYSREYQTDPAKKGEVLPEEQGPSIKNLDFWSKLITLIVSIIEEDKNSYTPCLNQFPQELNVGKISAEVMWNLFAQDMKYAMEEHDKHRLCKSADYMNLHFKVKWLYNEYVTELPAFKDRVPEYPAWFEPFVIQWLDENEEVSRDFLHGALERDKKDGFQQTSEHALFSCSVVDVFSQLNQSFEIIKKLECPDPQIVGHYMRRFAKTISNVLLQYADIISKDFASYCSKEKEKVPCILMNNTQQLRVQLEKMFEAMGGKELDAEASDILKELQVKLNNVLDELSRVFATSFQPHIEECVKQMGDILSQVKGTGNVPASACSSVAQDADNVLQPIMDLLDSNLTLFAKICEKTVLKRVLKELWKLVMNTMEKTIVLPPLTDQTMIGNLLRKHGKGLEKGRVKLPSHSDGTQMIFNAAKELGQLSKLKDHMVREEAKSLTPKQCAVVELALDTIKQYFHAGGVGLKKTFLEKSPDLQSLRYALSLYTQATDLLIKTFVQTQSAQGLGVEDPVGEVSVHVELFTHPGTGEHKVTVKVVAANDLKWQTSGIFRPFIEVNIIGPQLSDKKRKFATKSKNNSWAPKYNESFQFTLSADAGPECYELQVCVKDYCFAREDRTVGLAVLQLRELAQRGSAACWLPLGRRIHMDDTGLTVLRILSQRSNDEVAKEFVKLKSDTRSAEEGGAAPAP",
+   "ensembl": "ENSG00000130477",
+   "alphafold": {
+    "id": "AF-Q9UPW8-F1",
+    "plddt": 73.12,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UPW8-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UPW8-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9UPW8-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "SIGMAR1",
+   "uniprot": "Q99720",
+   "program": "ALS",
+   "disease": "ALS16 / juvenile ALS",
+   "rationale": "ER chaperone receptor with many small-molecule ligands.",
+   "name": "Sigma non-opioid intracellular receptor 1",
+   "length": 223,
+   "sequence": "MQWAVGRRWAWAALLLAVAAVLTQVVWLWLGTQSFVFQREEIAQLARQYAGLDHELAFSRLIVELRRLHPGHVLPDEELQWVFVNAGGWMGAMCLLHASLSEYVLLFGTALGSRGHSGRYWAEISDTIISGTFHQWREGTTKSEVFYPGETVVHGPGEATAVEWGPNTWMVEYGRGVIPSTLAFALADTVFSTQDFLTLFYTLRSYARGLRLELTTYLFGQDP",
+   "ensembl": "ENSG00000147955",
+   "alphafold": {
+    "id": "AF-Q99720-F1",
+    "plddt": 93.69,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99720-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99720-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99720-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 5,
+   "bestPdb": "5HK1",
+   "structures": [
+    {
+     "id": "5HK1",
+     "title": "Human sigma-1 receptor bound to PD144418",
+     "resolution": 2.5051,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OLC",
+       "name": "(2R)-2,3-dihydroxypropyl (9Z)-octadec-9-enoate"
+      },
+      {
+       "id": "61W",
+       "name": "3-(4-methylphenyl)-5-(1-propyl-3,6-dihydro-2H-pyridin-5-yl)-1,2-oxazole"
+      }
+     ]
+    },
+    {
+     "id": "6DK0",
+     "title": "Human sigma-1 receptor bound to NE-100",
+     "resolution": 2.9,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GKY",
+       "name": "N-{2-[4-methoxy-3-(2-phenylethoxy)phenyl]ethyl}-N-propylpropan-1-amine"
+      },
+      {
+       "id": "OLC",
+       "name": "(2R)-2,3-dihydroxypropyl (9Z)-octadec-9-enoate"
+      }
+     ]
+    },
+    {
+     "id": "6DJZ",
+     "title": "Human sigma-1 receptor bound to haloperidol",
+     "resolution": 3.084,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GMJ",
+       "name": "4-[4-(4-chlorophenyl)-4-hydroxypiperidin-1-yl]-1-(4-fluorophenyl)butan-1-one"
+      },
+      {
+       "id": "OLC",
+       "name": "(2R)-2,3-dihydroxypropyl (9Z)-octadec-9-enoate"
+      }
+     ]
+    },
+    {
+     "id": "6DK1",
+     "title": "Human sigma-1 receptor bound to (+)-pentazocine",
+     "resolution": 3.12,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GM4",
+       "name": "(2S,6S,11S)-6,11-dimethyl-3-(3-methylbut-2-en-1-yl)-1,2,3,4,5,6-hexahydro-2,6-methano-3-benzazocin-8-ol"
+      },
+      {
+       "id": "OLC",
+       "name": "(2R)-2,3-dihydroxypropyl (9Z)-octadec-9-enoate"
+      }
+     ]
+    },
+    {
+     "id": "5HK2",
+     "title": "Human sigma-1 receptor bound to 4-IBP",
+     "resolution": 3.2,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OLC",
+       "name": "(2R)-2,3-dihydroxypropyl (9Z)-octadec-9-enoate"
+      },
+      {
+       "id": "61V",
+       "name": "N-(1-benzylpiperidin-4-yl)-4-iodobenzamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "SNCA",
+   "uniprot": "P37840",
+   "program": "Parkinson's",
+   "disease": "PD / Lewy body dementia",
+   "rationale": "Alpha-synuclein aggregation is the hallmark of PD.",
+   "name": "Alpha-synuclein",
+   "length": 140,
+   "sequence": "MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTKEQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDPDNEAYEMPSEEGYQDYEPEA",
+   "ensembl": "ENSG00000145335",
+   "alphafold": {
+    "id": "AF-P37840-F1",
+    "plddt": 75.19,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P37840-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P37840-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P37840-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 249,
+   "bestPdb": "6CT7",
+   "structures": [
+    {
+     "id": "6CT7",
+     "title": "Fab of anti-a-synuclein antibody BIIB054 in complex with acetylated a-synuclein peptide (1-10)",
+     "resolution": 1.903,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "IPA",
+       "name": "ISOPROPYL ALCOHOL"
+      }
+     ]
+    },
+    {
+     "id": "7YNF",
+     "title": "CCA-bound alpha-synuclein fibrils",
+     "resolution": 2.5,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "V79",
+       "name": "copper;trisodium;18-(2-carboxylatoethyl)-20-(carboxylatomethyl)-12-ethenyl-7-ethyl-3,8,13,17-tetramethyl-17,18-dihydroporphyrin-21,23-diide-2-carboxylate"
+      }
+     ]
+    },
+    {
+     "id": "9O4B",
+     "title": "Cryo-EM structure of in-vitro alpha-synuclein fibril bound with Exemplar-6 PET-radioligand",
+     "resolution": 2.59,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1B9H",
+       "name": "2-(3,4-dimethylphenoxy)-N-[3-(4-fluorophenyl)-1,2-oxazol-5-yl]acetamide"
+      }
+     ]
+    },
+    {
+     "id": "7WMM",
+     "title": "alpha-synuclein fibril-F0502B complex",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "1KI",
+       "name": "2-bromanyl-4-[(~{E})-2-[6-[2-(2-fluoranylethoxy)ethyl-methyl-amino]-5-methyl-1,3-benzothiazol-2-yl]ethenyl]phenol"
+      }
+     ]
+    },
+    {
+     "id": "7YNL",
+     "title": "EB-bound alpha-synuclein fibrils",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "IZ8",
+       "name": "4-azanyl-6-[[4-[4-[(~{E})-(8-azanyl-1-oxidanyl-5,7-disulfo-naphthalen-2-yl)diazenyl]-3-methyl-phenyl]-2-methyl-phenyl]diazenyl]-5-oxidanyl-naphthalene-1,3-disulfonic acid"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "LRRK2",
+   "uniprot": "Q5S007",
+   "program": "Parkinson's",
+   "disease": "PARK8 familial and sporadic PD",
+   "rationale": "Kinase; G2019S gain of function; clinical-stage inhibitors.",
+   "name": "Leucine-rich repeat serine/threonine-protein kinase 2",
+   "length": 2527,
+   "sequence": "MASGSCQGCEEDEETLKKLIVRLNNVQEGKQIETLVQILEDLLVFTYSERASKLFQGKNIHVPLLIVLDSYMRVASVQQVGWSLLCKLIEVCPGTMQSLMGPQDVGNDWEVLGVHQLILKMLTVHNASVNLSVIGLKTLDLLLTSGKITLLILDEESDIFMLIFDAMHSFPANDEVQKLGCKALHVLFERVSEEQLTEFVENKDYMILLSALTNFKDEEEIVLHVLHCLHSLAIPCNNVEVLMSGNVRCYNIVVEAMKAFPMSERIQEVSCCLLHRLTLGNFFNILVLNEVHEFVVKAVQQYPENAALQISALSCLALLTETIFLNQDLEEKNENQENDDEGEEDKLFWLEACYKALTWHRKNKHVQEAACWALNNLLMYQNSLHEKIGDEDGHFPAHREVMLSMLMHSSSKEVFQASANALSTLLEQNVNFRKILLSKGIHLNVLELMQKHIHSPEVAESGCKMLNHLFEGSNTSLDIMAAVVPKILTVMKRHETSLPVQLEALRAILHFIVPGMPEESREDTEFHHKLNMVKKQCFKNDIHKLVLAALNRFIGNPGIQKCGLKVISSIVHFPDALEMLSLEGAMDSVLHTLQMYPDDQEIQCLGLSLIGYLITKKNVFIGTGHLLAKILVSSLYRFKDVAEIQTKGFQTILAILKLSASFSKLLVHHSFDLVIFHQMSSNIMEQKDQQFLNLCCKCFAKVAMDDYLKNVMLERACDQNNSIMVECLLLLGADANQAKEGSSLICQVCEKESSPKLVELLLNSGSREQDVRKALTISIGKGDSQIISLLLRRLALDVANNSICLGGFCIGKVEPSWLGPLFPDKTSNLRKQTNIASTLARMVIRYQMKSAVEEGTASGSDGNFSEDVLSKFDEWTFIPDSSMDSVFAQSDDLDSEGSEGSFLVKKKSNSISVGEFYRDAVLQRCSPNLQRHSNSLGPIFDHEDLLKRKRKILSSDDSLRSSKLQSHMRHSDSISSLASEREYITSLDLSANELRDIDALSQKCCISVHLEHLEKLELHQNALTSFPQQLCETLKSLTHLDLHSNKFTSFPSYLLKMSCIANLDVSRNDIGPSVVLDPTVKCPTLKQFNLSYNQLSFVPENLTDVVEKLEQLILEGNKISGICSPLRLKELKILNLSKNHISSLSENFLEACPKVESFSARMNFLAAMPFLPPSMTILKLSQNKFSCIPEAILNLPHLRSLDMSSNDIQYLPGPAHWKSLNLRELLFSHNQISILDLSEKAYLWSRVEKLHLSHNKLKEIPPEIGCLENLTSLDVSYNLELRSFPNEMGKLSKIWDLPLDELHLNFDFKHIGCKAKDIIRFLQQRLKKAVPYNRMKLMIVGNTGSGKTTLLQQLMKTKKSDLGMQSATVGIDVKDWPIQIRDKRKRDLVLNVWDFAGREEFYSTHPHFMTQRALYLAVYDLSKGQAEVDAMKPWLFNIKARASSSPVILVGTHLDVSDEKQRKACMSKITKELLNKRGFPAIRDYHFVNATEESDALAKLRKTIINESLNFKIRDQLVVGQLIPDCYVELEKIILSERKNVPIEFPVIDRKRLLQLVRENQLQLDENELPHAVHFLNESGVLLHFQDPALQLSDLYFVEPKWLCKIMAQILTVKVEGCPKHPKGIISRRDVEKFLSKKRKFPKNYMSQYFKLLEKFQIALPIGEEYLLVPSSLSDHRPVIELPHCENSEIIIRLYEMPYFPMGFWSRLINRLLEISPYMLSGRERALRPNRMYWRQGIYLNWSPEAYCLVGSEVLDNHPESFLKITVPSCRKGCILLGQVVDHIDSLMEEWFPGLLEIDICGEGETLLKKWALYSFNDGEEHQKILLDDLMKKAEEGDLLVNPDQPRLTIPISQIAPDLILADLPRNIMLNNDELEFEQAPEFLLGDGSFGSVYRAAYEGEEVAVKIFNKHTSLRLLRQELVVLCHLHHPSLISLLAAGIRPRMLVMELASKGSLDRLLQQDKASLTRTLQHRIALHVADGLRYLHSAMIIYRDLKPHNVLLFTLYPNAAIIAKIADYGIAQYCCRMGIKTSEGTPGFRAPEVARGNVIYNQQADVYSFGLLLYDILTTGGRIVEGLKFPNEFDELEIQGKLPDPVKEYGCAPWPMVEKLIKQCLKENPQERPTSAQVFDILNSAELVCLTRRILLPKNVIVECMVATHHNSRNASIWLGCGHTDRGQLSFLDLNTEGYTSEEVADSRILCLALVHLPVEKESWIVSGTQSGTLLVINTEDGKKRHTLEKMTDSVTCLYCNSFSKQSKQKNFLLVGTADGKLAIFEDKTVKLKGAAPLKILNIGNVSTPLMCLSESTNSTERNVMWGGCGTKIFSFSNDFTIQKLIETRTSQLFSYAAFSDSNIITVVVDTALYIAKQNSPVVEVWDKKTEKLCGLIDCVHFLREVMVKENKESKHKMSYSGRVKTLCLQKNTALWIGTGGGHILLLDLSTRRLIRVIYNFCNSVRVMMTAQLGSLKNVMLVLGYNRKNTEGTQKQKEIQSCLTVWDINLPHEVQNLEKHIEVRKELAEKMRRTSVE",
+   "ensembl": "ENSG00000188906",
+   "alphafold": {
+    "id": "AF-Q5S007-F1",
+    "plddt": 77.5,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q5S007-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q5S007-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q5S007-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 58,
+   "bestPdb": "9C76",
+   "structures": [
+    {
+     "id": "9C76",
+     "title": "LRRK2 Roc domain RP (Ras-pocket) complexed to Divarasib",
+     "resolution": 2.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1AWR",
+       "name": "1-{(3S)-4-[(7M)-7-[6-amino-4-methyl-3-(trifluoromethyl)pyridin-2-yl]-6-chloro-8-fluoro-2-{[(2S)-1-methylpyrrolidin-2-yl]methoxy}quinazolin-4-yl]-3-methylpiperazin-1-yl}propan-1-one"
+      },
+      {
+       "id": "F",
+       "name": "FLUORIDE ION"
+      }
+     ]
+    },
+    {
+     "id": "8TZC",
+     "title": "Structure of C-terminal LRRK2 bound to MLi-2 (G2019S mutant)",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1N",
+       "name": "(2~{R},6~{S})-2,6-dimethyl-4-[6-[5-(1-methylcyclopropyl)oxy-1~{H}-indazol-3-yl]pyrimidin-4-yl]morpholine"
+      }
+     ]
+    },
+    {
+     "id": "8TZG",
+     "title": "Structure of C-terminal LRRK2 bound to MLi-2 (I2020T mutant)",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1N",
+       "name": "(2~{R},6~{S})-2,6-dimethyl-4-[6-[5-(1-methylcyclopropyl)oxy-1~{H}-indazol-3-yl]pyrimidin-4-yl]morpholine"
+      }
+     ]
+    },
+    {
+     "id": "8TZE",
+     "title": "Structure of C-terminal half of LRRK2 bound to GZD-824",
+     "resolution": 2.9,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "T3X",
+       "name": "4-methyl-N-{4-[(4-methylpiperazin-1-yl)methyl]-3-(trifluoromethyl)phenyl}-3-[(1H-pyrazolo[3,4-b]pyridin-5-yl)ethynyl]benzamide"
+      }
+     ]
+    },
+    {
+     "id": "8TYQ",
+     "title": "Structure of the C-terminal half of LRRK2 bound to GZD-824 (G2019S mutant)",
+     "resolution": 2.99,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "T3X",
+       "name": "4-methyl-N-{4-[(4-methylpiperazin-1-yl)methyl]-3-(trifluoromethyl)phenyl}-3-[(1H-pyrazolo[3,4-b]pyridin-5-yl)ethynyl]benzamide"
+      }
+     ]
+    },
+    {
+     "id": "8TXZ",
+     "title": "Structure of C-terminal LRRK2 bound to MLi-2",
+     "resolution": 3.05,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1N",
+       "name": "(2~{R},6~{S})-2,6-dimethyl-4-[6-[5-(1-methylcyclopropyl)oxy-1~{H}-indazol-3-yl]pyrimidin-4-yl]morpholine"
+      }
+     ]
+    },
+    {
+     "id": "8TZB",
+     "title": "Structure of the C-terminal half of LRRK2 bound to GZD-824 (I2020T mutant)",
+     "resolution": 3.1,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "T3X",
+       "name": "4-methyl-N-{4-[(4-methylpiperazin-1-yl)methyl]-3-(trifluoromethyl)phenyl}-3-[(1H-pyrazolo[3,4-b]pyridin-5-yl)ethynyl]benzamide"
+      }
+     ]
+    },
+    {
+     "id": "9DMI",
+     "title": "Structure of the C-terminal half of LRRK2 bound to RN277 (Type-II inhibitor)",
+     "resolution": 3.35,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1A7Q",
+       "name": "N-[3-tert-butyl-1-(4-methylphenyl)-1H-pyrazol-5-yl]-N'-{(3M)-3-[2-chloro-4-(morpholin-4-yl)-7H-pyrrolo[2,3-d]pyrimidin-5-yl]phenyl}urea"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "GBA1",
+   "uniprot": "P04062",
+   "program": "Parkinson's",
+   "disease": "GBA-PD / Gaucher",
+   "rationale": "Glucocerebrosidase; strongest common genetic PD risk factor; chaperone targets.",
+   "name": "Lysosomal acid glucosylceramidase",
+   "length": 536,
+   "sequence": "MEFSSPSREECPKPLSRVSIMAGSLTGLLLLQAVSWASGARPCIPKSFGYSSVVCVCNATYCDSFDPPTFPALGTFSRYESTRSGRRMELSMGPIQANHTGTGLLLTLQPEQKFQKVKGFGGAMTDAAALNILALSPPAQNLLLKSYFSEEGIGYNIIRVPMASCDFSIRTYTYADTPDDFQLHNFSLPEEDTKLKIPLIHRALQLAQRPVSLLASPWTSPTWLKTNGAVNGKGSLKGQPGDIYHQTWARYFVKFLDAYAEHKLQFWAVTAENEPSAGLLSGYPFQCLGFTPEHQRDFIARDLGPTLANSTHHNVRLLMLDDQRLLLPHWAKVVLTDPEAAKYVHGIAVHWYLDFLAPAKATLGETHRLFPNTMLFASEACVGSKFWEQSVRLGSWDRGMQYSHSIITNLLYHVVGWTDWNLALNPEGGPNWVRNFVDSPIIVDITKDTFYKQPMFYHLGHFSKFIPEGSQRVGLVASQKNDLDAVALMHPDGSAVVVVLNRSSKDVPLTIKDPAVGFLETISPGYSIHTYLWRRQ",
+   "ensembl": "ENSG00000177628",
+   "alphafold": {
+    "id": "AF-P04062-F1",
+    "plddt": 93.25,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P04062-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P04062-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P04062-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 58,
+   "bestPdb": "6TN1",
+   "structures": [
+    {
+     "id": "6TN1",
+     "title": "Unliganded Crystal Structure of Recombinant GBA",
+     "resolution": 0.98,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GLN",
+       "name": "GLUTAMINE"
+      }
+     ]
+    },
+    {
+     "id": "9FB2",
+     "title": "Gcase in complex with small molecule inhibitor 1",
+     "resolution": 1.14,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IBO",
+       "name": "~{N}-[(2~{R})-2-azanyl-2-(3-prop-1-en-2-ylphenyl)ethyl]-3,5-bis(fluoranyl)-~{N}-methyl-benzenesulfonamide"
+      }
+     ]
+    },
+    {
+     "id": "9FA3",
+     "title": "Gcase in complex with small molecule inhibitor 1",
+     "resolution": 1.36,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IBC",
+       "name": "~{N}-(cyclopropylmethyl)benzenesulfonamide"
+      }
+     ]
+    },
+    {
+     "id": "9FAL",
+     "title": "Gcase in complex with small molecule inhibitor 1",
+     "resolution": 1.39,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BAQ",
+       "name": "pyrrolidin-2-one"
+      },
+      {
+       "id": "A1IBQ",
+       "name": "~{N}-[(2~{S})-2-azanyl-2-phenyl-ethyl]-3,5-bis(fluoranyl)benzenesulfonamide"
+      }
+     ]
+    },
+    {
+     "id": "9FAY",
+     "title": "Gcase in complex with small molecule inhibitor 1",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IBR",
+       "name": "~{N}-[(2~{S})-2-azanyl-2-phenyl-ethyl]-3,5-bis(fluoranyl)-~{N}-methyl-benzenesulfonamide"
+      }
+     ]
+    },
+    {
+     "id": "6TJQ",
+     "title": "Crystal Structure of Recombinant GBA in Complex with 2-Deoxy-2-fluoro-beta-D-glucopyranoside",
+     "resolution": 1.41,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NF8",
+       "name": "(2~{R},3~{S},4~{S},5~{S})-5-fluoranyl-2-(hydroxymethyl)oxane-3,4-diol"
+      }
+     ]
+    },
+    {
+     "id": "9FDI",
+     "title": "Gcase in complex with small molecule inhibitor 1",
+     "resolution": 1.41,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IB1",
+       "name": "4-(phenylmethyl)piperidine"
+      }
+     ]
+    },
+    {
+     "id": "8AWR",
+     "title": "Structure of recombinant human beta-glucocerebrosidase in complex with L-carbaxylosyl chloride",
+     "resolution": 1.49,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OJ6",
+       "name": "(1~{S},2~{S},3~{S},4~{R})-cyclohexane-1,2,3,4-tetrol"
+      },
+      {
+       "id": "OIZ",
+       "name": "(1~{S},2~{R},3~{S},6~{S})-6-chloranylcyclohex-4-ene-1,2,3-triol"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "PINK1",
+   "uniprot": "Q9BXM7",
+   "program": "Parkinson's",
+   "disease": "PARK6 early-onset PD",
+   "rationale": "Mitophagy kinase; activators under development.",
+   "name": "Serine/threonine-protein kinase PINK1, mitochondrial",
+   "length": 581,
+   "sequence": "MAVRQALGRGLQLGRALLLRFTGKPGRAYGLGRPGPAAGCVRGERPGWAAGPGAEPRRVGLGLPNRLRFFRQSVAGLAARLQRQFVVRAWGCAGPCGRAVFLAFGLGLGLIEEKQAESRRAVSACQEIQAIFTQKSKPGPDPLDTRRLQGFRLEEYLIGQSIGKGCSAAVYEATMPTLPQNLEVTKSTGLLPGRGPGTSAPGEGQERAPGAPAFPLAIKMMWNISAGSSSEAILNTMSQELVPASRVALAGEYGAVTYRKSKRGPKQLAPHPNIIRVLRAFTSSVPLLPGALVDYPDVLPSRLHPEGLGHGRTLFLVMKNYPCTLRQYLCVNTPSPRLAAMMLLQLLEGVDHLVQQGIAHRDLKSDNILVELDPDGCPWLVIADFGCCLADESIGLQLPFSSWYVDRGGNGCLMAPEVSTARPGPRAVIDYSKADAWAVGAIAYEIFGLVNPFYGQGKAHLESRSYQEAQLPALPESVPPDVRQLVRALLQREASKRPSARVAANVLHLSLWGEHILALKNLKLDKMVGWLLQQSAATLLANRLTEKCCVETKMKMLFLANLECETLCQAALLLCSWRAAL",
+   "ensembl": "ENSG00000158828",
+   "alphafold": {
+    "id": "AF-Q9BXM7-F1",
+    "plddt": 77.25,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BXM7-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BXM7-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BXM7-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 6,
+   "bestPdb": "9EII",
+   "structures": [
+    {
+     "id": "9EII",
+     "title": "Import stalled PINK1 TOM complex, symmetry expanded",
+     "resolution": 2.75,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      }
+     ]
+    },
+    {
+     "id": "9EIH",
+     "title": "Import stalled PINK1 TOM complex",
+     "resolution": 3.1,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      }
+     ]
+    },
+    {
+     "id": "9EIJ",
+     "title": "Import stalled PINK1 TOM complex, extended TOM20 helix class",
+     "resolution": 3.3,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "PRKN",
+   "uniprot": "O60260",
+   "program": "Parkinson's",
+   "disease": "PARK2 early-onset PD",
+   "rationale": "E3 ubiquitin ligase in mitophagy; activator programs.",
+   "name": "E3 ubiquitin-protein ligase parkin",
+   "length": 465,
+   "sequence": "MIVFVRFNSSHGFPVEVDSDTSIFQLKEVVAKRQGVPADQLRVIFAGKELRNDWTVQNCDLDQQSIVHIVQRPWRKGQEMNATGGDDPRNAAGGCEREPQSLTRVDLSSSVLPGDSVGLAVILHTDSRKDSPPAGSPAGRSIYNSFYVYCKGPCQRVQPGKLRVQCSTCRQATLTLTQGPSCWDDVLIPNRMSGECQSPHCPGTSAEFFFKCGAHPTSDKETSVALHLIATNSRNITCITCTDVRSPVLVFQCNSRHVICLDCFHLYCVTRLNDRQFVHDPQLGYSLPCVAGCPNSLIKELHHFRILGEEQYNRYQQYGAEECVLQMGGVLCPRPGCGAGLLPEPDQRKVTCEGGNGLGCGFAFCRECKEAYHEGECSAVFEASGTTTQAYRVDERAAEQARWEAASKETIKKTTKPCPRCHVPVEKNGGCMHMKCPQPQCRLEWCWNCGCEWNRVCMGDHWFDV",
+   "ensembl": "ENSG00000185345",
+   "alphafold": {
+    "id": "AF-O60260-F1",
+    "plddt": 78.06,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-O60260-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-O60260-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-O60260-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 21,
+   "bestPdb": "4I1F",
+   "structures": [
+    {
+     "id": "4I1F",
+     "title": "Structure of Parkin-S223P E3 ligase",
+     "resolution": 1.58,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BA",
+       "name": "BARIUM ION"
+      }
+     ]
+    },
+    {
+     "id": "8IKT",
+     "title": "Ternary trans-complex of phospho-parkin with cis ACT and pUb",
+     "resolution": 2.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "3CN",
+       "name": "3-AMINOPROPANE"
+      }
+     ]
+    },
+    {
+     "id": "5N2W",
+     "title": "WT-Parkin and pUB complex",
+     "resolution": 2.68,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TMO",
+       "name": "trimethylamine oxide"
+      }
+     ]
+    },
+    {
+     "id": "8JWV",
+     "title": "Untethered R0RBR",
+     "resolution": 2.9,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BA",
+       "name": "BARIUM ION"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "PARK7",
+   "uniprot": "Q99497",
+   "program": "Parkinson's",
+   "disease": "PARK7 early-onset PD",
+   "rationale": "DJ-1 oxidative-stress sensor.",
+   "name": "Parkinson disease protein 7",
+   "length": 189,
+   "sequence": "MASKRALVILAKGAEEMETVIPVDVMRRAGIKVTVAGLAGKDPVQCSRDVVICPDASLEDAKKEGPYDVVVLPGGNLGAQNLSESAAVKEILKEQENRKGLIAAICAGPTALLAHEIGFGSKVTTHPLAKDKMMNGGHYTYSENRVEKDGLILTSRGPGTSFEFALAIVEALNGKEVAAQVKAPLVLKD",
+   "ensembl": "ENSG00000116288",
+   "alphafold": {
+    "id": "AF-Q99497-F1",
+    "plddt": 98.44,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99497-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99497-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q99497-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 88,
+   "bestPdb": "3CZ9",
+   "structures": [
+    {
+     "id": "3CZ9",
+     "title": "Crystal Structure of E18L DJ-1",
+     "resolution": 1.15,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "P4C",
+       "name": "O-ACETALDEHYDYL-HEXAETHYLENE GLYCOL"
+      }
+     ]
+    },
+    {
+     "id": "5SY6",
+     "title": "Atomic resolution structure of human DJ-1, DTT bound",
+     "resolution": 1.15,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DTT",
+       "name": "2,3-DIHYDROXY-1,4-DITHIOBUTANE"
+      }
+     ]
+    },
+    {
+     "id": "4P36",
+     "title": "Crystal structure of DJ-1 With Zn(II) bound (crystal 2)",
+     "resolution": 1.182,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "P15",
+       "name": "2,5,8,11,14,17-HEXAOXANONADECAN-19-OL"
+      }
+     ]
+    },
+    {
+     "id": "3CZA",
+     "title": "Crystal Structure of E18D DJ-1",
+     "resolution": 1.2,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "MLA",
+       "name": "MALONIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "7PA2",
+     "title": "PARK7 with inhibitor 8RK64",
+     "resolution": 1.21,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "6SI",
+       "name": "(3~{S})-~{N}-[5-[2-[(azanylidene-$l^{4}-azanylidene)amino]ethanoyl]-6,7-dihydro-4~{H}-[1,3]thiazolo[5,4-c]pyridin-2-yl]-1-(iminomethyl)pyrrolidine-3-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6AF9",
+     "title": "DJ-1 with isatin bound (high concentration)",
+     "resolution": 1.39,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ISN",
+       "name": "ISATIN"
+      }
+     ]
+    },
+    {
+     "id": "7PA3",
+     "title": "PARK7 with covalent inhibitor JYQ-88",
+     "resolution": 1.42,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "6SI",
+       "name": "(3~{S})-~{N}-[5-[2-[(azanylidene-$l^{4}-azanylidene)amino]ethanoyl]-6,7-dihydro-4~{H}-[1,3]thiazolo[5,4-c]pyridin-2-yl]-1-(iminomethyl)pyrrolidine-3-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6AFC",
+     "title": "DJ-1 with compound 4",
+     "resolution": 1.45,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "72R",
+       "name": "5-fluoranyl-1~{H}-indole-2,3-dione"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "VPS35",
+   "uniprot": "Q96QK1",
+   "program": "Parkinson's",
+   "disease": "PARK17",
+   "rationale": "Retromer core; D620N stabilization strategies.",
+   "name": "Vacuolar protein sorting-associated protein 35",
+   "length": 796,
+   "sequence": "MPTTQQSPQDEQEKLLDEAIQAVKVQSFQMKRCLDKNKLMDALKHASNMLGELRTSMLSPKSYYELYMAISDELHYLEVYLTDEFAKGRKVADLYELVQYAGNIIPRLYLLITVGVVYVKSFPQSRKDILKDLVEMCRGVQHPLRGLFLRNYLLQCTRNILPDEGEPTDEETTGDISDSMDFVLLNFAEMNKLWVRMQHQGHSRDREKRERERQELRILVGTNLVRLSQLEGVNVERYKQIVLTGILEQVVNCRDALAQEYLMECIIQVFPDEFHLQTLNPFLRACAELHQNVNVKNIIIALIDRLALFAHREDGPGIPADIKLFDIFSQQVATVIQSRQDMPSEDVVSLQVSLINLAMKCYPDRVDYVDKVLETTVEIFNKLNLEHIATSSAVSKELTRLLKIPVDTYNNILTVLKLKHFHPLFEYFDYESRKSMSCYVLSNVLDYNTEIVSQDQVDSIMNLVSTLIQDQPDQPVEDPDPEDFADEQSLVGRFIHLLRSEDPDQQYLILNTARKHFGAGGNQRIRFTLPPLVFAAYQLAFRYKENSKVDDKWEKKCQKIFSFAHQTISALIKAELAELPLRLFLQGALAAGEIGFENHETVAYEFMSQAFSLYEDEISDSKAQLAAITLIIGTFERMKCFSEENHEPLRTQCALAASKLLKKPDQGRAVSTCAHLFWSGRNTDKNGEELHGGKRVMECLKKALKIANQCMDPSLQVQLFIEILNRYIYFYEKENDAVTIQVLNQLIQKIREDLPNLESSEETEQINKHFHNTLEHLRLRRESPESEGPIYEGLIL",
+   "ensembl": "ENSG00000069329",
+   "alphafold": {
+    "id": "AF-Q96QK1-F1",
+    "plddt": 91.25,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96QK1-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96QK1-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q96QK1-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 14,
+   "bestPdb": "8R0J",
+   "structures": [
+    {
+     "id": "8R0J",
+     "title": "Crystal structure of the retromer complex VPS29/VPS35 with the ligand bis-1,3-phenyl guanylhydrazone, 2a",
+     "resolution": 2.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "XFZ",
+       "name": "Bis-1,3-phenyl guanylhydrazon"
+      }
+     ]
+    },
+    {
+     "id": "8R02",
+     "title": "Crystal structure of the retromer complex VPS29/VPS35 with the ligand bis-1,3-phenyl guanylhydrazone, 2a",
+     "resolution": 2.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "XFZ",
+       "name": "Bis-1,3-phenyl guanylhydrazon"
+      }
+     ]
+    },
+    {
+     "id": "7BLO",
+     "title": "VPS26 dimer region of metazoan membrane-assembled retromer:SNX3 complex modelled with human proteins",
+     "resolution": 9.5,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PIB",
+       "name": "2-(BUTANOYLOXY)-1-{[(HYDROXY{[2,3,4,6-TETRAHYDROXY-5-(PHOSPHONOOXY)CYCLOHEXYL]OXY}PHOSPHORYL)OXY]METHYL}ETHYL\nBUTANOATE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "MAOB",
+   "uniprot": "P27338",
+   "program": "Parkinson's",
+   "disease": "Symptomatic PD therapy",
+   "rationale": "Approved target: selegiline, rasagiline, safinamide.",
+   "name": "Amine oxidase [flavin-containing] B",
+   "length": 520,
+   "sequence": "MSNKCDVVVVGGGISGMAAAKLLHDSGLNVVVLEARDRVGGRTYTLRNQKVKYVDLGGSYVGPTQNRILRLAKELGLETYKVNEVERLIHHVKGKSYPFRGPFPPVWNPITYLDHNNFWRTMDDMGREIPSDAPWKAPLAEEWDNMTMKELLDKLCWTESAKQLATLFVNLCVTAETHEVSALWFLWYVKQCGGTTRIISTTNGGQERKFVGGSGQVSERIMDLLGDRVKLERPVIYIDQTRENVLVETLNHEMYEAKYVISAIPPTLGMKIHFNPPLPMMRNQMITRVPLGSVIKCIVYYKEPFWRKKDYCGTMIIDGEEAPVAYTLDDTKPEGNYAAIMGFILAHKARKLARLTKEERLKKLCELYAKVLGSLEALEPVHYEEKNWCEEQYSGGCYTTYFPPGILTQYGRVLRQPVDRIYFAGTETATHWSGYMEGAVEAGERAAREILHAMGKIPEDEIWQSEPESVDVPAQPITTTFLERHLPSVPGLLRLIGLTTIFSATALGFLAHKRGLLVRV",
+   "ensembl": "ENSG00000069535",
+   "alphafold": {
+    "id": "AF-P27338-F1",
+    "plddt": 95.62,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P27338-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P27338-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P27338-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 57,
+   "bestPdb": "2V5Z",
+   "structures": [
+    {
+     "id": "9FJT",
+     "title": "Human Monoamine Oxidase B in complex with MC4762 inhibitor (9a) at 1.4 A resolution",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IDI",
+       "name": "~{N}-[[4-[[7-(1,3-benzoxazol-2-ylsulfanyl)-[1,2,3]triazolo[4,5-d]pyrimidin-3-yl]methyl]phenyl]methyl]-~{N}-methyl-prop-2-yn-1-amine"
+      },
+      {
+       "id": "C15",
+       "name": "N-DODECYL-N,N-DIMETHYL-3-AMMONIO-1-PROPANESULFONATE"
+      }
+     ]
+    },
+    {
+     "id": "1S3E",
+     "title": "Crystal structure of MAOB in complex with 6-hydroxy-N-propargyl-1(R)-aminoindan",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "RHP",
+       "name": "(3R)-3-(PROP-2-YNYLAMINO)INDAN-5-OL"
+      }
+     ]
+    },
+    {
+     "id": "28WL",
+     "title": "Crystal structure of human Monoamine Oxidase B (MAO B) in complex with 7-[(4-{[(3,4-dimethoxybenzyl(methyl)amino]methyl}benzyl)oxy]-4-(hydroxymethyl)-2H-chromen-2-one) (LP1488)",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "C15",
+       "name": "N-DODECYL-N,N-DIMETHYL-3-AMMONIO-1-PROPANESULFONATE"
+      },
+      {
+       "id": "A1JF0",
+       "name": "7-[[4-[[(3,4-dimethoxyphenyl)methyl-methyl-amino]methyl]phenyl]methoxy]-4-(hydroxymethyl)chromen-2-one"
+      }
+     ]
+    },
+    {
+     "id": "2V5Z",
+     "title": "Structure of human MAO B in complex with the selective inhibitor safinamide",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "SAG",
+       "name": "(S)-(+)-2-[4-(FLUOROBENZYLOXY-BENZYLAMINO)PROPIONAMIDE]"
+      }
+     ]
+    },
+    {
+     "id": "2XFN",
+     "title": "Human monoamine oxidase B in complex with 2-(2-benzofuranyl)-2- imidazoline",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "C15",
+       "name": "N-DODECYL-N,N-DIMETHYL-3-AMMONIO-1-PROPANESULFONATE"
+      },
+      {
+       "id": "XCG",
+       "name": "2-(2-BENZOFURANYL)-2-IMIDAZOLINE"
+      }
+     ]
+    },
+    {
+     "id": "6FW0",
+     "title": "Crystal structure of human monoamine oxidase B (MAO B) in complex with chlorophenyl-chromone-carboxamide",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "C15",
+       "name": "N-DODECYL-N,N-DIMETHYL-3-AMMONIO-1-PROPANESULFONATE"
+      },
+      {
+       "id": "E92",
+       "name": "~{N}-(3-chlorophenyl)-4-oxidanylidene-chromene-3-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "9R3K",
+     "title": "Crystal structure of human MAO B in complex with ((E)-3-(3-nitrophenyl)-1-(3-(trifluoromethyl)phenyl)prop-2-en-1-one (4b)",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "C15",
+       "name": "N-DODECYL-N,N-DIMETHYL-3-AMMONIO-1-PROPANESULFONATE"
+      },
+      {
+       "id": "A1JC6",
+       "name": "(2E)-3-(3-nitrophenyl)-1-[3-(trifluoromethyl)phenyl]prop-2-en-1-one"
+      }
+     ]
+    },
+    {
+     "id": "1S3B",
+     "title": "Crystal structure of MAOB in complex with N-methyl-N-propargyl-1(R)-aminoindan",
+     "resolution": 1.65,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "RMA",
+       "name": "N-[(1S)-2,3-DIHYDRO-1H-INDEN-1-YL]-N-METHYL-N-PROP-2-YNYLAMINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "COMT",
+   "uniprot": "P21964",
+   "program": "Parkinson's",
+   "disease": "Symptomatic PD therapy",
+   "rationale": "Approved target: entacapone, opicapone, tolcapone.",
+   "name": "Catechol O-methyltransferase",
+   "length": 271,
+   "sequence": "MPEAPPLLLAAVLLGLVLLVVLLLLLRHWGWGLCLIGWNEFILQPIHNLLMGDTKEQRILNHVLQHAEPGNAQSVLEAIDTYCEQKEWAMNVGDKKGKIVDAVIQEHQPSVLLELGAYCGYSAVRMARLLSPGARLITIEINPDCAAITQRMVDFAGVKDKVTLVVGASQDIIPQLKKKYDVDTLDMVFLDHWKDRYLPDTLLLEECGLLRKGTVLLADNVICPGAPDFLAHVRGSSCFECTHYQSFLEYREVVDGLEKAIYKGPGSEAGP",
+   "ensembl": "ENSG00000093010",
+   "alphafold": {
+    "id": "AF-P21964-F1",
+    "plddt": 93.94,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P21964-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P21964-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P21964-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 12,
+   "bestPdb": "3BWY",
+   "structures": [
+    {
+     "id": "3BWY",
+     "title": "Crystal Structure of Human 108M Catechol O-methyltransferase bound with S-adenosylmethionine and inhibitor dinitrocatechol",
+     "resolution": 1.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DNC",
+       "name": "3,5-DINITROCATECHOL"
+      }
+     ]
+    },
+    {
+     "id": "6I3C",
+     "title": "Crystal structure of Human soluble catechol O-methyltransferase in complex with 3,5-dinitrocatechol and S-adensoyl-L-methionine",
+     "resolution": 1.336,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DNC",
+       "name": "3,5-DINITROCATECHOL"
+      }
+     ]
+    },
+    {
+     "id": "6I3D",
+     "title": "Crystal structure of Human soluble catechol O-methyltransferase in complex with 3,5-dinitrocatechol and Sinefungin",
+     "resolution": 1.45,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DNC",
+       "name": "3,5-DINITROCATECHOL"
+      },
+      {
+       "id": "SFG",
+       "name": "SINEFUNGIN"
+      }
+     ]
+    },
+    {
+     "id": "5LSA",
+     "title": "human catechol O-methyltransferase in complex with SAM and DNC at 1.50A",
+     "resolution": 1.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DNC",
+       "name": "3,5-DINITROCATECHOL"
+      }
+     ]
+    },
+    {
+     "id": "4XUC",
+     "title": "Synthesis and evaluation of heterocyclic catechol mimics as inhibitors of catechol-O-methyltransferase (COMT): Structure with Cmpd18 (1-(biphenyl-3-yl)-3-hydroxypyridin-4(1H)-one)",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "43G",
+       "name": "1-(biphenyl-3-yl)-3-hydroxypyridin-4(1H)-one"
+      }
+     ]
+    },
+    {
+     "id": "3BWM",
+     "title": "Crystal Structure of Human Catechol O-Methyltransferase with bound SAM and DNC",
+     "resolution": 1.98,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DNC",
+       "name": "3,5-DINITROCATECHOL"
+      }
+     ]
+    },
+    {
+     "id": "4XUE",
+     "title": "Synthesis and evaluation of heterocyclic catechol mimics as inhibitors of catechol-O-methyltransferase (COMT): Structure with Cmpd27b",
+     "resolution": 2.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "43J",
+       "name": "2-(biphenyl-3-yl)-5-hydroxy-3-methylpyrimidin-4(3H)-one"
+      }
+     ]
+    },
+    {
+     "id": "4XUD",
+     "title": "Synthesis and evaluation of heterocyclic catechol mimics as inhibitors of catechol-O-methyltransferase (COMT): Structure with Cmpd32 ([1-(biphenyl-3-yl)-5-hydroxy-4-oxo-1,4-dihydropyridin-3-yl]boronic acid)",
+     "resolution": 2.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "43H",
+       "name": "[1-(biphenyl-3-yl)-5-hydroxy-4-oxo-1,4-dihydropyridin-3-yl]boronic acid"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "DRD2",
+   "uniprot": "P14416",
+   "program": "Parkinson's",
+   "disease": "Symptomatic PD therapy",
+   "rationale": "Dopamine agonists: pramipexole, ropinirole.",
+   "name": "Dopamine receptor D2",
+   "length": 443,
+   "sequence": "MDPLNLSWYDDDLERQNWSRPFNGSDGKADRPHYNYYATLLTLLIAVIVFGNVLVCMAVSREKALQTTTNYLIVSLAVADLLVATLVMPWVVYLEVVGEWKFSRIHCDIFVTLDVMMCTASILNLCAISIDRYTAVAMPMLYNTRYSSKRRVTVMISIVWVLSFTISCPLLFGLNNADQNECIIANPAFVVYSSIVSFYVPFIVTLLVYIKIYIVLRRRRKRVNTKRSSRAFRAHLRAPLKGNCTHPEDMKLCTVIMKSNGSFPVNRRRVEAARRAQELEMEMLSSTSPPERTRYSPIPPSHHQLTLPDPSHHGLHSTPDSPAKPEKNGHAKDHPKIAKIFEIQTMPNGKTRTSLKTMSRRKLSQQKEKKATQMLAIVLGVFIICWLPFFITHILNIHCDCNIPPVLYSAFTWLGYVNSAVNPIIYTTFNIEFRKAFLKILHC",
+   "ensembl": "ENSG00000149295",
+   "alphafold": {
+    "id": "AF-P14416-F1",
+    "plddt": 72.44,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P14416-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P14416-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P14416-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 11,
+   "bestPdb": "9BS9",
+   "structures": [
+    {
+     "id": "9BS9",
+     "title": "Local refinement of DRD2 bound to LSD in complex with a mini-GoA and scFv16 obtained by cryo-electron microscopy (cryoEM)",
+     "resolution": 2.28,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "7LD",
+       "name": "(8alpha)-N,N-diethyl-6-methyl-9,10-didehydroergoline-8-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "9BSB",
+     "title": "Global reconstruction of DRD2 bound to LSD in complex with a mini-GoA and scFv16 obtained by cryo-electron microscopy (cryoEM)",
+     "resolution": 2.32,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "7LD",
+       "name": "(8alpha)-N,N-diethyl-6-methyl-9,10-didehydroergoline-8-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "7JVR",
+     "title": "Cryo-EM structure of Bromocriptine-bound dopamine receptor 2 in complex with Gi protein",
+     "resolution": 2.8,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "08Y",
+       "name": "bromoergocryptine"
+      }
+     ]
+    },
+    {
+     "id": "6CM4",
+     "title": "Structure of the D2 Dopamine Receptor Bound to the Atypical Antipsychotic Drug Risperidone",
+     "resolution": 2.867,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OLA",
+       "name": "OLEIC ACID"
+      },
+      {
+       "id": "8NU",
+       "name": "3-[2-[4-(6-fluoranyl-1,2-benzoxazol-3-yl)piperidin-1-yl]ethyl]-2-methyl-6,7,8,9-tetrahydropyrido[1,2-a]pyrimidin-4-one"
+      }
+     ]
+    },
+    {
+     "id": "8IRS",
+     "title": "Dopamine Receptor D2R-Gi-Rotigotine complex",
+     "resolution": 3.0,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "R5F",
+       "name": "Rotigotine"
+      }
+     ]
+    },
+    {
+     "id": "6LUQ",
+     "title": "Haloperidol bound D2 dopamine receptor structure inspired discovery of subtype selective ligands",
+     "resolution": 3.1,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OLA",
+       "name": "OLEIC ACID"
+      },
+      {
+       "id": "GMJ",
+       "name": "4-[4-(4-chlorophenyl)-4-hydroxypiperidin-1-yl]-1-(4-fluorophenyl)butan-1-one"
+      }
+     ]
+    },
+    {
+     "id": "7DFP",
+     "title": "Human dopamine D2 receptor in complex with spiperone",
+     "resolution": 3.1,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "SIP",
+       "name": "8-[4-(4-fluorophenyl)-4-oxidanylidene-butyl]-1-phenyl-1,3,8-triazaspiro[4.5]decan-4-one"
+      }
+     ]
+    },
+    {
+     "id": "8TZQ",
+     "title": "CryoEM structure of D2 dopamine receptor in complex with GoA KE Mutant, scFv16, and dopamine",
+     "resolution": 3.2,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LDP",
+       "name": "L-DOPAMINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "TH",
+   "uniprot": "P07101",
+   "program": "Parkinson's",
+   "disease": "Dopamine synthesis",
+   "rationale": "Rate-limiting enzyme in dopamine biosynthesis.",
+   "name": "Tyrosine 3-monooxygenase",
+   "length": 528,
+   "sequence": "MPTPDATTPQAKGFRRAVSELDAKQAEAIMVRGQGAPGPSLTGSPWPGTAAPAASYTPTPRSPRFIGRRQSLIEDARKEREAAVAAAAAAVPSEPGDPLEAVAFEEKEGKAVLNLLFSPRATKPSALSRAVKVFETFEAKIHHLETRPAQRPRAGGPHLEYFVRLEVRRGDLAALLSGVRQVSEDVRSPAGPKVPWFPRKVSELDKCHHLVTKFDPDLDLDHPGFSDQVYRQRRKLIAEIAFQYRHGDPIPRVEYTAEEIATWKEVYTTLKGLYATHACGEHLEAFALLERFSGYREDNIPQLEDVSRFLKERTGFQLRPVAGLLSARDFLASLAFRVFQCTQYIRHASSPMHSPEPDCCHELLGHVPMLADRTFAQFSQDIGLASLGASDEEIEKLSTLYWFTVEFGLCKQNGEVKAYGAGLLSSYGELLHCLSEEPEIRAFDPEAAAVQPYQDQTYQSVYFVSESFSDAKDKLRSYASRIQRPFSVKFDPYTLAIDVLDSPQAVRRSLEGVQDELDTLAHALSAIG",
+   "ensembl": "ENSG00000180176",
+   "alphafold": {
+    "id": "AF-P07101-F1",
+    "plddt": 80.75,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P07101-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P07101-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P07101-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 7,
+   "bestPdb": "6ZVP",
+   "structures": [
+    {
+     "id": "6ZVP",
+     "title": "Atomic model of the EM-based structure of the full-length tyrosine hydroxylase in complex with dopamine (residues 40-497) in which the regulatory domain (residues 40-165) has been included only with the backbone atoms",
+     "resolution": 4.0,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LDP",
+       "name": "L-DOPAMINE"
+      }
+     ]
+    },
+    {
+     "id": "6ZN2",
+     "title": "Partial structure of tyrosine hydroxylase in complex with dopamine showing the catalytic domain and an alpha-helix from the regulatory domain involved in dopamine binding.",
+     "resolution": 4.3,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LDP",
+       "name": "L-DOPAMINE"
+      }
+     ]
+    },
+    {
+     "id": "7PIM",
+     "title": "Partial structure of tyrosine hydroxylase lacking the first 35 residues in complex with dopamine.",
+     "resolution": 4.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LDP",
+       "name": "L-DOPAMINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "UCHL1",
+   "uniprot": "P09936",
+   "program": "Parkinson's",
+   "disease": "PARK5",
+   "rationale": "Deubiquitinase in neuronal proteostasis.",
+   "name": "Ubiquitin carboxyl-terminal hydrolase isozyme L1",
+   "length": 223,
+   "sequence": "MQLKPMEINPEMLNKVLSRLGVAGQWRFVDVLGLEEESLGSVPAPACALLLLFPLTAQHENFRKKQIEELKGQEVSPKVYFMKQTIGNSCGTIGLIHAVANNQDKLGFEDGSVLKQFLSETEKMSPEDRAKCFEKNEAIQAAHDAVAQEGQCRVDDKVNFHFILFNNVDGHLYELDGRMPFPVNHGASSEDTLLKDAAKVCREFTEREQGEVRFSAVALCKAA",
+   "ensembl": "ENSG00000154277",
+   "alphafold": {
+    "id": "AF-P09936-F1",
+    "plddt": 93.62,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P09936-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P09936-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P09936-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 14,
+   "bestPdb": "8EDE",
+   "structures": [
+    {
+     "id": "8EDE",
+     "title": "Crystal structure of covalent inhibitor 2-chloro-N'-(N-(4-chlorophenyl)-N-methylglycyl)acetohydrazide bound to Ubiquitin C-terminal Hydrolase-L1",
+     "resolution": 1.799,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "WEU",
+       "name": "2-[(4-chlorophenyl)-methyl-amino]-~{N}'-ethanoyl-ethanehydrazide"
+      }
+     ]
+    },
+    {
+     "id": "9O4M",
+     "title": "Crystal structure of Ubiquitin Carboxy Terminal Hydrolase L1 Q209C mutant covalently crosslinked to ubiquitin genetically encoded with N6-(6-bromohexanoyl)-L-lysine",
+     "resolution": 2.0,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "6NA",
+       "name": "HEXANOIC ACID"
+      }
+     ]
+    },
+    {
+     "id": "8PW1",
+     "title": "Structure of human UCHL1 in complex with CG341 inhibitor",
+     "resolution": 2.2,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GKO",
+       "name": "(2~{S})-4-(iminomethyl)-1-methyl-~{N}-[1-[4-(pent-4-ynylcarbamoyl)phenyl]imidazol-4-yl]piperazine-2-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "7ZM0",
+     "title": "Structure of UCHL1 in complex with GK13S inhibitor",
+     "resolution": 2.24,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "JMF",
+       "name": "(3S)-1-(iminomethyl)-N-[1-[4-(pent-4-ynylcarbamoyl)phenyl]imidazol-4-yl]pyrrolidine-3-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "3IFW",
+     "title": "Crystal structure of the S18Y variant of ubiquitin carboxy terminal hydrolase L1 bound to ubiquitin vinylmethylester.",
+     "resolution": 2.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GVE",
+       "name": "METHYL 4-AMINOBUTANOATE"
+      }
+     ]
+    },
+    {
+     "id": "3KVF",
+     "title": "Crystal structure of the I93M mutant of ubiquitin carboxy terminal hydrolase L1 bound to ubiquitin vinylmethylester",
+     "resolution": 2.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GVE",
+       "name": "METHYL 4-AMINOBUTANOATE"
+      }
+     ]
+    },
+    {
+     "id": "3KW5",
+     "title": "Crystal structure of ubiquitin carboxy terminal hydrolase L1 bound to ubiquitin vinylmethylester",
+     "resolution": 2.83,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GVE",
+       "name": "METHYL 4-AMINOBUTANOATE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "ATP13A2",
+   "uniprot": "Q9NQ11",
+   "program": "Parkinson's",
+   "disease": "PARK9 Kufor-Rakeb",
+   "rationale": "Lysosomal polyamine transporter.",
+   "name": "Polyamine-transporting ATPase 13A2",
+   "length": 1180,
+   "sequence": "MSADSSPLVGSTPTGYGTLTIGTSIDPLSSSVSSVRLSGYCGSPWRVIGYHVVVWMMAGIPLLLFRWKPLWGVRLRLRPCNLAHAETLVIEIRDKEDSSWQLFTVQVQTEAIGEGSLEPSPQSQAEDGRSQAAVGAVPEGAWKDTAQLHKSEEAVSVGQKRVLRYYLFQGQRYIWIETQQAFYQVSLLDHGRSCDDVHRSRHGLSLQDQMVRKAIYGPNVISIPVKSYPQLLVDEALNPYYGFQAFSIALWLADHYYWYALCIFLISSISICLSLYKTRKQSQTLRDMVKLSMRVCVCRPGGEEEWVDSSELVPGDCLVLPQEGGLMPCDAALVAGECMVNESSLTGESIPVLKTALPEGLGPYCAETHRRHTLFCGTLILQARAYVGPHVLAVVTRTGFCTAKGGLVSSILHPRPINFKFYKHSMKFVAALSVLALLGTIYSIFILYRNRVPLNEIVIRALDLVTVVVPPALPAAMTVCTLYAQSRLRRQGIFCIHPLRINLGGKLQLVCFDKTGTLTEDGLDVMGVVPLKGQAFLPLVPEPRRLPVGPLLRALATCHALSRLQDTPVGDPMDLKMVESTGWVLEEEPAADSAFGTQVLAVMRPPLWEPQLQAMEEPPVPVSVLHRFPFSSALQRMSVVVAWPGATQPEAYVKGSPELVAGLCNPETVPTDFAQMLQSYTAAGYRVVALASKPLPTVPSLEAAQQLTRDTVEGDLSLLGLLVMRNLLKPQTTPVIQALRRTRIRAVMVTGDNLQTAVTVARGCGMVAPQEHLIIVHATHPERGQPASLEFLPMESPTAVNGVKDPDQAASYTVEPDPRSRHLALSGPTFGIIVKHFPKLLPKVLVQGTVFARMAPEQKTELVCELQKLQYCVGMCGDGANDCGALKAADVGISLSQAEASVVSPFTSSMASIECVPMVIREGRCSLDTSFSVFKYMALYSLTQFISVLILYTINTNLGDLQFLAIDLVITTTVAVLMSRTGPALVLGRVRPPGALLSVPVLSSLLLQMVLVTGVQLGGYFLTLAQPWFVPLNRTVAAPDNLPNYENTVVFSLSSFQYLILAAAVSKGAPFRRPLYTNVPFLVALALLSSVLVGLVLVPGLLQGPLALRNITDTGFKLLLLGLVTLNFVGAFMLESVLDQCLPACLRRLRPKRASKKRFKQLERELAEQPWPPLPAGPLR",
+   "ensembl": "ENSG00000159363",
+   "alphafold": {
+    "id": "AF-Q9NQ11-F1",
+    "plddt": 79.62,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQ11-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQ11-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQ11-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 25,
+   "bestPdb": "7N72",
+   "structures": [
+    {
+     "id": "7N72",
+     "title": "Cryo-EM structure of ATP13A2 in the AlF-bound E2-Pi-like state",
+     "resolution": 2.5,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "SPM",
+       "name": "SPERMINE"
+      },
+      {
+       "id": "ALF",
+       "name": "TETRAFLUOROALUMINATE ION"
+      }
+     ]
+    },
+    {
+     "id": "7M5X",
+     "title": "Human ATP13A2 in the outward-facing E2 state bound to spermine and beryllium fluoride",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "D12",
+       "name": "DODECANE"
+      },
+      {
+       "id": "C14",
+       "name": "TETRADECANE"
+      },
+      {
+       "id": "D10",
+       "name": "DECANE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      },
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "BEF",
+       "name": "BERYLLIUM TRIFLUORIDE ION"
+      },
+      {
+       "id": "EUJ",
+       "name": "(2R)-3-{[(S)-hydroxy{[(1S,2R,3R,4S,5S,6R)-2,4,6-trihydroxy-3,5-bis(phosphonooxy)cyclohexyl]oxy}phosphoryl]oxy}propane-1,2-diyl dioctanoate"
+      },
+      {
+       "id": "SPK",
+       "name": "SPERMINE (FULLY PROTONATED FORM)"
+      }
+     ]
+    },
+    {
+     "id": "7N70",
+     "title": "Cryo-EM structure of ATP13A2 in the BeF-bound E2P-like state",
+     "resolution": 2.8,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "BEF",
+       "name": "BERYLLIUM TRIFLUORIDE ION"
+      }
+     ]
+    },
+    {
+     "id": "7N74",
+     "title": "Cryo-EM structure of ATP13A2 D508N mutant in the E1-ATP-like state",
+     "resolution": 2.8,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      }
+     ]
+    },
+    {
+     "id": "7M5V",
+     "title": "human ATP13A2 in the AMPPNP-bound occluded state",
+     "resolution": 2.9,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "D12",
+       "name": "DODECANE"
+      },
+      {
+       "id": "D10",
+       "name": "DECANE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "1DO",
+       "name": "1-DODECANOL"
+      },
+      {
+       "id": "EUJ",
+       "name": "(2R)-3-{[(S)-hydroxy{[(1S,2R,3R,4S,5S,6R)-2,4,6-trihydroxy-3,5-bis(phosphonooxy)cyclohexyl]oxy}phosphoryl]oxy}propane-1,2-diyl dioctanoate"
+      }
+     ]
+    },
+    {
+     "id": "7N73",
+     "title": "Cryo-EM structure of ATP13A2 in the ADP-AlF-bound E1P-ADP-like state",
+     "resolution": 2.9,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "ALF",
+       "name": "TETRAFLUOROALUMINATE ION"
+      }
+     ]
+    },
+    {
+     "id": "7M5Y",
+     "title": "human ATP13A2 in the outward-facing E2 state bound to spermine and magnesium fluoride",
+     "resolution": 3.0,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "D12",
+       "name": "DODECANE"
+      },
+      {
+       "id": "C14",
+       "name": "TETRADECANE"
+      },
+      {
+       "id": "D10",
+       "name": "DECANE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      },
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "MF4",
+       "name": "TETRAFLUOROMAGNESATE(2-)"
+      },
+      {
+       "id": "EUJ",
+       "name": "(2R)-3-{[(S)-hydroxy{[(1S,2R,3R,4S,5S,6R)-2,4,6-trihydroxy-3,5-bis(phosphonooxy)cyclohexyl]oxy}phosphoryl]oxy}propane-1,2-diyl dioctanoate"
+      },
+      {
+       "id": "SPK",
+       "name": "SPERMINE (FULLY PROTONATED FORM)"
+      }
+     ]
+    },
+    {
+     "id": "7N78",
+     "title": "Cryo-EM structure of ATP13A2 in the E2-Pi state",
+     "resolution": 3.0,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "LMT",
+       "name": "DODECYL-BETA-D-MALTOSIDE"
+      },
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "Y01",
+       "name": "CHOLESTEROL HEMISUCCINATE"
+      },
+      {
+       "id": "SPM",
+       "name": "SPERMINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "HTT",
+   "uniprot": "P42858",
+   "program": "Neurogenetic",
+   "disease": "Huntington's disease",
+   "rationale": "PolyQ expansion; lowering and splicing modulators.",
+   "name": "Huntingtin",
+   "length": 3142,
+   "sequence": "MATLEKLMKAFESLKSFQQQQQQQQQQQQQQQQQQQQQPPPPPPPPPPPQLPQPPPQAQPLLPQPQPPPPPPPPPPGPAVAEEPLHRPKKELSATKKDRVNHCLTICENIVAQSVRNSPEFQKLLGIAMELFLLCSDDAESDVRMVADECLNKVIKALMDSNLPRLQLELYKEIKKNGAPRSLRAALWRFAELAHLVRPQKCRPYLVNLLPCLTRTSKRPEESVQETLAAAVPKIMASFGNFANDNEIKVLLKAFIANLKSSSPTIRRTAAGSAVSICQHSRRTQYFYSWLLNVLLGLLVPVEDEHSTLLILGVLLTLRYLVPLLQQQVKDTSLKGSFGVTRKEMEVSPSAEQLVQVYELTLHHTQHQDHNVVTGALELLQQLFRTPPPELLQTLTAVGGIGQLTAAKEESGGRSRSGSIVELIAGGGSSCSPVLSRKQKGKVLLGEEEALEDDSESRSDVSSSALTASVKDEISGELAASSGVSTPGSAGHDIITEQPRSQHTLQADSVDLASCDLTSSATDGDEEDILSHSSSQVSAVPSDPAMDLNDGTQASSPISDSSQTTTEGPDSAVTPSDSSEIVLDGTDNQYLGLQIGQPQDEDEEATGILPDEASEAFRNSSMALQQAHLLKNMSHCRQPSDSSVDKFVLRDEATEPGDQENKPCRIKGDIGQSTDDDSAPLVHCVRLLSASFLLTGGKNVLVPDRDVRVSVKALALSCVGAAVALHPESFFSKLYKVPLDTTEYPEEQYVSDILNYIDHGDPQVRGATAILCGTLICSILSRSRFHVGDWMGTIRTLTGNTFSLADCIPLLRKTLKDESSVTCKLACTAVRNCVMSLCSSSYSELGLQLIIDVLTLRNSSYWLVRTELLETLAEIDFRLVSFLEAKAENLHRGAHHYTGLLKLQERVLNNVVIHLLGDEDPRVRHVAAASLIRLVPKLFYKCDQGQADPVVAVARDQSSVYLKLLMHETQPPSHFSVSTITRIYRGYNLLPSITDVTMENNLSRVIAAVSHELITSTTRALTFGCCEALCLLSTAFPVCIWSLGWHCGVPPLSASDESRKSCTVGMATMILTLLSSAWFPLDLSAHQDALILAGNLLAASAPKSLRSSWASEEEANPAATKQEEVWPALGDRALVPMVEQLFSHLLKVINICAHVLDDVAPGPAIKAALPSLTNPPSLSPIRRKGKEKEPGEQASVPLSPKKGSEASAASRQSDTSGPVTTSKSSSLGSFYHLPSYLKLHDVLKATHANYKVTLDLQNSTEKFGGFLRSALDVLSQILELATLQDIGKCVEEILGYLKSCFSREPMMATVCVQQLLKTLFGTNLASQFDGLSSNPSKSQGRAQRLGSSSVRPGLYHYCFMAPYTHFTQALADASLRNMVQAEQENDTSGWFDVLQKVSTQLKTNLTSVTKNRADKNAIHNHIRLFEPLVIKALKQYTTTTCVQLQKQVLDLLAQLVQLRVNYCLLDSDQVFIGFVLKQFEYIEVGQFRESEAIIPNIFFFLVLLSYERYHSKQIIGIPKIIQLCDGIMASGRKAVTHAIPALQPIVHDLFVLRGTNKADAGKELETQKEVVVSMLLRLIQYHQVLEMFILVLQQCHKENEDKWKRLSRQIADIILPMLAKQQMHIDSHEALGVLNTLFEILAPSSLRPVDMLLRSMFVTPNTMASVSTVQLWISGILAILRVLISQSTEDIVLSRIQELSFSPYLISCTVINRLRDGDSTSTLEEHSEGKQIKNLPEETFSRFLLQLVGILLEDIVTKQLKVEMSEQQHTFYCQELGTLLMCLIHIFKSGMFRRITAAATRLFRSDGCGGSFYTLDSLNLRARSMITTHPALVLLWCQILLLVNHTDYRWWAEVQQTPKRHSLSSTKLLSPQMSGEEEDSDLAAKLGMCNREIVRRGALILFCDYVCQNLHDSEHLTWLIVNHIQDLISLSHEPPVQDFISAVHRNSAASGLFIQAIQSRCENLSTPTMLKKTLQCLEGIHLSQSGAVLTLYVDRLLCTPFRVLARMVDILACRRVEMLLAANLQSSMAQLPMEELNRIQEYLQSSGLAQRHQRLYSLLDRFRLSTMQDSLSPSPPVSSHPLDGDGHVSLETVSPDKDWYVHLVKSQCWTRSDSALLEGAELVNRIPAEDMNAFMMNSEFNLSLLAPCLSLGMSEISGGQKSALFEAAREVTLARVSGTVQQLPAVHHVFQPELPAEPAAYWSKLNDLFGDAALYQSLPTLARALAQYLVVVSKLPSHLHLPPEKEKDIVKFVVATLEALSWHLIHEQIPLSLDLQAGLDCCCLALQLPGLWSVVSSTEFVTHACSLIYCVHFILEAVAVQPGEQLLSPERRTNTPKAISEEEEEVDPNTQNPKYITAACEMVAEMVESLQSVLALGHKRNSGVPAFLTPLLRNIIISLARLPLVNSYTRVPPLVWKLGWSPKPGGDFGTAFPEIPVEFLQEKEVFKEFIYRINTLGWTSRTQFEETWATLLGVLVTQPLVMEQEESPPEEDTERTQINVLAVQAITSLVLSAMTVPVAGNPAVSCLEQQPRNKPLKALDTRFGRKLSIIRGIVEQEIQAMVSKRENIATHHLYQAWDPVPSLSPATTGALISHEKLLLQINPERELGSMSYKLGQVSIHSVWLGNSITPLREEEWDEEEEEEADAPAPSSPPTSPVNSRKHRAGVDIHSCSQFLLELYSRWILPSSSARRTPAILISEVVRSLLVVSDLFTERNQFELMYVTLTELRRVHPSEDEILAQYLVPATCKAAAVLGMDKAVAEPVSRLLESTLRSSHLPSRVGALHGVLYVLECDLLDDTAKQLIPVISDYLLSNLKGIAHCVNIHSQQHVLVMCATAFYLIENYPLDVGPEFSASIIQMCGVMLSGSEESTPSIIYHCALRGLERLLLSEQLSRLDAESLVKLSVDRVNVHSPHRAMAALGLMLTCMYTGKEKVSPGRTSDPNPAAPDSESVIVAMERVSVLFDRIRKGFPCEARVVARILPQFLDDFFPPQDIMNKVIGEFLSNQQPYPQFMATVVYKVFQTLHSTGQSSMVRDWVMLSLSNFTQRAPVAMATWSLSCFFVSASTSPWVAAILPHVISRMGKLEQVDVNLFCLVATDFYRHQIEEELDRRAFQSVLEVVAAPGSPYHRLLTCLRNVHKVTTC",
+   "ensembl": "ENSG00000197386",
+   "alphafold": null,
+   "pdbCount": 30,
+   "bestPdb": "9YR6",
+   "structures": [
+    {
+     "id": "9YR6",
+     "title": "Structure of HTTQ23-HAP40 complex bound to a small molecule ligand",
+     "resolution": 2.3,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1CYY",
+       "name": "2-[(1R)-2,2-difluorocyclopropyl]-N-[(1-methyl-1H-indazol-6-yl)methyl]aniline"
+      }
+     ]
+    },
+    {
+     "id": "8VLX",
+     "title": "HTT in complex with HAP40 and a small molecule.",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1ACS",
+       "name": "N-[(1S,2R)-2-benzylcyclopentyl]-N'-{1-[(1S)-1-(pyridin-4-yl)ethyl]piperidin-4-yl}urea"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "SMN1",
+   "uniprot": "Q16637",
+   "program": "Neurogenetic",
+   "disease": "Spinal muscular atrophy",
+   "rationale": "Nusinersen, risdiplam, onasemnogene all act on SMN.",
+   "name": "Survival motor neuron protein",
+   "length": 294,
+   "sequence": "MAMSSGGSGGGVPEQEDSVLFRRGTGQSDDSDIWDDTALIKAYDKAVASFKHALKNGDICETSGKPKTTPKRKPAKKNKSQKKNTAASLQQWKVGDKCSAIWSEDGCIYPATIASIDFKRETCVVVYTGYGNREEQNLSDLLSPICEVANNIEQNAQENENESQVSTDESENSRSPGNKSDNIKPKSAPWNSFLPPPPPMPGPRLGPGKPGLKFNGPPPPPPPPPPHLLSCWLPPFPSGPPIIPPPPPICPDSLDDADALGSMLISWYMSGYHTGYYMGFRQNQKEGRCSHSLN",
+   "ensembl": "ENSG00000172062",
+   "alphafold": {
+    "id": "AF-Q16637-F1",
+    "plddt": 66.88,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16637-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16637-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16637-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 16,
+   "bestPdb": "7W2P",
+   "structures": [
+    {
+     "id": "7W2P",
+     "title": "Tudor domain of SMN in complex with a small molecule",
+     "resolution": 1.15,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "8AI",
+       "name": "2-[(4-fluorophenyl)methyl]-2-azatricyclo[7.3.0.0^{3,7}]dodeca-1(9),3(7)-dien-8-imine"
+      }
+     ]
+    },
+    {
+     "id": "4QQ6",
+     "title": "Crystal Structure of tudor domain of SMN1 in complex with a small organic molecule",
+     "resolution": 1.75,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "36X",
+       "name": "4-methyl-2,3,4,5,6,7-hexahydrodicyclopenta[b,e]pyridin-8(1H)-imine"
+      }
+     ]
+    },
+    {
+     "id": "7W30",
+     "title": "Tudor domain of SMN in complex with a small molecule",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "8AT",
+       "name": "1,2-dimethylquinolin-4-imine"
+      }
+     ]
+    },
+    {
+     "id": "4A4E",
+     "title": "Solution structure of SMN Tudor domain in complex with symmetrically dimethylated arginine",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": [
+      {
+       "id": "2MR",
+       "name": "N3, N4-DIMETHYLARGININE"
+      }
+     ]
+    },
+    {
+     "id": "4A4G",
+     "title": "Solution structure of SMN Tudor domain in complex with asymmetrically dimethylated arginine",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": [
+      {
+       "id": "DA2",
+       "name": "NG,NG-DIMETHYL-L-ARGININE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "FXN",
+   "uniprot": "Q16595",
+   "program": "Neurogenetic",
+   "disease": "Friedreich's ataxia",
+   "rationale": "Frataxin deficiency; omaveloxolone approved.",
+   "name": "Frataxin, mitochondrial",
+   "length": 210,
+   "sequence": "MWTLGRRAVAGLLASPSPAQAQTLTRVPRPAELAPLCGRRGLRTDIDATCTPRRASSNQRGLNQIWNVKKQSVYLMNLRKSGTLGHPGSLDETTYERLAEETLDSLAEFFEDLADKPYTFEDYDVSFGSGVLTVKLGGDLGTYVINKQTPNKQIWLSSPSSGPKRYDWTGKNWVYSHDGVSLHELLAAELTKALKTKLDLSSLAYSGKDA",
+   "ensembl": "ENSG00000165060",
+   "alphafold": {
+    "id": "AF-Q16595-F1",
+    "plddt": 75.5,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16595-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16595-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q16595-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 20,
+   "bestPdb": "8PK8",
+   "structures": [
+    {
+     "id": "8PK8",
+     "title": "Structure of the human mitochondrial iron-sulfur cluster biosynthesis complex during persulfide transfer (persulfide on ISCU2)",
+     "resolution": 2.49,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "8Q1",
+       "name": "S-[2-({N-[(2R)-2-hydroxy-3,3-dimethyl-4-(phosphonooxy)butanoyl]-beta-alanyl}amino)ethyl] dodecanethioate"
+      },
+      {
+       "id": "PLP",
+       "name": "PYRIDOXAL-5'-PHOSPHATE"
+      }
+     ]
+    },
+    {
+     "id": "8RME",
+     "title": "Structure of the core ISC complex under turnover conditions (frataxin-bound)",
+     "resolution": 2.49,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "8Q1",
+       "name": "S-[2-({N-[(2R)-2-hydroxy-3,3-dimethyl-4-(phosphonooxy)butanoyl]-beta-alanyl}amino)ethyl] dodecanethioate"
+      }
+     ]
+    },
+    {
+     "id": "8PK9",
+     "title": "Structure of the human mitochondrial iron-sulfur cluster biosynthesis complex during persulfide transfer (persulfide on NFS1 and ISCU2)",
+     "resolution": 2.58,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "8Q1",
+       "name": "S-[2-({N-[(2R)-2-hydroxy-3,3-dimethyl-4-(phosphonooxy)butanoyl]-beta-alanyl}amino)ethyl] dodecanethioate"
+      },
+      {
+       "id": "PLP",
+       "name": "PYRIDOXAL-5'-PHOSPHATE"
+      }
+     ]
+    },
+    {
+     "id": "6NZU",
+     "title": "Structure of the human frataxin-bound iron-sulfur cluster assembly complex",
+     "resolution": 3.2,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "8Q1",
+       "name": "S-[2-({N-[(2R)-2-hydroxy-3,3-dimethyl-4-(phosphonooxy)butanoyl]-beta-alanyl}amino)ethyl] dodecanethioate"
+      },
+      {
+       "id": "PLP",
+       "name": "PYRIDOXAL-5'-PHOSPHATE"
+      }
+     ]
+    },
+    {
+     "id": "8ZZF",
+     "title": "Structure of human mitochondrial iron sulfur cluster core complex (NIAUF)2",
+     "resolution": null,
+     "method": "Integrative",
+     "ligands": [
+      {
+       "id": "8Q1",
+       "name": "S-[2-({N-[(2R)-2-hydroxy-3,3-dimethyl-4-(phosphonooxy)butanoyl]-beta-alanyl}amino)ethyl] dodecanethioate"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "MECP2",
+   "uniprot": "P51608",
+   "program": "Neurogenetic",
+   "disease": "Rett syndrome",
+   "rationale": "Trofinetide approved; gene therapies in trials.",
+   "name": "Methyl-CpG-binding protein 2",
+   "length": 486,
+   "sequence": "MVAGMLGLREEKSEDQDLQGLKDKPLKFKKVKKDKKEEKEGKHEPVQPSAHHSAEPAEAGKAETSEGSGSAPAVPEASASPKQRRSIIRDRGPMYDDPTLPEGWTRKLKQRKSGRSAGKYDVYLINPQGKAFRSKVELIAYFEKVGDTSLDPNDFDFTVTGRGSPSRREQKPPKKPKSPKAPGTGRGRGRPKGSGTTRPKAATSEGVQVKRVLEKSPGKLLVKMPFQTSPGGKAEGGGATTSTQVMVIKRPGRKRKAEADPQAIPKKRGRKPGSVVAAAAAEAKKKAVKESSIRSVQETVLPIKKRKTRETVSIEVKEVVKPLLVSTLGEKSGKGLKTCKSPGRKSKESSPKGRSSSASSPPKKEHHHHHHHSESPKAPVPLLPPLPPPPPEPESSEDPTSPPEPQDLSSSVCKEEKMPRGGSLESDGCPKEPAKTQPAVATAATAAEKYKHRGEGERKDIVSSSMPRPNREEPVDSRTPVTERVS",
+   "ensembl": "ENSG00000169057",
+   "alphafold": {
+    "id": "AF-P51608-F1",
+    "plddt": 56.59,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P51608-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P51608-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P51608-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 11,
+   "bestPdb": "6OGK",
+   "structures": [
+    {
+     "id": "6OGK",
+     "title": "MeCP2 MBD in complex with DNA",
+     "resolution": 1.65,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "6OGJ",
+     "title": "MeCP2 MBD in complex with DNA",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "9RPQ",
+     "title": "MeCP2 MBD domain (P152R) in complex with hydroxymethylated CA repeat DNA",
+     "resolution": 1.92,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "6YWW",
+     "title": "MeCP2 is a microsatellite binding protein that protects CA repeats from nucleosome invasion",
+     "resolution": 2.102,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "MAPT",
+   "uniprot": "P10636",
+   "program": "Neurogenetic",
+   "disease": "FTD / tauopathies / PD risk",
+   "rationale": "Tau aggregation; ASO and antibody programs.",
+   "name": "Microtubule-associated protein tau",
+   "length": 758,
+   "sequence": "MAEPRQEFEVMEDHAGTYGLGDRKDQGGYTMHQDQEGDTDAGLKESPLQTPTEDGSEEPGSETSDAKSTPTAEDVTAPLVDEGAPGKQAAAQPHTEIPEGTTAEEAGIGDTPSLEDEAAGHVTQEPESGKVVQEGFLREPGPPGLSHQLMSGMPGAPLLPEGPREATRQPSGTGPEDTEGGRHAPELLKHQLLGDLHQEGPPLKGAGGKERPGSKEEVDEDRDVDESSPQDSPPSKASPAQDGRPPQTAAREATSIPGFPAEGAIPLPVDFLSKVSTEIPASEPDGPSVGRAKGQDAPLEFTFHVEITPNVQKEQAHSEEHLGRAAFPGAPGEGPEARGPSLGEDTKEADLPEPSEKQPAAAPRGKPVSRVPQLKARMVSKSKDGTGSDDKKAKTSTRSSAKTLKNRPCLSPKHPTPGSSDPLIQPSSPAVCPEPPSSPKYVSSVTSRTGSSGAKEMKLKGADGKTKIATPRGAAPPGQKGQANATRIPAKTPPAPKTPPSSGEPPKSGDRSGYSSPGSPGTPGSRSRTPSLPTPPTREPKKVAVVRTPPKSPSSAKSRLQTAPVPMPDLKNVKSKIGSTENLKHQPGGGKVQIINKKLDLSNVQSKCGSKDNIKHVPGGGSVQIVYKPVDLSKVTSKCGSLGNIHHKPGGGQVEVKSEKLDFKDRVQSKIGSLDNITHVPGGGNKKIETHKLTFRENAKAKTDHGAEIVYKSPVVSGDTSPRHLSNVSSTGSIDMVDSPQLATLADEVSASLAKQGL",
+   "ensembl": "ENSG00000186868",
+   "alphafold": {
+    "id": "AF-P10636-F1",
+    "plddt": 49.22,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P10636-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P10636-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P10636-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 308,
+   "bestPdb": "9GG8",
+   "structures": [
+    {
+     "id": "9GG8",
+     "title": "Crystal structure of 14-3-3 sigma dC - C38N in complex with Tau pS214 peptide and covalent stabilizer 187",
+     "resolution": 1.1,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TW8",
+       "name": "4-(3,4-dihydro-2~{H}-quinoxalin-1-ylsulfonyl)benzaldehyde"
+      }
+     ]
+    },
+    {
+     "id": "9GG7",
+     "title": "Crystal structure of 14-3-3 sigma dC - C38N in complex with Tau pS324 peptide and covalent stabilizer 187",
+     "resolution": 1.24,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TW8",
+       "name": "4-(3,4-dihydro-2~{H}-quinoxalin-1-ylsulfonyl)benzaldehyde"
+      }
+     ]
+    },
+    {
+     "id": "6FAU",
+     "title": "Crystal structure of C-terminal modified Tau peptide-hybrid 4.2e-I with 14-3-3sigma",
+     "resolution": 1.25,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "D3W",
+       "name": "(2~{R})-2-[(~{R})-(2-methoxyphenyl)-phenyl-methyl]pyrrolidine"
+      }
+     ]
+    },
+    {
+     "id": "6FAV",
+     "title": "Crystal structure of C-terminal modified Tau peptide-hybrid 4.2f-I with 14-3-3sigma",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "D3Q",
+       "name": "(2~{R})-2-[(~{R})-(3-methoxyphenyl)-phenyl-methyl]pyrrolidine"
+      }
+     ]
+    },
+    {
+     "id": "6FAW",
+     "title": "Crystal structure of C-terminal modified Tau peptide-hybrid 4.2c-I with 14-3-3sigma",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "D3K",
+       "name": "(2~{R})-2-[(~{R})-[2-(2-methoxyethoxy)phenyl]-phenyl-methyl]pyrrolidine"
+      }
+     ]
+    },
+    {
+     "id": "6FBW",
+     "title": "Crystal structure of C-terminal modified Tau peptide-hybrid 4.2f-II with 14-3-3sigma",
+     "resolution": 1.45,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "D4K",
+       "name": "(2~{R})-2-[(~{S})-(3-methoxyphenyl)-phenyl-methyl]pyrrolidine"
+      }
+     ]
+    },
+    {
+     "id": "9FVG",
+     "title": "Crystal structure of 14-3-3 sigma in complex with Tau pS214 peptide and covalent stabilizer AO184",
+     "resolution": 1.45,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IF3",
+       "name": "1-(3-bromanyl-4-methyl-phenyl)-2-(4-ethylphenyl)imidazole"
+      }
+     ]
+    },
+    {
+     "id": "9FVH",
+     "title": "Crystal structure of 14-3-3 sigma in complex with Tau pS214 peptide and covalent stabilizer JS17",
+     "resolution": 1.45,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1IF5",
+       "name": "2-bromanyl-4-[2-(2-methylphenyl)imidazol-1-yl]benzaldehyde"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "APP",
+   "uniprot": "P05067",
+   "program": "Neurogenetic",
+   "disease": "Alzheimer's disease",
+   "rationale": "Amyloid precursor; antibody therapies approved.",
+   "name": "Amyloid-beta precursor protein",
+   "length": 770,
+   "sequence": "MLPGLALLLLAAWTARALEVPTDGNAGLLAEPQIAMFCGRLNMHMNVQNGKWDSDPSGTKTCIDTKEGILQYCQEVYPELQITNVVEANQPVTIQNWCKRGRKQCKTHPHFVIPYRCLVGEFVSDALLVPDKCKFLHQERMDVCETHLHWHTVAKETCSEKSTNLHDYGMLLPCGIDKFRGVEFVCCPLAEESDNVDSADAEEDDSDVWWGGADTDYADGSEDKVVEVAEEEEVAEVEEEEADDDEDDEDGDEVEEEAEEPYEEATERTTSIATTTTTTTESVEEVVREVCSEQAETGPCRAMISRWYFDVTEGKCAPFFYGGCGGNRNNFDTEEYCMAVCGSAMSQSLLKTTQEPLARDPVKLPTTAASTPDAVDKYLETPGDENEHAHFQKAKERLEAKHRERMSQVMREWEEAERQAKNLPKADKKAVIQHFQEKVESLEQEAANERQQLVETHMARVEAMLNDRRRLALENYITALQAVPPRPRHVFNMLKKYVRAEQKDRQHTLKHFEHVRMVDPKKAAQIRSQVMTHLRVIYERMNQSLSLLYNVPAVAEEIQDEVDELLQKEQNYSDDVLANMISEPRISYGNDALMPSLTETKTTVELLPVNGEFSLDDLQPWHSFGADSVPANTENEVEPVDARPAADRGLTTRPGSGLTNIKTEEISEVKMDAEFRHDSGYEVHHQKLVFFAEDVGSNKGAIIGLMVGGVVIATVIVITLVMLKKKQYTSIHHGVVEVDAAVTPEERHLSKMQQNGYENPTYKFFEQMQN",
+   "ensembl": "ENSG00000142192",
+   "alphafold": {
+    "id": "AF-P05067-F1",
+    "plddt": 67.38,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P05067-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P05067-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P05067-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 265,
+   "bestPdb": "8T82",
+   "structures": [
+    {
+     "id": "8T82",
+     "title": "Racemic mixture of amyloid beta segment 35-MVGGVV-40 forms heterochiral rippled beta-sheet, includes pentafluoropropionic acid",
+     "resolution": 1.1,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "YWK",
+       "name": "pentafluoropropanoic acid"
+      }
+     ]
+    },
+    {
+     "id": "7OW1",
+     "title": "Crystal Structure of TAP01 in complex with amyloid beta peptide",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "FLC",
+       "name": "CITRATE ANION"
+      }
+     ]
+    },
+    {
+     "id": "8T89",
+     "title": "Racemic mixture of amyloid beta segment 16-KLVFFA-21 forms heterochiral rippled beta-sheet",
+     "resolution": 1.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TFA",
+       "name": "trifluoroacetic acid"
+      }
+     ]
+    },
+    {
+     "id": "2IPU",
+     "title": "PFA1 Fab fragment complexed with Abeta 1-8 peptide",
+     "resolution": 1.65,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ACM",
+       "name": "ACETAMIDE"
+      }
+     ]
+    },
+    {
+     "id": "3OVJ",
+     "title": "Structure of an amyloid forming peptide KLVFFA from amyloid beta in complex with orange G",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ORA",
+       "name": "7-hydroxy-8-[(E)-phenyldiazenyl]naphthalene-1,3-disulfonic acid"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "BACE1",
+   "uniprot": "P56817",
+   "program": "Neurogenetic",
+   "disease": "Alzheimer's disease",
+   "rationale": "Protease with deep small-molecule SAR history.",
+   "name": "Beta-secretase 1",
+   "length": 501,
+   "sequence": "MAQALPWLLLWMGAGVLPAHGTQHGIRLPLRSGLGGAPLGLRLPRETDEEPEEPGRRGSFVEMVDNLRGKSGQGYYVEMTVGSPPQTLNILVDTGSSNFAVGAAPHPFLHRYYQRQLSSTYRDLRKGVYVPYTQGKWEGELGTDLVSIPHGPNVTVRANIAAITESDKFFINGSNWEGILGLAYAEIARPDDSLEPFFDSLVKQTHVPNLFSLQLCGAGFPLNQSEVLASVGGSMIIGGIDHSLYTGSLWYTPIRREWYYEVIIVRVEINGQDLKMDCKEYNYDKSIVDSGTTNLRLPKKVFEAAVKSIKAASSTEKFPDGFWLGEQLVCWQAGTTPWNIFPVISLYLMGEVTNQSFRITILPQQYLRPVEDVATSQDDCYKFAISQSSTGTVMGAVIMEGFYVVFDRARKRIGFAVSACHVHDEFRTAAVEGPFVTLDMEDCGYNIPQTDESTLMTIAYVMAAICALFMLPLCLMVCQWRCLRCLRQQHDDFADDISLLK",
+   "ensembl": "ENSG00000186318",
+   "alphafold": {
+    "id": "AF-P56817-F1",
+    "plddt": 87.5,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P56817-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P56817-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P56817-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 431,
+   "bestPdb": "7MYI",
+   "structures": [
+    {
+     "id": "7MYI",
+     "title": "BACE-1 in complex with compound #6",
+     "resolution": 1.25,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ZQS",
+       "name": "(4aR,7aR)-6-(pyrimidin-2-yl)-7a-(thiophen-2-yl)-4,4a,5,6,7,7a-hexahydropyrrolo[3,4-d][1,3]thiazin-2-amine"
+      }
+     ]
+    },
+    {
+     "id": "6UWP",
+     "title": "BACE-1 in complex with compound #32",
+     "resolution": 1.29,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "QKA",
+       "name": "(1R,2R)-2-[(4aR,7aR)-2-amino-6-(pyrimidin-2-yl)-4a,5,6,7-tetrahydropyrrolo[3,4-d][1,3]thiazin-7a(4H)-yl]-N-{[(1R,2R)-2-methylcyclopropyl]methyl}cyclopropane-1-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6EQM",
+     "title": "Crystal Structure of Human BACE-1 in Complex with CNP520",
+     "resolution": 1.35,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BUH",
+       "name": "~{N}-[6-[(3~{R},6~{R})-5-azanyl-3,6-dimethyl-6-(trifluoromethyl)-2~{H}-1,4-oxazin-3-yl]-5-fluoranyl-pyridin-2-yl]-3-chloranyl-5-(trifluoromethyl)pyridine-2-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "4L7G",
+     "title": "Diethylaminosulfur Trifluoride-Mediated Intramolecular Cyclization of 2-hydroxy-benzylureas to Fused Bicyclic Aminooxazoline Compounds and Evaluation of Their Biochemical Activity Against Beta-Secretase-1 (BACE1)",
+     "resolution": 1.38,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "1W0",
+       "name": "(3aS,7aR)-7a-[3-(pyrimidin-5-yl)phenyl]-3a,6,7,7a-tetrahydro-4H-pyrano[4,3-d][1,3]oxazol-2-amine"
+      }
+     ]
+    },
+    {
+     "id": "6EJ2",
+     "title": "BACE1 compound 28",
+     "resolution": 1.46,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "B7E",
+       "name": "compound 28"
+      }
+     ]
+    },
+    {
+     "id": "6UWV",
+     "title": "BACE-1 in complex with compound #34",
+     "resolution": 1.47,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "QK7",
+       "name": "(4aR,7aR)-7a-[(1R,2R)-2-(2-{[(1R,2R)-2-methylcyclopropyl]methoxy}propan-2-yl)cyclopropyl]-6-(pyrimidin-2-yl)-4,4a,5,6,7,7a-hexahydropyrrolo[3,4-d][1,3]thiazin-2-amine"
+      }
+     ]
+    },
+    {
+     "id": "3VF3",
+     "title": "Crystal Structure of Human Beta Secretase in Complex with NVP-BQQ711",
+     "resolution": 1.48,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "0GS",
+       "name": "(3S,4S,5R)-3-(4-amino-3-bromo-5-fluorobenzyl)-5-{[3-(1,1-difluoroethyl)benzyl]amino}tetrahydro-2H-thiopyran-4-ol 1,1-dioxide"
+      }
+     ]
+    },
+    {
+     "id": "5HDZ",
+     "title": "BACE-1 in complex with (7aR)-7a-(5-cyanothiophen-2-yl)-6-(5-fluoro-4-methyl-6-(methylthio)pyrimidin-2-yl)-3-methyl-4-oxooctahydro-2H-pyrrolo[3,4-d]pyrimidin-2-iminium",
+     "resolution": 1.49,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "954",
+       "name": "5-{(2E,4aR,7aR)-6-[5-fluoro-4-methyl-6-(methylsulfanyl)pyrimidin-2-yl]-2-imino-3-methyl-4-oxooctahydro-7aH-pyrrolo[3,4-d]pyrimidin-7a-yl}thiophene-2-carbonitrile"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "PSEN1",
+   "uniprot": "P49768",
+   "program": "Neurogenetic",
+   "disease": "Early-onset Alzheimer's",
+   "rationale": "Gamma-secretase catalytic subunit.",
+   "name": "Presenilin-1",
+   "length": 467,
+   "sequence": "MTELPAPLSYFQNAQMSEDNHLSNTVRSQNDNRERQEHNDRRSLGHPEPLSNGRPQGNSRQVVEQDEEEDEELTLKYGAKHVIMLFVPVTLCMVVVVATIKSVSFYTRKDGQLIYTPFTEDTETVGQRALHSILNAAIMISVIVVMTILLVVLYKYRCYKVIHAWLIISSLLLLFFFSFIYLGEVFKTYNVAVDYITVALLIWNFGVVGMISIHWKGPLRLQQAYLIMISALMALVFIKYLPEWTAWLILAVISVYDLVAVLCPKGPLRMLVETAQERNETLFPALIYSSTMVWLVNMAEGDPEAQRRVSKNSKYNAESTERESQDTVAENDDGGFSEEWEAQRDSHLGPHRSTPESRAAVQELSSSILAGEDPEERGVKLGLGDFIFYSVLVGKASATASGDWNTTIACFVAILIGLCLTLLLLAIFKKALPALPISITFGLVFYFATDYLVQPFMDQLAFHQFYI",
+   "ensembl": "ENSG00000080815",
+   "alphafold": {
+    "id": "AF-P49768-F1",
+    "plddt": 72.12,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P49768-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P49768-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P49768-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 27,
+   "bestPdb": "8KCS",
+   "structures": [
+    {
+     "id": "8KCS",
+     "title": "Cryo-EM structure of human gamma-secretase in complex with BMS906024",
+     "resolution": 2.4,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "Q70",
+       "name": "Osugacestat"
+      },
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    },
+    {
+     "id": "6IYC",
+     "title": "Recognition of the Amyloid Precursor Protein by Human gamma-secretase",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    },
+    {
+     "id": "7D8X",
+     "title": "CryoEM structure of human gamma-secretase in complex with E2012 and L685458",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "GZR",
+       "name": "1-[(1S)-1-(4-fluorophenyl)ethyl]-3-[[3-methoxy-4-(4-methylimidazol-1-yl)phenyl]methylidene]piperidin-2-one"
+      },
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      },
+      {
+       "id": "FTO",
+       "name": "~{tert}-butyl ~{N}-[(2~{S},3~{R},5~{R})-6-[[(2~{S})-1-[[(2~{S})-1-azanyl-1-oxidanylidene-3-phenyl-propan-2-yl]amino]-4-methyl-1-oxidanylidene-pentan-2-yl]amino]-3-oxidanyl-6-oxidanylidene-1-phenyl-5-(phenylmethyl)hexan-2-yl]carbamate"
+      },
+      {
+       "id": "PTY",
+       "name": "PHOSPHATIDYLETHANOLAMINE"
+      }
+     ]
+    },
+    {
+     "id": "8K8E",
+     "title": "Human gamma-secretase in complex with a substrate mimetic",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    },
+    {
+     "id": "8KCT",
+     "title": "Cryo-EM structure of human gamma-secretase in complex with Nirogacestat",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      },
+      {
+       "id": "O6U",
+       "name": "Nirogacestat"
+      }
+     ]
+    },
+    {
+     "id": "6IDF",
+     "title": "Cryo-EM structure of gamma secretase in complex with a Notch fragment",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    },
+    {
+     "id": "8KCU",
+     "title": "Cryo-EM structure of human gamma-secretase in complex with MK-0752",
+     "resolution": 2.7,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "OL9",
+       "name": "MK-0752"
+      },
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    },
+    {
+     "id": "8KCO",
+     "title": "Cryo-EM structure of human gamma-secretase in complex with RO4929097",
+     "resolution": 2.8,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "PC1",
+       "name": "1,2-DIACYL-SN-GLYCERO-3-PHOSPHOCHOLINE"
+      },
+      {
+       "id": "N60",
+       "name": "2,2-dimethyl-N-[(7S)-6-oxo-5,7-dihydrobenzo[d][1]benzazepin-7-yl]-N'-(2,2,3,3,3-pentafluoropropyl)propanediamide"
+      },
+      {
+       "id": "CLR",
+       "name": "CHOLESTEROL"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "ATXN3",
+   "uniprot": "P54252",
+   "program": "Neurogenetic",
+   "disease": "Spinocerebellar ataxia 3",
+   "rationale": "PolyQ deubiquitinase.",
+   "name": "Ataxin-3",
+   "length": 361,
+   "sequence": "MESIFHEKQEGSLCAQHCLNNLLQGEYFSPVELSSIAHQLDEEERMRMAEGGVTSEDYRTFLQQPSGNMDDSGFFSIQVISNALKVWGLELILFNSPEYQRLRIDPINERSFICNYKEHWFTVRKLGKQWFNLNSLLTGPELISDTYLALFLAQLQQEGYSIFVVKGDLPDCEADQLLQMIRVQQMHRPKLIGEELAQLKEQRVHKTDLERVLEANDGSGMLDEDEEDLQRALALSRQEIDMEDEEADLRRAIQLSMQGSSRNISQDMTQTSGTNLTSEELRKRREAYFEKQQQKQQQQQQQQQQGDLSGQSSHPCERPATSSGALGSDLGDAMSEEDMLQAAVTMSLETVRNDLKTEGKK",
+   "ensembl": "ENSG00000066427",
+   "alphafold": {
+    "id": "AF-P54252-F1",
+    "plddt": 75.88,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P54252-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P54252-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P54252-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 7,
+   "bestPdb": "4YS9",
+   "structures": [
+    {
+     "id": "4YS9",
+     "title": "Ataxin-3 Carboxy-Terminal Region - Crystal C1 (tetragonal)",
+     "resolution": 2.0,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "4WTH",
+     "title": "Ataxin-3 Carboxy Terminal Region - Crystal C2 (triclinic)",
+     "resolution": 2.25,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "1YZB",
+     "title": "Solution structure of the Josephin domain of Ataxin-3",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    },
+    {
+     "id": "2AGA",
+     "title": "De-ubiquitinating function of ataxin-3: insights from the solution structure of the Josephin domain",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "DMD",
+   "uniprot": "P11532",
+   "program": "Neurogenetic",
+   "disease": "Duchenne muscular dystrophy",
+   "rationale": "Exon-skipping ASOs and micro-dystrophin gene therapy.",
+   "name": "Dystrophin",
+   "length": 3685,
+   "sequence": "MLWWEEVEDCYEREDVQKKTFTKWVNAQFSKFGKQHIENLFSDLQDGRRLLDLLEGLTGQKLPKEKGSTRVHALNNVNKALRVLQNNNVDLVNIGSTDIVDGNHKLTLGLIWNIILHWQVKNVMKNIMAGLQQTNSEKILLSWVRQSTRNYPQVNVINFTTSWSDGLALNALIHSHRPDLFDWNSVVCQQSATQRLEHAFNIARYQLGIEKLLDPEDVDTTYPDKKSILMYITSLFQVLPQQVSIEAIQEVEMLPRPPKVTKEEHFQLHHQMHYSQQITVSLAQGYERTSSPKPRFKSYAYTQAAYVTTSDPTRSPFPSQHLEAPEDKSFGSSLMESEVNLDRYQTALEEVLSWLLSAEDTLQAQGEISNDVEVVKDQFHTHEGYMMDLTAHQGRVGNILQLGSKLIGTGKLSEDEETEVQEQMNLLNSRWECLRVASMEKQSNLHRVLMDLQNQKLKELNDWLTKTEERTRKMEEEPLGPDLEDLKRQVQQHKVLQEDLEQEQVRVNSLTHMVVVVDESSGDHATAALEEQLKVLGDRWANICRWTEDRWVLLQDILLKWQRLTEEQCLFSAWLSEKEDAVNKIHTTGFKDQNEMLSSLQKLAVLKADLEKKKQSMGKLYSLKQDLLSTLKNKSVTQKTEAWLDNFARCWDNLVQKLEKSTAQISQAVTTTQPSLTQTTVMETVTTVTTREQILVKHAQEELPPPPPQKKRQITVDSEIRKRLDVDITELHSWITRSEAVLQSPEFAIFRKEGNFSDLKEKVNAIEREKAEKFRKLQDASRSAQALVEQMVNEGVNADSIKQASEQLNSRWIEFCQLLSERLNWLEYQNNIIAFYNQLQQLEQMTTTAENWLKIQPTTPSEPTAIKSQLKICKDEVNRLSDLQPQIERLKIQSIALKEKGQGPMFLDADFVAFTNHFKQVFSDVQAREKELQTIFDTLPPMRYQETMSAIRTWVQQSETKLSIPQLSVTDYEIMEQRLGELQALQSSLQEQQSGLYYLSTTVKEMSKKAPSEISRKYQSEFEEIEGRWKKLSSQLVEHCQKLEEQMNKLRKIQNHIQTLKKWMAEVDVFLKEEWPALGDSEILKKQLKQCRLLVSDIQTIQPSLNSVNEGGQKIKNEAEPEFASRLETELKELNTQWDHMCQQVYARKEALKGGLEKTVSLQKDLSEMHEWMTQAEEEYLERDFEYKTPDELQKAVEEMKRAKEEAQQKEAKVKLLTESVNSVIAQAPPVAQEALKKELETLTTNYQWLCTRLNGKCKTLEEVWACWHELLSYLEKANKWLNEVEFKLKTTENIPGGAEEISEVLDSLENLMRHSEDNPNQIRILAQTLTDGGVMDELINEELETFNSRWRELHEEAVRRQKLLEQSIQSAQETEKSLHLIQESLTFIDKQLAAYIADKVDAAQMPQEAQKIQSDLTSHEISLEEMKKHNQGKEAAQRVLSQIDVAQKKLQDVSMKFRLFQKPANFEQRLQESKMILDEVKMHLPALETKSVEQEVVQSQLNHCVNLYKSLSEVKSEVEMVIKTGRQIVQKKQTENPKELDERVTALKLHYNELGAKVTERKQQLEKCLKLSRKMRKEMNVLTEWLAATDMELTKRSAVEGMPSNLDSEVAWGKATQKEIEKQKVHLKSITEVGEALKTVLGKKETLVEDKLSLLNSNWIAVTSRAEEWLNLLLEYQKHMETFDQNVDHITKWIIQADTLLDESEKKKPQQKEDVLKRLKAELNDIRPKVDSTRDQAANLMANRGDHCRKLVEPQISELNHRFAAISHRIKTGKASIPLKELEQFNSDIQKLLEPLEAEIQQGVNLKEEDFNKDMNEDNEGTVKELLQRGDNLQQRITDERKREEIKIKQQLLQTKHNALKDLRSQRRKKALEISHQWYQYKRQADDLLKCLDDIEKKLASLPEPRDERKIKEIDRELQKKKEELNAVRRQAEGLSEDGAAMAVEPTQIQLSKRWREIESKFAQFRRLNFAQIHTVREETMMVMTEDMPLEISYVPSTYLTEITHVSQALLEVEQLLNAPDLCAKDFEDLFKQEESLKNIKDSLQQSSGRIDIIHSKKTAALQSATPVERVKLQEALSQLDFQWEKVNKMYKDRQGRFDRSVEKWRRFHYDIKIFNQWLTEAEQFLRKTQIPENWEHAKYKWYLKELQDGIGQRQTVVRTLNATGEEIIQQSSKTDASILQEKLGSLNLRWQEVCKQLSDRKKRLEEQKNILSEFQRDLNEFVLWLEEADNIASIPLEPGKEQQLKEKLEQVKLLVEELPLRQGILKQLNETGGPVLVSAPISPEEQDKLENKLKQTNLQWIKVSRALPEKQGEIEAQIKDLGQLEKKLEDLEEQLNHLLLWLSPIRNQLEIYNQPNQEGPFDVKETEIAVQAKQPDVEEILSKGQHLYKEKPATQPVKRKLEDLSSEWKAVNRLLQELRAKQPDLAPGLTTIGASPTQTVTLVTQPVVTKETAISKLEMPSSLMLEVPALADFNRAWTELTDWLSLLDQVIKSQRVMVGDLEDINEMIIKQKATMQDLEQRRPQLEELITAAQNLKNKTSNQEARTIITDRIERIQNQWDEVQEHLQNRRQQLNEMLKDSTQWLEAKEEAEQVLGQARAKLESWKEGPYTVDAIQKKITETKQLAKDLRQWQTNVDVANDLALKLLRDYSADDTRKVHMITENINASWRSIHKRVSEREAALEETHRLLQQFPLDLEKFLAWLTEAETTANVLQDATRKERLLEDSKGVKELMKQWQDLQGEIEAHTDVYHNLDENSQKILRSLEGSDDAVLLQRRLDNMNFKWSELRKKSLNIRSHLEASSDQWKRLHLSLQELLVWLQLKDDELSRQAPIGGDFPAVQKQNDVHRAFKRELKTKEPVIMSTLETVRIFLTEQPLEGLEKLYQEPRELPPEERAQNVTRLLRKQAEEVNTEWEKLNLHSADWQRKIDETLERLRELQEATDELDLKLRQAEVIKGSWQPVGDLLIDSLQDHLEKVKALRGEIAPLKENVSHVNDLARQLTTLGIQLSPYNLSTLEDLNTRWKLLQVAVEDRVRQLHEAHRDFGPASQHFLSTSVQGPWERAISPNKVPYYINHETQTTCWDHPKMTELYQSLADLNNVRFSAYRTAMKLRRLQKALCLDLLSLSAACDALDQHNLKQNDQPMDILQIINCLTTIYDRLEQEHNNLVNVPLCVDMCLNWLLNVYDTGRTGRIRVLSFKTGIISLCKAHLEDKYRYLFKQVASSTGFCDQRRLGLLLHDSIQIPRQLGEVASFGGSNIEPSVRSCFQFANNKPEIEAALFLDWMRLEPQSMVWLPVLHRVAAAETAKHQAKCNICKECPIIGFRYRSLKHFNYDICQSCFFSGRVAKGHKMHYPMVEYCTPTTSGEDVRDFAKVLKNKFRTKRYFAKHPRMGYLPVQTVLEGDNMETPVTLINFWPVDSAPASSPQLSHDDTHSRIEHYASRLAEMENSNGSYLNDSISPNESIDDEHLLIQHYCQSLNQDSPLSQPRSPAQILISLESEERGELERILADLEEENRNLQAEYDRLKQQHEHKGLSPLPSPPEMMPTSPQSPRDAELIAEAKLLRQHKGRLEARMQILEDHNKQLESQLHRLRQLLEQPQAEAKVNGTTVSSPSTSLQRSDSSQPMLLRVVGSQTSDSMGEEDLLSPPQDTSTGLEEVMEQLNNSFPSSRGRNTPGKPMREDTM",
+   "ensembl": "ENSG00000198947",
+   "alphafold": {
+    "id": "AF-P11532-9-F1",
+    "plddt": 76.38,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P11532-9-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P11532-9-F1-model_v6.cif",
+    "missenseUrl": null
+   },
+   "pdbCount": 6,
+   "bestPdb": "9D58",
+   "structures": [
+    {
+     "id": "9D58",
+     "title": "Human Dystrophin tandem calponin homology actin-binding domain crystallized in a closed-state conformation",
+     "resolution": 1.94,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "1EG3",
+     "title": "STRUCTURE OF A DYSTROPHIN WW DOMAIN FRAGMENT IN COMPLEX WITH A BETA-DYSTROGLYCAN PEPTIDE",
+     "resolution": 2.0,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "1EG4",
+     "title": "STRUCTURE OF A DYSTROPHIN WW DOMAIN FRAGMENT IN COMPLEX WITH A BETA-DYSTROGLYCAN PEPTIDE",
+     "resolution": 2.0,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "9EC1",
+     "title": "The Structure of Human Dystrophin Spectrin Repeat 24",
+     "resolution": 2.14,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "COL1A1",
+   "uniprot": "P02452",
+   "program": "Shriners Children's",
+   "disease": "Osteogenesis imperfecta",
+   "rationale": "Type I collagen alpha-1; majority of OI cases.",
+   "name": "Collagen alpha-1(I) chain",
+   "length": 1464,
+   "sequence": "MFSFVDLRLLLLLAATALLTHGQEEGQVEGQDEDIPPITCVQNGLRYHDRDVWKPEPCRICVCDNGKVLCDDVICDETKNCPGAEVPEGECCPVCPDGSESPTDQETTGVEGPKGDTGPRGPRGPAGPPGRDGIPGQPGLPGPPGPPGPPGPPGLGGNFAPQLSYGYDEKSTGGISVPGPMGPSGPRGLPGPPGAPGPQGFQGPPGEPGEPGASGPMGPRGPPGPPGKNGDDGEAGKPGRPGERGPPGPQGARGLPGTAGLPGMKGHRGFSGLDGAKGDAGPAGPKGEPGSPGENGAPGQMGPRGLPGERGRPGAPGPAGARGNDGATGAAGPPGPTGPAGPPGFPGAVGAKGEAGPQGPRGSEGPQGVRGEPGPPGPAGAAGPAGNPGADGQPGAKGANGAPGIAGAPGFPGARGPSGPQGPGGPPGPKGNSGEPGAPGSKGDTGAKGEPGPVGVQGPPGPAGEEGKRGARGEPGPTGLPGPPGERGGPGSRGFPGADGVAGPKGPAGERGSPGPAGPKGSPGEAGRPGEAGLPGAKGLTGSPGSPGPDGKTGPPGPAGQDGRPGPPGPPGARGQAGVMGFPGPKGAAGEPGKAGERGVPGPPGAVGPAGKDGEAGAQGPPGPAGPAGERGEQGPAGSPGFQGLPGPAGPPGEAGKPGEQGVPGDLGAPGPSGARGERGFPGERGVQGPPGPAGPRGANGAPGNDGAKGDAGAPGAPGSQGAPGLQGMPGERGAAGLPGPKGDRGDAGPKGADGSPGKDGVRGLTGPIGPPGPAGAPGDKGESGPSGPAGPTGARGAPGDRGEPGPPGPAGFAGPPGADGQPGAKGEPGDAGAKGDAGPPGPAGPAGPPGPIGNVGAPGAKGARGSAGPPGATGFPGAAGRVGPPGPSGNAGPPGPPGPAGKEGGKGPRGETGPAGRPGEVGPPGPPGPAGEKGSPGADGPAGAPGTPGPQGIAGQRGVVGLPGQRGERGFPGLPGPSGEPGKQGPSGASGERGPPGPMGPPGLAGPPGESGREGAPGAEGSPGRDGSPGAKGDRGETGPAGPPGAPGAPGAPGPVGPAGKSGDRGETGPAGPAGPVGPVGARGPAGPQGPRGDKGETGEQGDRGIKGHRGFSGLQGPPGPPGSPGEQGPSGASGPAGPRGPPGSAGAPGKDGLNGLPGPIGPPGPRGRTGDAGPVGPPGPPGPPGPPGPPSAGFDFSFLPQPPQEKAHDGGRYYRADDANVVRDRDLEVDTTLKSLSQQIENIRSPEGSRKNPARTCRDLKMCHSDWKSGEYWIDPNQGCNLDAIKVFCNMETGETCVYPTQPSVAQKNWYISKNPKDKRHVWFGESMTDGFQFEYGGQGSDPADVAIQLTFLRLMSTEASQNITYHCKNSVAYMDQQTGNLKKALLLQGSNEIEIRAEGNSRFTYSVTVDGCTSHTGAWGKTVIEYKTTKTSRLPIIDVAPLDVGAPDQEFGFDVGPVCFL",
+   "ensembl": "ENSG00000108821",
+   "alphafold": {
+    "id": "AF-P02452-F1",
+    "plddt": 52.72,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P02452-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P02452-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P02452-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 14,
+   "bestPdb": "7E7B",
+   "structures": [
+    {
+     "id": "7E7B",
+     "title": "Cryo-EM structure of the SARS-CoV-2 furin site mutant S-Trimer from a subunit vaccine candidate",
+     "resolution": 2.6,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "VCG",
+       "name": "2-hydroxyethyl 2-deoxy-3,5-bis-O-(2-hydroxyethyl)-6-O-(2-{[(9E)-octadec-9-enoyl]oxy}ethyl)-alpha-L-xylo-hexofuranoside"
+      },
+      {
+       "id": "ELA",
+       "name": "Elaidic acid"
+      }
+     ]
+    },
+    {
+     "id": "7E7D",
+     "title": "Cryo-EM structure of the SARS-CoV-2 wild-type S-Trimer from a subunit vaccine candidate",
+     "resolution": 3.2,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "ELA",
+       "name": "Elaidic acid"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "COL1A2",
+   "uniprot": "P08123",
+   "program": "Shriners Children's",
+   "disease": "Osteogenesis imperfecta",
+   "rationale": "Type I collagen alpha-2.",
+   "name": "Collagen alpha-2(I) chain",
+   "length": 1366,
+   "sequence": "MLSFVDTRTLLLLAVTLCLATCQSLQEETVRKGPAGDRGPRGERGPPGPPGRDGEDGPTGPPGPPGPPGPPGLGGNFAAQYDGKGVGLGPGPMGLMGPRGPPGAAGAPGPQGFQGPAGEPGEPGQTGPAGARGPAGPPGKAGEDGHPGKPGRPGERGVVGPQGARGFPGTPGLPGFKGIRGHNGLDGLKGQPGAPGVKGEPGAPGENGTPGQTGARGLPGERGRVGAPGPAGARGSDGSVGPVGPAGPIGSAGPPGFPGAPGPKGEIGAVGNAGPAGPAGPRGEVGLPGLSGPVGPPGNPGANGLTGAKGAAGLPGVAGAPGLPGPRGIPGPVGAAGATGARGLVGEPGPAGSKGESGNKGEPGSAGPQGPPGPSGEEGKRGPNGEAGSAGPPGPPGLRGSPGSRGLPGADGRAGVMGPPGSRGASGPAGVRGPNGDAGRPGEPGLMGPRGLPGSPGNIGPAGKEGPVGLPGIDGRPGPIGPAGARGEPGNIGFPGPKGPTGDPGKNGDKGHAGLAGARGAPGPDGNNGAQGPPGPQGVQGGKGEQGPPGPPGFQGLPGPSGPAGEVGKPGERGLHGEFGLPGPAGPRGERGPPGESGAAGPTGPIGSRGPSGPPGPDGNKGEPGVVGAVGTAGPSGPSGLPGERGAAGIPGGKGEKGEPGLRGEIGNPGRDGARGAPGAVGAPGPAGATGDRGEAGAAGPAGPAGPRGSPGERGEVGPAGPNGFAGPAGAAGQPGAKGERGAKGPKGENGVVGPTGPVGAAGPAGPNGPPGPAGSRGDGGPPGMTGFPGAAGRTGPPGPSGISGPPGPPGPAGKEGLRGPRGDQGPVGRTGEVGAVGPPGFAGEKGPSGEAGTAGPPGTPGPQGLLGAPGILGLPGSRGERGLPGVAGAVGEPGPLGIAGPPGARGPPGAVGSPGVNGAPGEAGRDGNPGNDGPPGRDGQPGHKGERGYPGNIGPVGAAGAPGPHGPVGPAGKHGNRGETGPSGPVGPAGAVGPRGPSGPQGIRGDKGEPGEKGPRGLPGLKGHNGLQGLPGIAGHHGDQGAPGSVGPAGPRGPAGPSGPAGKDGRTGHPGTVGPAGIRGPQGHQGPAGPPGPPGPPGPPGVSGGGYDFGYDGDFYRADQPRSAPSLRPKDYEVDATLKSLNNQIETLLTPEGSRKNPARTCRDLRLSHPEWSSGYYWIDPNQGCTMDAIKVYCDFSTGETCIRAQPENIPAKNWYRSSKDKKHVWLGETINAGSQFEYNVEGVTSKEMATQLAFMRLLANYASQNITYHCKNSIAYMDEETGNLKKAVILQGSNDVELVAEGNSRFTYTVLVDGCSKKTNEWGKTIIEYKTNKPSRLPFLDIAPLDIGGADQEFFVDIGPVCFK",
+   "ensembl": "ENSG00000164692",
+   "alphafold": {
+    "id": "AF-P08123-F1",
+    "plddt": 53.66,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P08123-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P08123-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P08123-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 5,
+   "bestPdb": "5CTD",
+   "structures": [
+    {
+     "id": "5CTD",
+     "title": "Crystal structure of the type IX collagen NC2 hetero-trimerization domain with a guest fragment a2a1a1 of type I collagen",
+     "resolution": 1.5991,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "8YV3",
+     "title": "The heterotrimer structure of peptides derived from human collagen type I",
+     "resolution": 1.68,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "5CTI",
+     "title": "Crystal structure of the type IX collagen NC2 hetero-trimerization domain with a guest fragment a2a1a1 of type I collagen (native form)",
+     "resolution": 1.8994,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "6JEC",
+     "title": "Structure of a triple-helix region of human collagen type II",
+     "resolution": 2.049,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "SOST",
+   "uniprot": "Q9BQB4",
+   "program": "Shriners Children's",
+   "disease": "Osteogenesis imperfecta / bone mass",
+   "rationale": "Sclerostin; setrusumab in OI trials, romosozumab approved.",
+   "name": "Sclerostin",
+   "length": 213,
+   "sequence": "MQLPLALCLVCLLVHTAFRVVEGQGWQAFKNDATEIIPELGEYPEPPPELENNKTMNRAENGGRPPHHPFETKDVSEYSCRELHFTRYVTDGPCRSAKPVTELVCSGQCGPARLLPNAIGRGKWWRPSGPDFRCIPDRYRAQRVQLLCPGGEAPRARKVRLVASCKCKRLTRFHNQSELKDFGTEAARPQKGRKPRPRARSAKANQAELENAY",
+   "ensembl": "ENSG00000167941",
+   "alphafold": {
+    "id": "AF-Q9BQB4-F1",
+    "plddt": 70.81,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BQB4-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BQB4-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9BQB4-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 3,
+   "bestPdb": "3SOV",
+   "structures": [
+    {
+     "id": "3SOV",
+     "title": "The structure of a beta propeller domain in complex with peptide S",
+     "resolution": 1.27,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "6L6R",
+     "title": "Crystal structure of LRP6 E1E2-SOST complex",
+     "resolution": 3.8,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "2K8P",
+     "title": "Characterisation of the structural features and interactions of sclerostin: molecular insight into a key regulator of Wnt-mediated bone formation",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "TNFSF11",
+   "uniprot": "O14788",
+   "program": "Shriners Children's",
+   "disease": "Bone resorption / OI",
+   "rationale": "RANKL; denosumab target.",
+   "name": "Tumor necrosis factor ligand superfamily member 11",
+   "length": 317,
+   "sequence": "MRRASRDYTKYLRGSEEMGGGPGAPHEGPLHAPPPPAPHQPPAASRSMFVALLGLGLGQVVCSVALFFYFRAQMDPNRISEDGTHCIYRILRLHENADFQDTTLESQDTKLIPDSCRRIKQAFQGAVQKELQHIVGSQHIRAEKAMVDGSWLDLAKRSKLEAQPFAHLTINATDIPSGSHKVSLSSWYHDRGWAKISNMTFSNGKLIVNQDGFYYLYANICFRHHETSGDLATEYLQLMVYVTKTSIKIPSSHTLMKGGSTKYWSGNSEFHFYSINVGGFFKLRSGEEISIEVSNPSLLDPDQDATYFGAFKVRDID",
+   "ensembl": "ENSG00000120659",
+   "alphafold": {
+    "id": "AF-O14788-F1",
+    "plddt": 79.19,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-O14788-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-O14788-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-O14788-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 2,
+   "bestPdb": "3URF",
+   "structures": [
+    {
+     "id": "3URF",
+     "title": "Human RANKL/OPG complex",
+     "resolution": 2.701,
+     "method": "X-ray",
+     "ligands": []
+    },
+    {
+     "id": "5BNQ",
+     "title": "Crystal structure of hRANKL-mRANK complex",
+     "resolution": 2.8,
+     "method": "X-ray",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "FGFR3",
+   "uniprot": "P22607",
+   "program": "Shriners Children's",
+   "disease": "Achondroplasia",
+   "rationale": "Gain-of-function FGFR3; infigratinib in trials.",
+   "name": "Fibroblast growth factor receptor 3",
+   "length": 806,
+   "sequence": "MGAPACALALCVAVAIVAGASSESLGTEQRVVGRAAEVPGPEPGQQEQLVFGSGDAVELSCPPPGGGPMGPTVWVKDGTGLVPSERVLVGPQRLQVLNASHEDSGAYSCRQRLTQRVLCHFSVRVTDAPSSGDDEDGEDEAEDTGVDTGAPYWTRPERMDKKLLAVPAANTVRFRCPAAGNPTPSISWLKNGREFRGEHRIGGIKLRHQQWSLVMESVVPSDRGNYTCVVENKFGSIRQTYTLDVLERSPHRPILQAGLPANQTAVLGSDVEFHCKVYSDAQPHIQWLKHVEVNGSKVGPDGTPYVTVLKTAGANTTDKELEVLSLHNVTFEDAGEYTCLAGNSIGFSHHSAWLVVLPAEEELVEADEAGSVYAGILSYGVGFFLFILVVAAVTLCRLRSPPKKGLGSPTVHKISRFPLKRQVSLESNASMSSNTPLVRIARLSSGEGPTLANVSELELPADPKWELSRARLTLGKPLGEGCFGQVVMAEAIGIDKDRAAKPVTVAVKMLKDDATDKDLSDLVSEMEMMKMIGKHKNIINLLGACTQGGPLYVLVEYAAKGNLREFLRARRPPGLDYSFDTCKPPEEQLTFKDLVSCAYQVARGMEYLASQKCIHRDLAARNVLVTEDNVMKIADFGLARDVHNLDYYKKTTNGRLPVKWMAPEALFDRVYTHQSDVWSFGVLLWEIFTLGGSPYPGIPVEELFKLLKEGHRMDKPANCTHDLYMIMRECWHAAPSQRPTFKQLVEDLDRVLTVTSTDEYLDLSAPFEQYSPGGQDTPSSSSSGDDSVFAHDLLPPAPPSSGGSRT",
+   "ensembl": "ENSG00000068078",
+   "alphafold": {
+    "id": "AF-P22607-F1",
+    "plddt": 74.19,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P22607-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P22607-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P22607-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 16,
+   "bestPdb": "9KFU",
+   "structures": [
+    {
+     "id": "9KFU",
+     "title": "Human FGFR3 in complex with inhibitor F1",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1L5T",
+       "name": "(7~{S})-2-azanyl-7-(4-fluorophenyl)-6,7-dihydro-4~{H}-[1,3]thiazolo[4,5-b]pyridin-5-one"
+      }
+     ]
+    },
+    {
+     "id": "9D1X",
+     "title": "Crystal structure of FGFR3 bound to indazole inhibitor",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1A6M",
+       "name": "(3P)-N-(2,6-dimethylphenyl)-6-methoxy-3-(1-methyl-1H-pyrazol-4-yl)-1H-indazole-5-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "8UDU",
+     "title": "The X-RAY co-crystal structure of human FGFR3 and Compound 17",
+     "resolution": 1.737,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "WIQ",
+       "name": "3-[(6-chloro-1-cyclopropyl-1H-benzimidazol-5-yl)ethynyl]-1-[(3S,5S)-5-(methoxymethyl)-1-(prop-2-enoyl)pyrrolidin-3-yl]-5-(methylamino)-1H-pyrazole-4-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "9VMB",
+     "title": "The X-RAY co-crystal structure of human FGFR3 and Compound 10t",
+     "resolution": 1.97,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1ESX",
+       "name": "~{N}-[1-methyl-3-[2-[[3-methyl-1-(2-morpholin-4-ylethyl)pyrazol-4-yl]amino]pyrimidin-4-yl]indol-6-yl]propanamide"
+      }
+     ]
+    },
+    {
+     "id": "6PNX",
+     "title": "Crystal Structure of an Asymmetric Dimer of FGF Receptor 3 Kinases Trapped in A-loop Tyrosine Transphosphorylation Reaction",
+     "resolution": 2.199,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ACP",
+       "name": "PHOSPHOMETHYLPHOSPHONIC ACID ADENYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "4K33",
+     "title": "Crystal Structure of FGF Receptor 3 (FGFR3) Kinase Domain Harboring the K650E Mutation, a Gain-of-Function Mutation Responsible for Thanatophoric Dysplasia Type II and Spermatocytic Seminoma",
+     "resolution": 2.3405,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "ACP",
+       "name": "PHOSPHOMETHYLPHOSPHONIC ACID ADENYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "8UDV",
+     "title": "The X-RAY co-crystal structure of human FGFR3 V555M and Compound 17",
+     "resolution": 2.348,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "WIQ",
+       "name": "3-[(6-chloro-1-cyclopropyl-1H-benzimidazol-5-yl)ethynyl]-1-[(3S,5S)-5-(methoxymethyl)-1-(prop-2-enoyl)pyrrolidin-3-yl]-5-(methylamino)-1H-pyrazole-4-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6LVM",
+     "title": "Crystal structure of FGFR3 in complex with pyrimidine derivative",
+     "resolution": 2.53,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "EVR",
+       "name": "2-[[5-[2-(3,5-dimethoxyphenyl)ethyl]-2-[[3-methoxy-4-[4-(4-methylpiperazin-1-yl)piperidin-1-yl]phenyl]amino]pyrimidin-4-yl]amino]-N-ethyl-benzenesulfonamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "NPR2",
+   "uniprot": "P20594",
+   "program": "Shriners Children's",
+   "disease": "Achondroplasia / short stature",
+   "rationale": "Vosoritide acts through NPR2 signaling.",
+   "name": "Atrial natriuretic peptide receptor 2",
+   "length": 1047,
+   "sequence": "MALPSLLLLVAALAGGVRPPGARNLTLAVVLPEHNLSYAWAWPRVGPAVALAVEALGRALPVDLRFVSSELEGACSEYLAPLSAVDLKLYHDPDLLLGPGCVYPAASVARFASHWRLPLLTAGAVASGFSAKNDHYRTLVRTGPSAPKLGEFVVTLHGHFNWTARAALLYLDARTDDRPHYFTIEGVFEALQGSNLSVQHQVYAREPGGPEQATHFIRANGRIVYICGPLEMLHEILLQAQRENLTNGDYVFFYLDVFGESLRAGPTRATGRPWQDNRTREQAQALREAFQTVLVITYREPPNPEYQEFQNRLLIRAREDFGVELGPSLMNLIAGCFYDGILLYAEVLNETIQEGGTREDGLRIVEKMQGRRYHGVTGLVVMDKNNDRETDFVLWAMGDLDSGDFQPAAHYSGAEKQIWWTGRPIPWVKGAPPSDNPPCAFDLDDPSCDKTPLSTLAIVALGTGITFIMFGVSSFLIFRKLMLEKELASMLWRIRWEELQFGNSERYHKGAGSRLTLSLRGSSYGSLMTAHGKYQIFANTGHFKGNVVAIKHVNKKRIELTRQVLFELKHMRDVQFNHLTRFIGACIDPPNICIVTEYCPRGSLQDILENDSINLDWMFRYSLINDLVKGMAFLHNSIISSHGSLKSSNCVVDSRFVLKITDYGLASFRSTAEPDDSHALYAKKLWTAPELLSGNPLPTTGMQKADVYSFGIILQEIALRSGPFYLEGLDLSPKEIVQKVRNGQRPYFRPSIDRTQLNEELVLLMERCWAQDPAERPDFGQIKGFIRRFNKEGGTSILDNLLLRMEQYANNLEKLVEERTQAYLEEKRKAEALLYQILPHSVAEQLKRGETVQAEAFDSVTIYFSDIVGFTALSAESTPMQVVTLLNDLYTCFDAIIDNFDVYKVETIGDAYMVVSGLPGRNGQRHAPEIARMALALLDAVSSFRIRHRPHDQLRLRIGVHTGPVCAGVVGLKMPRYCLFGDTVNTASRMESNGQALKIHVSSTTKDALDELGCFQLELRGDVEMKGKGKMRTYWLLGERKGPPGLL",
+   "ensembl": "ENSG00000159899",
+   "alphafold": {
+    "id": "AF-P20594-F1",
+    "plddt": 83.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P20594-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P20594-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P20594-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "ALPL",
+   "uniprot": "P05186",
+   "program": "Shriners Children's",
+   "disease": "Hypophosphatasia",
+   "rationale": "Asfotase alfa enzyme replacement.",
+   "name": "Alkaline phosphatase, tissue-nonspecific isozyme",
+   "length": 524,
+   "sequence": "MISPFLVLAIGTCLTNSLVPEKEKDPKYWRDQAQETLKYALELQKLNTNVAKNVIMFLGDGMGVSTVTAARILKGQLHHNPGEETRLEMDKFPFVALSKTYNTNAQVPDSAGTATAYLCGVKANEGTVGVSAATERSRCNTTQGNEVTSILRWAKDAGKSVGIVTTTRVNHATPSAAYAHSADRDWYSDNEMPPEALSQGCKDIAYQLMHNIRDIDVIMGGGRKYMYPKNKTDVEYESDEKARGTRLDGLDLVDTWKSFKPRYKHSHFIWNRTELLTLDPHNVDYLLGLFEPGDMQYELNRNNVTDPSLSEMVVVAIQILRKNPKGFFLLVEGGRIDHGHHEGKAKQALHEAVEMDRAIGQAGSLTSSEDTLTVVTADHSHVFTFGGYTPRGNSIFGLAPMLSDTDKKPFTAILYGNGPGYKVVGGERENVSMVDYAHNNYQAQSAVPLRHETHGGEDVAVFSKGPMAHLLHGVHEQNYVPHVMAYAACIGANLGHCAPASSAGSLAAGPLLLALALYPLSVLF",
+   "ensembl": "ENSG00000162551",
+   "alphafold": {
+    "id": "AF-P05186-F1",
+    "plddt": 93.31,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P05186-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P05186-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P05186-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 5,
+   "bestPdb": "9SH5",
+   "structures": [
+    {
+     "id": "9SH5",
+     "title": "The cryo-EM structure of human Tissue Nonspecific Alkaline Phosphatase (hTNAP) in complex with MLS-0038949",
+     "resolution": 2.27,
+     "method": "EM",
+     "ligands": [
+      {
+       "id": "A1JNY",
+       "name": "2,5-dimethoxy-~{N}-quinolin-3-yl-benzenesulfonamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "FGF23",
+   "uniprot": "Q9GZV9",
+   "program": "Shriners Children's",
+   "disease": "X-linked hypophosphatemic rickets",
+   "rationale": "Burosumab target.",
+   "name": "Fibroblast growth factor 23",
+   "length": 251,
+   "sequence": "MLGARLRLWVCALCSVCSMSVLRAYPNASPLLGSSWGGLIHLYTATARNSYHLQIHKNGHVDGAPHQTIYSALMIRSEDAGFVVITGVMSRRYLCMDFRGNIFGSHYFDPENCRFQHQTLENGYDVYHSPQYHFLVSLGRAKRAFLPGMNPPPYSQFLSRRNEIPLIHFNTPIPRRHTRSAEDDSERDPLNVLKPRARMTPAPASCSQELPSAEDNSPMASDPLGVVRGGRVNTHAGGTGPEGCRPFAKFI",
+   "ensembl": "ENSG00000118972",
+   "alphafold": {
+    "id": "AF-Q9GZV9-F1",
+    "plddt": 76.62,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9GZV9-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9GZV9-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9GZV9-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 6,
+   "bestPdb": "6S22",
+   "structures": [
+    {
+     "id": "6S22",
+     "title": "Crystal structure of the TgGalNAc-T3 in complex with UDP, manganese and FGF23c",
+     "resolution": 1.96,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NGA",
+       "name": "2-acetamido-2-deoxy-beta-D-galactopyranose"
+      },
+      {
+       "id": "UDP",
+       "name": "URIDINE-5'-DIPHOSPHATE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "PHEX",
+   "uniprot": "P78562",
+   "program": "Shriners Children's",
+   "disease": "X-linked hypophosphatemic rickets",
+   "rationale": "Loss of PHEX elevates FGF23.",
+   "name": "Phosphate-regulating neutral endopeptidase PHEX",
+   "length": 749,
+   "sequence": "MEAETGSSVETGKKANRGTRIALVVFVGGTLVLGTILFLVSQGLLSLQAKQEYCLKPECIEAAAAILSKVNLSVDPCDNFFRFACDGWISNNPIPEDMPSYGVYPWLRHNVDLKLKELLEKSISRRRDTEAIQKAKILYSSCMNEKAIEKADAKPLLHILRHSPFRWPVLESNIGPEGVWSERKFSLLQTLATFRGQYSNSVFIRLYVSPDDKASNEHILKLDQATLSLAVREDYLDNSTEAKSYRDALYKFMVDTAVLLGANSSRAEHDMKSVLRLEIKIAEIMIPHENRTSEAMYNKMNISELSAMIPQFDWLGYIKKVIDTRLYPHLKDISPSENVVVRVPQYFKDLFRILGSERKKTIANYLVWRMVYSRIPNLSRRFQYRWLEFSRVIQGTTTLLPQWDKCVNFIESALPYVVGKMFVDVYFQEDKKEMMEELVEGVRWAFIDMLEKENEWMDAGTKRKAKEKARAVLAKVGYPEFIMNDTHVNEDLKAIKFSEADYFGNVLQTRKYLAQSDFFWLRKAVPKTEWFTNPTTVNAFYSASTNQIRFPAGELQKPFFWGTEYPRSLSYGAIGVIVGHEFTHGFDNNGRKYDKNGNLDPWWSTESEEKFKEKTKCMINQYSNYYWKKAGLNVKGKRTLGENIADNGGLREAFRAYRKWINDRRQGLEEPLLPGITFTNNQLFFLSYAHVRCNSYRPEAAREQVQIGAHSPPQFRVNGAISNFEEFQKAFNCPPNSTMNRGMDSCRLW",
+   "ensembl": "ENSG00000102174",
+   "alphafold": {
+    "id": "AF-P78562-F1",
+    "plddt": 94.31,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P78562-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P78562-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P78562-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "IRF6",
+   "uniprot": "O14896",
+   "program": "Shriners Children's",
+   "disease": "Cleft lip and palate (Van der Woude)",
+   "rationale": "Most common syndromic cleft gene.",
+   "name": "Interferon regulatory factor 6",
+   "length": 467,
+   "sequence": "MALHPRRVRLKPWLVAQVDSGLYPGLIWLHRDSKRFQIPWKHATRHSPQQEEENTIFKAWAVETGKYQEGVDDPDPAKWKAQLRCALNKSREFNLMYDGTKEVPMNPVKIYQVCDIPQPQGSIINPGSTGSAPWDEKDNDVDEEDEEDELDQSQHHVPIQDTFPFLNINGSPMAPASVGNCSVGNCSPEAVWPKTEPLEMEVPQAPIQPFYSSPELWISSLPMTDLDIKFQYRGKEYGQTMTVSNPQGCRLFYGDLGPMPDQEELFGPVSLEQVKFPGPEHITNEKQKLFTSKLLDVMDRGLILEVSGHAIYAIRLCQCKVYWSGPCAPSLVAPNLIERQKKVKLFCLETFLSDLIAHQKGQIEKQPPFEIYLCFGEEWPDGKPLERKLILVQVIPVVARMIYEMFSGDFTRSFDSGSVRLQISTPDIKDNIVAQLKQLYRILQTQESWQPMQPTPSMQLPPALPPQ",
+   "ensembl": "ENSG00000117595",
+   "alphafold": {
+    "id": "AF-O14896-F1",
+    "plddt": 73.5,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-O14896-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-O14896-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-O14896-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 0,
+   "bestPdb": null,
+   "structures": []
+  },
+  {
+   "symbol": "TGFB1",
+   "uniprot": "P01137",
+   "program": "Shriners Children's",
+   "disease": "Burn scarring / fibrosis",
+   "rationale": "Master regulator of hypertrophic scar formation.",
+   "name": "Transforming growth factor beta-1 proprotein",
+   "length": 390,
+   "sequence": "MPPSGLRLLPLLLPLLWLLVLTPGRPAAGLSTCKTIDMELVKRKRIEAIRGQILSKLRLASPPSQGEVPPGPLPEAVLALYNSTRDRVAGESAEPEPEPEADYYAKEVTRVLMVETHNEIYDKFKQSTHSIYMFFNTSELREAVPEPVLLSRAELRLLRLKLKVEQHVELYQKYSNNSWRYLSNRLLAPSDSPEWLSFDVTGVVRQWLSRGGEIEGFRLSAHCSCDSRDNTLQVDINGFTTGRRGDLATIHGMNRPFLLLMATPLERAQHLQSSRHRRALDTNYCFSSTEKNCCVRQLYIDFRKDLGWKWIHEPKGYHANFCLGPCPYIWSLDTQYSKVLALYNQHNPGASAAPCCVPQALEPLPIVYYVGRKPKVEQLSNMIVRSCKCS",
+   "ensembl": "ENSG00000105329",
+   "alphafold": {
+    "id": "AF-P01137-F1",
+    "plddt": 79.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P01137-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P01137-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P01137-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 22,
+   "bestPdb": "6OM2",
+   "structures": [
+    {
+     "id": "6OM2",
+     "title": "Crystal structure of atypical integrin alphaV beta8 with proTGF-beta1 ligand peptide",
+     "resolution": 2.77,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GLY",
+       "name": "GLYCINE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "VEGFA",
+   "uniprot": "P15692",
+   "program": "Shriners Children's",
+   "disease": "Burn wound healing",
+   "rationale": "Angiogenesis in wound repair.",
+   "name": "Vascular endothelial growth factor A, long form",
+   "length": 395,
+   "sequence": "MTDRQTDTAPSPSYHLLPGRRRTVDAAASRGQGPEPAPGGGVEGVGARGVALKLFVQLLGCSRFGGAVVRAGEAEPSGAARSASSGREEPQPEEGEEEEEKEEERGPQWRLGARKPGSWTGEAAVCADSAPAARAPQALARASGRGGRVARRGAEESGPPHSPSRRGSASRAGPGRASETMNFLLSWVHWSLALLLYLHHAKWSQAAPMAEGGGQNHHEVVKFMDVYQRSYCHPIETLVDIFQEYPDEIEYIFKPSCVPLMRCGGCCNDEGLECVPTEESNITMQIMRIKPHQGQHIGEMSFLQHNKCECRPKKDRARQEKKSVRGKGKGQKRKRKKSRYKSWSVPCGPCSERRKHLFVQDPQTCKCSCKNTDSRCKARQLELNERTCRCDKPRR",
+   "ensembl": "ENSG00000112715",
+   "alphafold": {
+    "id": "AF-P15692-F1",
+    "plddt": 63.91,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P15692-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P15692-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P15692-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 57,
+   "bestPdb": "4QAF",
+   "structures": [
+    {
+     "id": "4QAF",
+     "title": "Crystal structure of an engineered lipocalin (Anticalin) in complex with VEGF(8-109)",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "OMA",
+       "name": "10-{(1R,2R)-2-[(2E)-hex-2-en-1-yl]cyclopropyl}decanoic acid"
+      }
+     ]
+    },
+    {
+     "id": "6Z13",
+     "title": "VEGF-A 13:107 crystallized with 3C bicyclic peptide",
+     "resolution": 1.8,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NH2",
+       "name": "AMINO GROUP"
+      }
+     ]
+    },
+    {
+     "id": "3QTK",
+     "title": "The crystal structure of chemically synthesized VEGF-A",
+     "resolution": 1.849,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "TFA",
+       "name": "trifluoroacetic acid"
+      }
+     ]
+    },
+    {
+     "id": "5DN2",
+     "title": "Human NRP2 b1 domain in complex with the peptide corresponding to the C-terminus of VEGF-A",
+     "resolution": 1.95,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      }
+     ]
+    },
+    {
+     "id": "6Z3F",
+     "title": "VEGF-A 13:107 crystallized with 2C bicyclic peptide",
+     "resolution": 2.1,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NH2",
+       "name": "AMINO GROUP"
+      }
+     ]
+    },
+    {
+     "id": "5O4E",
+     "title": "Crystal structure of VEGF in complex with heterodimeric Fcab JanusCT6",
+     "resolution": 2.15,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "MRD",
+       "name": "(4R)-2-METHYLPENTANE-2,4-DIOL"
+      },
+      {
+       "id": "CAC",
+       "name": "CACODYLATE ION"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "MMP9",
+   "uniprot": "P14780",
+   "program": "Shriners Children's",
+   "disease": "Burn and chronic wounds",
+   "rationale": "Matrix remodeling protease.",
+   "name": "Matrix metalloproteinase-9",
+   "length": 707,
+   "sequence": "MSLWQPLVLVLLVLGCCFAAPRQRQSTLVLFPGDLRTNLTDRQLAEEYLYRYGYTRVAEMRGESKSLGPALLLLQKQLSLPETGELDSATLKAMRTPRCGVPDLGRFQTFEGDLKWHHHNITYWIQNYSEDLPRAVIDDAFARAFALWSAVTPLTFTRVYSRDADIVIQFGVAEHGDGYPFDGKDGLLAHAFPPGPGIQGDAHFDDDELWSLGKGVVVPTRFGNADGAACHFPFIFEGRSYSACTTDGRSDGLPWCSTTANYDTDDRFGFCPSERLYTQDGNADGKPCQFPFIFQGQSYSACTTDGRSDGYRWCATTANYDRDKLFGFCPTRADSTVMGGNSAGELCVFPFTFLGKEYSTCTSEGRGDGRLWCATTSNFDSDKKWGFCPDQGYSLFLVAAHEFGHALGLDHSSVPEALMYPMYRFTEGPPLHKDDVNGIRHLYGPRPEPEPRPPTTTTPQPTAPPTVCPTGPPTVHPSERPTAGPTGPPSAGPTGPPTAGPSTATTVPLSPVDDACNVNIFDAIAEIGNQLYLFKDGKYWRFSEGRGSRPQGPFLIADKWPALPRKLDSVFEERLSKKLFFFSGRQVWVYTGASVLGPRRLDKLGLGADVAQVTGALRSGRGKMLLFSGRRLWRFDVKAQMVDPRSASEVDRMFPGVPLDTHDVFQYREKAYFCQDRFYWRVSSRSELNQVDQVGYVTYDILQCPED",
+   "ensembl": "ENSG00000100985",
+   "alphafold": {
+    "id": "AF-P14780-F1",
+    "plddt": 82.06,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P14780-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P14780-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P14780-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 29,
+   "bestPdb": "6ESM",
+   "structures": [
+    {
+     "id": "6ESM",
+     "title": "Crystal structure of MMP9 in complex with inhibitor BE4.",
+     "resolution": 1.104,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PZE",
+       "name": "piperazine"
+      },
+      {
+       "id": "B9Z",
+       "name": "(2~{S})-2-[2-[4-(4-methoxyphenyl)phenyl]sulfanylphenyl]pentanedioic acid"
+      }
+     ]
+    },
+    {
+     "id": "4XCT",
+     "title": "Crystal structure of a hydroxamate based inhibitor ARP101 (EN73) in complex with the MMP-9 catalytic domain.",
+     "resolution": 1.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "BUD",
+       "name": "(2S,3S)-butane-2,3-diol"
+      },
+      {
+       "id": "PGO",
+       "name": "S-1,2-PROPANEDIOL"
+      },
+      {
+       "id": "N73",
+       "name": "(2~{R})-3-methyl-~{N}-oxidanylidene-2-[(4-phenylphenyl)sulfonyl-propan-2-yloxy-amino]butanamide"
+      }
+     ]
+    },
+    {
+     "id": "8K5Y",
+     "title": "Crystal structure of human proMMP-9 catalytic domain in complex with inhibitor",
+     "resolution": 1.52,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "2HP",
+       "name": "DIHYDROGENPHOSPHATE ION"
+      },
+      {
+       "id": "VP6",
+       "name": "(3-azanyl-4-fluoranyl-5,7,8,9-tetrahydropyrido[4,3-c]azepin-6-yl)-[6-(2-oxidanylpropan-2-yl)-1H-indol-2-yl]methanone"
+      }
+     ]
+    },
+    {
+     "id": "4H1Q",
+     "title": "Crystal structure of mutant MMP-9 catalytic domain in complex with a twin inhibitor.",
+     "resolution": 1.59,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "0XX",
+       "name": "N-(4-{[(3R)-3-[(biphenyl-4-ylsulfonyl)(propan-2-yloxy)amino]-4-(hydroxyamino)-4-oxobutyl]amino}-4-oxobutyl)-N'-(4-{[(3S)-3-[(biphenyl-4-ylsulfonyl)(propan-2-yloxy)amino]-4-(hydroxyamino)-4-oxobutyl]amino}-4-oxobutyl)benzene-1,3-dicarboxamide"
+      }
+     ]
+    },
+    {
+     "id": "5I12",
+     "title": "Crystal structure of the catalytic domain of MMP-9 in complex with a selective sugar-conjugated arylsulfonamide carboxylate water-soluble inhibitor (DC27).",
+     "resolution": 1.59,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "H27",
+       "name": "(2R)-2-[{(E)-2-[({(2R,3R,4R,5S,6R)-3-(acetylamino)-4,5-bis(acetyloxy)-6-[(acetyloxy)methyl]tetrahydro-2H-pyran-2-yl}carbamothioyl)amino]ethenyl}(biphenyl-4-ylsulfonyl)amino]-3-methylbutanoic acid"
+      }
+     ]
+    },
+    {
+     "id": "4WZV",
+     "title": "Crystal structure of a hydroxamate based inhibitor EN140 in complex with the MMP-9 catalytic domain",
+     "resolution": 1.65,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "AZI",
+       "name": "AZIDE ION"
+      },
+      {
+       "id": "PGO",
+       "name": "S-1,2-PROPANEDIOL"
+      },
+      {
+       "id": "E40",
+       "name": "(2R)-4-(1,3-dioxo-1,3-dihydro-2H-isoindol-2-yl)-N-hydroxy-2-{[(4'-methoxybiphenyl-4-yl)sulfonyl](propan-2-yloxy)amino}butanamide"
+      }
+     ]
+    },
+    {
+     "id": "4JIJ",
+     "title": "Crystal structure of an inactive mutant of MMP-9 catalytic domain in complex with a fluorogenic synthetic peptidic substrate",
+     "resolution": 1.698,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "PGO",
+       "name": "S-1,2-PROPANEDIOL"
+      },
+      {
+       "id": "SR",
+       "name": "STRONTIUM ION"
+      },
+      {
+       "id": "AZI",
+       "name": "AZIDE ION"
+      }
+     ]
+    },
+    {
+     "id": "8K5V",
+     "title": "Crystal structure of human proMMP-9 catalytic domain in complex with inhibitor",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "2HP",
+       "name": "DIHYDROGENPHOSPHATE ION"
+      },
+      {
+       "id": "VOC",
+       "name": "6,7-dihydro-4H-[1,3]oxazolo[4,5-c]pyridin-5-yl-(7-ethyl-2H-indazol-3-yl)methanone"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "RTN4",
+   "uniprot": "Q9NQC3",
+   "program": "Shriners Children's",
+   "disease": "Spinal cord injury",
+   "rationale": "Nogo-A; anti-Nogo antibodies in SCI trials.",
+   "name": "Reticulon-4",
+   "length": 1192,
+   "sequence": "MEDLDQSPLVSSSDSPPRPQPAFKYQFVREPEDEEEEEEEEEEDEDEDLEELEVLERKPAAGLSAAPVPTAPAAGAPLMDFGNDFVPPAPRGPLPAAPPVAPERQPSWDPSPVSSTVPAPSPLSAAAVSPSKLPEDDEPPARPPPPPPASVSPQAEPVWTPPAPAPAAPPSTPAAPKRRGSSGSVDETLFALPAASEPVIRSSAENMDLKEQPGNTISAGQEDFPSVLLETAASLPSLSPLSAASFKEHEYLGNLSTVLPTEGTLQENVSEASKEVSEKAKTLLIDRDLTEFSELEYSEMGSSFSVSPKAESAVIVANPREEIIVKNKDEEEKLVSNNILHNQQELPTALTKLVKEDEVVSSEKAKDSFNEKRVAVEAPMREEYADFKPFERVWEVKDSKEDSDMLAAGGKIESNLESKVDKKCFADSLEQTNHEKDSESSNDDTSFPSTPEGIKDRSGAYITCAPFNPAATESIATNIFPLLGDPTSENKTDEKKIEEKKAQIVTEKNTSTKTSNPFLVAAQDSETDYVTTDNLTKVTEEVVANMPEGLTPDLVQEACESELNEVTGTKIAYETKMDLVQTSEVMQESLYPAAQLCPSFEESEATPSPVLPDIVMEAPLNSAVPSAGASVIQPSSSPLEASSVNYESIKHEPENPPPYEEAMSVSLKKVSGIKEEIKEPENINAALQETEAPYISIACDLIKETKLSAEPAPDFSDYSEMAKVEQPVPDHSELVEDSSPDSEPVDLFSDDSIPDVPQKQDETVMLVKESLTETSFESMIEYENKEKLSALPPEGGKPYLESFKLSLDNTKDTLLPDEVSTLSKKEKIPLQMEELSTAVYSNDDLFISKEAQIRETETFSDSSPIEIIDEFPTLISSKTDSFSKLAREYTDLEVSHKSEIANAPDGAGSLPCTELPHDLSLKNIQPKVEEKISFSDDFSKNGSATSKVLLLPPDVSALATQAEIESIVKPKVLVKEAEKKLPSDTEKEDRSPSAIFSAELSKTSVVDLLYWRDIKKTGVVFGASLFLLLSLTVFSIVSVTAYIALALLSVTISFRIYKGVIQAIQKSDEGHPFRAYLESEVAISEELVQKYSNSALGHVNCTIKELRRLFLVDDLVDSLKFAVLMWVFTYVGALFNGLTLLILALISLFSVPVIYERHQAQIDHYLGLANKNVKDAMAKIQAKIPGLKRKAE",
+   "ensembl": "ENSG00000115310",
+   "alphafold": {
+    "id": "AF-Q9NQC3-F1",
+    "plddt": 40.84,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQC3-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQC3-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q9NQC3-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 2,
+   "bestPdb": "2G31",
+   "structures": [
+    {
+     "id": "2G31",
+     "title": "Human Nogo-A functional domain: nogo60",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    },
+    {
+     "id": "2JV5",
+     "title": "Nogo54",
+     "resolution": null,
+     "method": "NMR",
+     "ligands": []
+    }
+   ]
+  },
+  {
+   "symbol": "RHOA",
+   "uniprot": "P61586",
+   "program": "Shriners Children's",
+   "disease": "Spinal cord injury",
+   "rationale": "Axon-regrowth inhibition pathway.",
+   "name": "Transforming protein RhoA",
+   "length": 193,
+   "sequence": "MAAIRKKLVIVGDGACGKTCLLIVFSKDQFPEVYVPTVFENYVADIEVDGKQVELALWDTAGQEDYDRLRPLSYPDTDVILMCFSIDSPDSLENIPEKWTPEVKHFCPNVPIILVGNKKDLRNDEHTRRELAKMKQEPVKPEEGRDMANRIGAFGYMECSAKTKDGVREVFEMATRAALQARRGKKKSGCLVL",
+   "ensembl": "ENSG00000067560",
+   "alphafold": {
+    "id": "AF-P61586-F1",
+    "plddt": 93.56,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P61586-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P61586-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P61586-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 131,
+   "bestPdb": "6V6U",
+   "structures": [
+    {
+     "id": "6V6U",
+     "title": "Crystal structure of RhoA-GDP with novel Switch I conformation",
+     "resolution": 1.16,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      }
+     ]
+    },
+    {
+     "id": "7G83",
+     "title": "ARHGEF2 PanDDA analysis group deposition -- ARHGEF2 and RhoA in complex with Z108545814",
+     "resolution": 1.31,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "YX2",
+       "name": "3-propanamido-1-benzofuran-2-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "7G8T",
+     "title": "ARHGEF2 PanDDA analysis group deposition -- ARHGEF2 and RhoA in complex with Z1273312142",
+     "resolution": 1.385,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "Z4X",
+       "name": "2-ethoxy-3-fluoro-N,N-dimethylbenzamide"
+      }
+     ]
+    },
+    {
+     "id": "6V6M",
+     "title": "Crystal structure of an inactive state of GMPPNP-bound RhoA",
+     "resolution": 1.39,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      },
+      {
+       "id": "GNP",
+       "name": "PHOSPHOAMINOPHOSPHONIC ACID-GUANYLATE ESTER"
+      }
+     ]
+    },
+    {
+     "id": "6V6V",
+     "title": "Crystal structure of oncogenic RhoA mutant G14V complexed with GDP",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      }
+     ]
+    },
+    {
+     "id": "8FPW",
+     "title": "Crystal structure of tumor related RhoA mutant A161V in complex with GDP",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "DIO",
+       "name": "1,4-DIETHYLENE DIOXIDE"
+      }
+     ]
+    },
+    {
+     "id": "6BCB",
+     "title": "A Complex between PH Domain of p114RhoGEF and Activated RhoA Bound to a GTP Analog",
+     "resolution": 1.401,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "GSP",
+       "name": "5'-GUANOSINE-DIPHOSPHATE-MONOTHIOPHOSPHATE"
+      }
+     ]
+    },
+    {
+     "id": "7G82",
+     "title": "ARHGEF2 PanDDA analysis group deposition -- ARHGEF2 and RhoA in complex with Z1079512010",
+     "resolution": 1.409,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "UWS",
+       "name": "6-methyl-2-[(3-methyl-1,2-oxazol-5-yl)methyl]pyridazin-3(2H)-one"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "BCL2L1",
+   "uniprot": "Q07817",
+   "program": "Apoptosis / BCL-XL",
+   "disease": "Oncology, senolytics, neuronal survival",
+   "rationale": "BCL-XL; navitoclax and ABT-737 bind the BH3 groove.",
+   "name": "Bcl-2-like protein 1",
+   "length": 233,
+   "sequence": "MSQSNRELVVDFLSYKLSQKGYSWSQFSDVEENRTEAPEGTESEMETPSAINGNPSWHLADSPAVNGATGHSSSLDAREVIPMAAVKQALREAGDEFELRYRRAFSDLTSQLHITPGTAYQSFEQVVNELFRDGVNWGRIVAFFSFGGALCVESVDKEMQVLVSRIAAWMATYLNDHLEPWIQENGGWDTFVELYGNNAAAESRKGQERFNRWFLTGMTVAGVVLLGSLFSRK",
+   "ensembl": "ENSG00000171552",
+   "alphafold": {
+    "id": "AF-Q07817-F1",
+    "plddt": 72.5,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-Q07817-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-Q07817-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-Q07817-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 126,
+   "bestPdb": "2YXJ",
+   "structures": [
+    {
+     "id": "2YXJ",
+     "title": "Crystal structure of Bcl-xL in complex with ABT-737",
+     "resolution": 2.2,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "N3C",
+       "name": "4-{4-[(4'-CHLOROBIPHENYL-2-YL)METHYL]PIPERAZIN-1-YL}-N-{[4-({(1R)-3-(DIMETHYLAMINO)-1-[(PHENYLTHIO)METHYL]PROPYL}AMINO)-3-NITROPHENYL]SULFONYL}BENZAMIDE"
+      }
+     ]
+    },
+    {
+     "id": "7JGW",
+     "title": "Crystal structure of BCL-XL in complex with COMPOUND 1620116, CRYSTAL FORM 1",
+     "resolution": 1.3,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "V9S",
+       "name": "6-[(8E)-8-{2-[4-(benzylcarbamoyl)-1,3-thiazol-2-yl]hydrazinylidene}-5,6,7,8-tetrahydronaphthalen-2-yl]-3-(2-phenylethoxy)pyridine-2-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "3SP7",
+     "title": "Crystal Structure of Bcl-xL bound to BM903",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "03B",
+       "name": "5-(4-chlorophenyl)-4-{3-[4-(4-{[(4-{[(2R)-4-(dimethylamino)-1-(phenylsulfanyl)butan-2-yl]amino}-3-nitrophenyl)sulfonyl]amino}phenyl)piperazin-1-yl]phenyl}-1,2-dimethyl-1H-pyrrole-3-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "7YAA",
+     "title": "Crystal structure analysis of cp3 bound BCLxl",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "JJ9",
+       "name": "N-(2-acetamidoethyl)-4-(4-methanoyl-1,3-thiazol-2-yl)benzamide"
+      }
+     ]
+    },
+    {
+     "id": "7LH7",
+     "title": "Crystal structure of BCL-XL in complex with a benzothiazole-based inhibitor",
+     "resolution": 1.409,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "XZM",
+       "name": "N-(1,3-benzothiazol-2-yl)-2-(4-{[(4-{[(2R)-4-(morpholin-4-yl)-1-(phenylsulfanyl)butan-2-yl]amino}-3-[(trifluoromethyl)sulfonyl]phenyl)sulfonyl]carbamoyl}-1,3-thiazol-2-yl)-1,2,3,4-tetrahydroisoquinoline-8-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "9IGG",
+     "title": "Structure of human Bcl-xL in complex with small molecule inhibitor",
+     "resolution": 1.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1I4B",
+       "name": "2-[3-(1,3-benzothiazol-2-ylamino)-4-methyl-6,7-dihydro-5H-pyrido[2,3-c]pyridazin-8-yl]-1,3-thiazole-4-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "6VWC",
+     "title": "Crystal structure of Bcl-xL in complex with tetrahydroisoquinoline-pyridine based inhibitors",
+     "resolution": 1.604,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "RQ7",
+       "name": "6-{8-[(1,3-benzothiazol-2-yl)carbamoyl]-3,4-dihydroisoquinolin-2(1H)-yl}-3-{1-[(pyridin-4-yl)methyl]-1H-pyrazol-4-yl}pyridine-2-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "6O0K",
+     "title": "crystal structure of BCL-2 with venetoclax",
+     "resolution": 1.62,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "LBM",
+       "name": "4-{4-[(4'-chloro-5,5-dimethyl[3,4,5,6-tetrahydro[1,1'-biphenyl]]-2-yl)methyl]piperazin-1-yl}-N-[(3-nitro-4-{[(oxan-4-yl\n)methyl]amino}phenyl)sulfonyl]-2-[(1H-pyrrolo[2,3-b]pyridin-5-yl)oxy]benzamide"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "symbol": "BCL2",
+   "uniprot": "P10415",
+   "program": "Apoptosis / BCL-XL",
+   "disease": "Oncology",
+   "rationale": "Venetoclax target; selectivity reference for BCL-XL.",
+   "name": "Apoptosis regulator Bcl-2",
+   "length": 239,
+   "sequence": "MAHAGRTGYDNREIVMKYIHYKLSQRGYEWDAGDVGAAPPGAAPAPGIFSSQPGHTPHPAASRDPVARTSPLQTPAAPGAAAGPALSPVPPVVHLTLRQAGDDFSRRYRRDFAEMSSQLHLTPFTARGRFATVVEELFRDGVNWGRIVAFFEFGGVMCVESVNREMSPLVDNIALWMTEYLNRHLHTWIQDNGGWDAFVELYGPSMRPLFDFSWLSLKTLLSLALVGACITLGAYLGHK",
+   "ensembl": "ENSG00000171791",
+   "alphafold": {
+    "id": "AF-P10415-F1",
+    "plddt": 72.0,
+    "pdbUrl": "https://alphafold.ebi.ac.uk/files/AF-P10415-F1-model_v6.pdb",
+    "cifUrl": "https://alphafold.ebi.ac.uk/files/AF-P10415-F1-model_v6.cif",
+    "missenseUrl": "https://alphafold.ebi.ac.uk/files/AF-P10415-F1-aa-substitutions.csv"
+   },
+   "pdbCount": 63,
+   "bestPdb": "6O0K",
+   "structures": [
+    {
+     "id": "8HTS",
+     "title": "Crystal structure of Bcl2 in complex with S-10r",
+     "resolution": 1.25,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "N2L",
+       "name": "4-[2-[(2~{S})-2-(2-cyclopropylphenyl)pyrrolidin-1-yl]-7-azaspiro[3.5]nonan-7-yl]-~{N}-[3-nitro-4-(oxan-4-ylmethylamino)phenyl]sulfonyl-2-(1~{H}-pyrrolo[2,3-b]pyridin-5-yloxy)benzamide"
+      }
+     ]
+    },
+    {
+     "id": "6GL8",
+     "title": "Crystal structure of Bcl-2 in complex with the novel orally active inhibitor S55746",
+     "resolution": 1.4,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "F3Q",
+       "name": "~{N}-(4-hydroxyphenyl)-3-[6-[[(3~{S})-3-(morpholin-4-ylmethyl)-3,4-dihydro-1~{H}-isoquinolin-2-yl]carbonyl]-1,3-benzodioxol-5-yl]-~{N}-phenyl-5,6,7,8-tetrahydroindolizine-1-carboxamide"
+      }
+     ]
+    },
+    {
+     "id": "6QGG",
+     "title": "Structure of human Bcl-2 in complex with analogue of ABT-737",
+     "resolution": 1.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "J1H",
+       "name": "[(3~{R})-3-[[4-[[4-[4-[[2-(4-chlorophenyl)phenyl]methyl]piperazin-1-yl]phenyl]carbonylsulfamoyl]-2-nitro-phenyl]amino]-4-phenylsulfanyl-butyl]-(2-hydroxy-2-oxoethyl)-dimethyl-azanium"
+      }
+     ]
+    },
+    {
+     "id": "9IGG",
+     "title": "Structure of human Bcl-xL in complex with small molecule inhibitor",
+     "resolution": 1.5,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1I4B",
+       "name": "2-[3-(1,3-benzothiazol-2-ylamino)-4-methyl-6,7-dihydro-5H-pyrido[2,3-c]pyridazin-8-yl]-1,3-thiazole-4-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "8HTR",
+     "title": "Crystal structure of Bcl2 in complex with S-9c",
+     "resolution": 1.6,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "MWH",
+       "name": "4-[4-[(2~{S})-2-(2-chlorophenyl)pyrrolidin-1-yl]phenyl]-~{N}-[3-nitro-4-(oxan-4-ylmethylamino)phenyl]sulfonyl-2-(1~{H}-pyrrolo[2,3-b]pyridin-5-yloxy)benzamide"
+      }
+     ]
+    },
+    {
+     "id": "6O0K",
+     "title": "crystal structure of BCL-2 with venetoclax",
+     "resolution": 1.62,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "LBM",
+       "name": "4-{4-[(4'-chloro-5,5-dimethyl[3,4,5,6-tetrahydro[1,1'-biphenyl]]-2-yl)methyl]piperazin-1-yl}-N-[(3-nitro-4-{[(oxan-4-yl\n)methyl]amino}phenyl)sulfonyl]-2-[(1H-pyrrolo[2,3-b]pyridin-5-yl)oxy]benzamide"
+      }
+     ]
+    },
+    {
+     "id": "9I9E",
+     "title": "Structure of human Bcl-xL in complex with small molecule inhibitor",
+     "resolution": 1.7,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "A1I1S",
+       "name": "2-[(8~{E})-8-(1,3-benzothiazol-2-ylhydrazinylidene)-6,7-dihydro-5~{H}-naphthalen-2-yl]-1,3-thiazole-4-carboxylic acid"
+      }
+     ]
+    },
+    {
+     "id": "9O14",
+     "title": "Crystal Structure of BCL-2 in complex with a stapled BAD BH3 peptide BAD SAHB 4.2",
+     "resolution": 1.73,
+     "method": "X-ray",
+     "ligands": [
+      {
+       "id": "NTA",
+       "name": "NITRILOTRIACETIC ACID"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
