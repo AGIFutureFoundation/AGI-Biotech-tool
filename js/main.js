@@ -14,6 +14,7 @@ import { Collab } from './collab.js';
 import { XRManager, xrSupport, startSession } from './xr.js';
 import { Ledger } from './ledger.js';
 import { Recorder } from './recorder.js';
+import { yieldToEventLoop } from './util.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -911,6 +912,7 @@ async function runFilm() {
   S.recorder = rec;
   const shots = await filmComputePass();          // do the science first, recording snapshots
   const beats = filmStoryboard(shots);
+  fetch('/api/filmprogress?phase=render+pass+started').catch(() => {});
   const total = beats.reduce((a, b) => a + b.seconds, 0);
   status(`rendering ${Math.round(total)} s of video…`);
   let elapsed = 0;
@@ -926,6 +928,9 @@ async function runFilm() {
       if (beat.title) beat.title.alpha = beat.fade === 'in' ? Math.min(1, t * 3) : beat.fade === 'out' ? Math.max(0, 1 - t * 2.2) : 1;
       rec.progress = (elapsed + f) / (total * FILM.fps);
       await rec.capture();
+      if (rec.frameIndex % 60 === 0) {
+        fetch(`/api/filmprogress?s=${Math.round(rec.seconds)}&of=${Math.round(total)}`).catch(() => {});
+      }
     }
     elapsed += frames;
     status(`video ${Math.round(rec.seconds)}s / ${Math.round(total)}s`);
@@ -940,29 +945,31 @@ async function runFilm() {
 // Run the actual features and keep the results the film needs.
 async function filmComputePass() {
   const shots = {};
-  status('film: loading SOD1');
+  const mark = (m) => { status(`film: ${m}`); fetch(`/api/filmprogress?phase=${encodeURIComponent(m)}`).catch(() => {}); };
+  mark('compute pass started');
+  mark('loading SOD1');
   await openTarget(S.targets.find((t) => t.symbol === 'SOD1'));
   for (let i = 0; i < 20 && !S.missense; i++) await new Promise((r) => setTimeout(r, 700));
   shots.missense = S.missense ? { h46: S.missense.get(47), a4: S.missense.get(5), g93: S.missense.get(94) } : null;
   shots.sod1 = { pos: Float32Array.from(S.protein.pos), name: S.protein.name, st: S.protein, view: S.proteinView };
 
-  status('film: gathering evidence');
+  mark('gathering evidence');
   await gatherEvidence().catch(() => {});
   shots.evidence = { trials: $('#evidenceHead').dataset.trials || '—',
     partners: $$('#evPartners .item').length, pathways: $$('#evPathways .item').length,
     domains: $$('#evDomains .item').length, papers: $$('#evPapers .item').length };
 
-  status('film: loading BCL-XL');
+  mark('loading BCL-XL');
   await loadPdb('2YXJ');
   const lig = S.protein.ligands.find((l) => l.atoms.length > 20) || S.protein.ligands[0];
   await extractCocrystal(lig);
   shots.crystalScore = S.lastScore ? S.lastScore.total : null;
   shots.crystalPose = Float32Array.from(S.ligand.pos);
 
-  status('film: docking');
+  mark('docking');
   const search = [];
   const poses = await dockLigand(S.grid, S.ligand, S.pocket.center, {
-    runs: 10, steps: 2500, box: 8,
+    runs: 8, steps: 2200, box: 8,
     onProgress: ({ coords }) => { if (search.length < 140) search.push(Float32Array.from(coords)); },
   });
   S.poses = poses;
@@ -974,8 +981,8 @@ async function filmComputePass() {
     rmsd: rmsdTo(shots.crystalPose) };
   await S.ledger.append('dock', { compound: S.ligand.name, target: S.protein.name, score: +(poses[0]?.score || 0).toFixed(2), poses: poses.length });
 
-  status('film: screening the library');
-  await screenLibrary({ limit: 6, runs: 3, steps: 900 });
+  mark('screening');
+  await screenLibrary({ limit: 5, runs: 3, steps: 800 });
   shots.ranked = S.library.compounds.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore).slice(0, 4);
 
   const v = await S.ledger.verify();
@@ -996,6 +1003,13 @@ function rmsdTo(ref) {
   return Math.sqrt(s2 / S.ligand.n);
 }
 
+function filmFit(diameter = 0.6, closeness = 0.36) {
+  fitView(diameter);
+  camera.position.lerp(workspace.position, closeness);
+  controls.target.copy(workspace.position);
+  controls.update();
+}
+
 function filmStoryboard(shots) {
   const spin = (rate) => (t, f) => { workspace.rotation.y += rate; };
   const setColor = (mode) => { $('#colorSelect').value = mode; $('#colorSelect').dispatchEvent(new Event('change')); };
@@ -1009,7 +1023,7 @@ function filmStoryboard(shots) {
 
     { seconds: 8, caption: 'Sixty curated targets across ALS, Parkinson\'s, other neurogenetic disease, and the conditions Shriners Children\'s treats.',
       stats: { targets: S.targets.length, programmes: 5, 'verified against': 'UniProt' },
-      onEnter: async () => { await showSod1(); setColor('plddt'); fitView(0.62); }, onFrame: spin(0.0016) },
+      onEnter: async () => { await showSod1(); setColor('plddt'); filmFit(0.62); }, onFrame: spin(0.0016) },
 
     { seconds: 7, caption: 'SOD1, the first ALS gene, shown as its AlphaFold prediction and coloured by confidence.',
       stats: { structure: 'SOD1', source: 'AlphaFold DB', residues: 154, 'mean pLDDT': 98 }, onFrame: spin(0.0018) },
@@ -1025,7 +1039,7 @@ function filmStoryboard(shots) {
 
     { seconds: 8, caption: 'A validation case: BCL-XL solved by X-ray with the drug ABT-737 bound, streamed from the Protein Data Bank.',
       stats: { entry: '2YXJ', method: 'X-ray', ligand: 'ABT-737' },
-      onEnter: async () => { setColor('ss'); fitView(0.6); }, onFrame: spin(0.002) },
+      onEnter: async () => { setColor('ss'); filmFit(0.6); }, onFrame: spin(0.002) },
 
     { seconds: 7, caption: 'The drug is lifted out of the crystal and stops counting as part of the protein, so it cannot clash with itself.',
       stats: { 'heavy atoms': S.ligand?.n, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`, 'H-bonds': 1 },
@@ -1074,30 +1088,33 @@ function filmStoryboard(shots) {
 
 // ---------------------------------------------------------------- guided demo
 const DEMO_STEPS = [
-  { say: 'biodao.blockchain: VR/AR molecular workspace for drug discovery', wait: 3000 },
-  { say: 'Loading SOD1, the ALS target...', run: async () => { await loadTarget('SOD1'); }, wait: 5000 },
-  { say: 'BCL-XL with ABT-737 bound—screening the reference library', run: async () => { 
-    await loadTarget('BCL2L1'); const c = S.library.compounds.find(e => e.agiId === 'REF-017');
-    if (c) await setLigand(await smilesTo3D(c.smiles, {name: c.agiId}), c); }, wait: 4000 },
-  { say: 'Docking...', run: async () => { if (S.grid) await doDock(); }, wait: 8000 },
-  { say: 'Interactive MD at 300K', run: async () => { startMD(); }, wait: 6000 },
-  { say: 'Screening 12 reference compounds...', run: async () => { stopMD(); await screenLibrary({ limit: 12, runs: 2, steps: 1000 }); }, wait: 10000 },
-  { say: 'Ledger records every operation—tamper-proof provenance', run: async () => { renderLedger(); }, wait: 5000 },
-  { say: 'Ready for VR. See the menu: ▶ Demo', wait: 3000 },
-]; await extractCocrystal(l); }, wait: 7000 },
-  { say: 'That crystal pose scores about minus ten. Re-docking it blind to see if the search finds it again.',
+  { say: 'biodao.blockchain, powered by AGI Corp: a molecular workspace for neurogenetic drug discovery.', wait: 4000 },
+  { say: 'Loading SOD1, the first ALS gene, from the AlphaFold database.',
+    run: async () => { await openTarget(S.targets.find((t) => t.symbol === 'SOD1')); }, wait: 8000 },
+  { say: 'Colouring by AlphaMissense shows where mutations are damaging. The ALS hotspots turn red.',
+    run: async () => { for (let i = 0; i < 18 && !S.missense; i++) await new Promise((r) => setTimeout(r, 900));
+      $('#colorSelect').value = 'missense'; $('#colorSelect').dispatchEvent(new Event('change')); }, wait: 6000 },
+  { say: 'Gathering evidence from nine free databases: domains, pathways, interactions, expression, trials, literature.',
+    run: async () => { $$('.tabs button').find((b) => b.dataset.tab === 'evidence').click(); await gatherEvidence(); }, wait: 7000 },
+  { say: 'A validation case: BCL-XL with the drug ABT-737 bound, straight from the Protein Data Bank.',
+    run: async () => { await loadPdb('2YXJ'); }, wait: 8000 },
+  { say: 'Lifting the drug out of the crystal so it stops counting as part of the protein.',
+    run: async () => { const l = S.protein.ligands.find((x) => x.atoms.length > 20) || S.protein.ligands[0];
+      await extractCocrystal(l); }, wait: 6000 },
+  { say: 'Re-docking it blind to see whether the search finds the experimental pose again.',
     run: async () => { await doDock(); }, wait: 2000 },
-  { say: 'Found. Hydrogen bonds are drawn in the pocket, and the run is now in the provenance ledger.',
+  { say: 'Found, with the hydrogen bonds drawn in the site. The run is now in the provenance ledger.',
     run: async () => { renderLedger(); }, wait: 5000 },
-  { say: 'Starting interactive dynamics. The ligand is flexible, the backbone moves on an elastic network.',
+  { say: 'Interactive dynamics: flexible ligand, elastic-network backbone, live score.',
     run: async () => { $('#freezeProtein').checked = false; if (!S.mdRunning) toggleMD(); }, wait: 9000 },
-  { say: 'In a headset you would grab the ligand and pull it through the pocket while this runs.', wait: 6000 },
-  { say: 'Now screening the compound library against this site and ranking it.',
+  { say: 'In a headset you grab the ligand and pull it through the pocket while this runs.', wait: 6000 },
+  { say: 'Screening the compound library against this site and ranking it.',
     run: async () => { stopMD(); $$('.tabs button').find((b) => b.dataset.tab === 'library').click();
       await screenLibrary({ limit: 8, runs: 3, steps: 1200 }); }, wait: 3000 },
-  { say: 'Ranked by score. Every step is hash-chained: the ledger can be verified and anchored on-chain.',
+  { say: 'Every step is hash-chained, so the ledger can be verified and anchored on-chain.',
     run: async () => { $$('.tabs button').find((b) => b.dataset.tab === 'session').click(); renderLedger();
-      const v = await S.ledger.verify(); toast(v.ok ? `Ledger verified: ${v.length} records intact` : `Ledger broken at ${v.brokenAt}`); }, wait: 7000 },
+      const v = await S.ledger.verify();
+      toast(v.ok ? `Ledger verified: ${v.length} records intact` : `Ledger broken at record ${v.brokenAt}`); }, wait: 7000 },
   { say: 'Demo complete. Press Enter VR for the headset version.', wait: 5000 },
 ];
 
@@ -1490,7 +1507,10 @@ async function boot() {
   if (t) openTarget(t);
   status('ready');
   if (new URLSearchParams(location.search).has('record')) {
-    setTimeout(() => runFilm().catch((e) => { toast(e.message, true); console.error(e); }), 1500);
+    setTimeout(() => runFilm().catch((e) => {
+      toast(e.message, true); console.error(e);
+      fetch(`/api/filmprogress?err=${encodeURIComponent(e.stack || e.message)}`).catch(() => {});
+    }), 1500);
   }
 }
 

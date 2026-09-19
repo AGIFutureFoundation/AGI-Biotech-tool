@@ -1,5 +1,5 @@
 {
- "saved": "2026-09-19T22:30:36.892Z",
+ "saved": "2026-09-19T23:04:10.421Z",
  "compounds": [
   {
    "agiId": "REF-001",
@@ -46,7 +46,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -5.19,
+   "dockScore": -4.8,
    "dockTarget": "2YXJ"
   },
   {
@@ -94,7 +94,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -4.83,
+   "dockScore": -4.08,
    "dockTarget": "2YXJ"
   },
   {
@@ -190,7 +190,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -7.04,
+   "dockScore": -4.09,
    "dockTarget": "2YXJ"
   },
   {
@@ -238,7 +238,7 @@
     ],
     "nearest": []
    },
-   "dockScore": -5.31,
+   "dockScore": -5.96,
    "dockTarget": "2YXJ"
   },
   {
@@ -285,9 +285,7 @@
      }
     ],
     "nearest": []
-   },
-   "dockScore": -4.85,
-   "dockTarget": "2YXJ"
+   }
   },
   {
    "agiId": "REF-007",
@@ -333,9 +331,7 @@
      }
     ],
     "nearest": []
-   },
-   "dockScore": -4.4,
-   "dockTarget": "2YXJ"
+   }
   },
   {
    "agiId": "REF-008",
@@ -381,9 +377,7 @@
      }
     ],
     "nearest": []
-   },
-   "dockScore": -5.51,
-   "dockTarget": "2YXJ"
+   }
   },
   {
    "agiId": "REF-009",

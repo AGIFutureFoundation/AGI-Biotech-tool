@@ -5,6 +5,16 @@
 // intended pacing even when the browser is throttling a background tab. Output is a real .mp4.
 import * as THREE from 'three';
 
+// Yield to the event loop without a timer. setTimeout is clamped to once a second in a background tab,
+// and spinning on microtasks starves the encoder's own callbacks, so neither works here.
+function macrotask() {
+  return new Promise((resolve) => {
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => { ch.port1.close(); resolve(); };
+    ch.port2.postMessage(0);
+  });
+}
+
 const MUXER = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/+esm';
 
 export class Recorder {
@@ -13,7 +23,8 @@ export class Recorder {
     this.canvas = document.createElement('canvas');
     this.canvas.width = width; this.canvas.height = height;
     this.ctx = this.canvas.getContext('2d', { alpha: false });
-    this.gl = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    this.gl = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this.gl.setClearColor(0x000000, 0);
     this.gl.setPixelRatio(1);
     this.gl.setSize(width, height, false);
     this.gl.outputColorSpace = THREE.SRGBColorSpace;
@@ -43,6 +54,7 @@ export class Recorder {
     this.camera.updateProjectionMatrix();
     this.gl.render(this.scene, this.camera);
     const c = this.ctx;
+    this.drawBackdrop(c);
     c.drawImage(this.gl.domElement, 0, 0, this.w, this.h);
     this.drawOverlay(c);
     const us = Math.round((this.frameIndex * 1e6) / this.fps);
@@ -50,8 +62,9 @@ export class Recorder {
     this.encoder.encode(frame, { keyFrame: this.frameIndex % (this.fps * 2) === 0 });
     frame.close();
     this.frameIndex++;
-    // Back-pressure without timers (timers are throttled when the tab is hidden).
-    while (this.encoder.encodeQueueSize > 12) await Promise.resolve();
+    // Give the event loop a turn so the encoder can deliver chunks, then apply back-pressure.
+    await macrotask();
+    while (this.encoder.encodeQueueSize > 8) await macrotask();
   }
 
   async finish() {
@@ -61,6 +74,18 @@ export class Recorder {
   }
 
   get seconds() { return this.frameIndex / this.fps; }
+
+  // The WebGL layer is transparent, so the film gets the same deep-space backdrop as the app.
+  drawBackdrop(c) {
+    if (!this.bg) {
+      this.bg = c.createRadialGradient(this.w * 0.5, this.h * 0.42, 60, this.w * 0.5, this.h * 0.42, this.w * 0.72);
+      this.bg.addColorStop(0, '#12202f');
+      this.bg.addColorStop(0.55, '#0a121d');
+      this.bg.addColorStop(1, '#04070c');
+    }
+    c.fillStyle = this.bg;
+    c.fillRect(0, 0, this.w, this.h);
+  }
 
   drawOverlay(c) {
     const W = this.w, H = this.h;

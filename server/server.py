@@ -333,6 +333,15 @@ class Handler(SimpleHTTPRequestHandler):
             if since:
                 out.pop("topology", None)
             return self._json(out)
+        if p == "/api/filmprogress":
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            if "err" in qs:
+                print(f"film ERROR: {qs['err'][0][:400]}", flush=True)
+            elif "phase" in qs:
+                print(f"film phase: {qs['phase'][0]}", flush=True)
+            else:
+                print(f"film: {qs.get('s',['?'])[0]}s / {qs.get('of',['?'])[0]}s", flush=True)
+            return self._json({"ok": True})
         if p == "/api/proxy":
             qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             target = (qs.get("url") or [""])[0]
@@ -484,3 +493,228 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ================================================================
+# Phase 1 Enhancements: Auth, Projects, Reporting, Agents
+# ================================================================
+
+from auth import require_auth, require_role, authenticate_user, create_user
+from projects import create_project, get_project, list_user_projects, create_campaign
+from disease_panels import get_panel, list_panels, get_targets_by_program
+from reporting import Report, generate_screening_report
+from paper_generator import generate_paper_from_session
+from agents import OptimizationAgent, AnalysisAgent, WorkflowOrchestrator
+
+# ================================================================
+# User Authentication Endpoints
+# ================================================================
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Authenticate a user and return JWT token."""
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    
+    token = authenticate_user(email, password)
+    if token:
+        return jsonify({'token': token, 'email': email}), 200
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    """Register a new user account."""
+    data = request.json
+    email = data.get('email')
+    name = data.get('name')
+    role = data.get('role', 'researcher')
+    institution = data.get('institution', '')
+    
+    user = create_user(email, name, role, institution)
+    token = authenticate_user(email, data.get('password', ''))
+    
+    return jsonify({
+        'user_id': user.user_id,
+        'token': token,
+        'message': 'Account created'
+    }), 201
+
+# ================================================================
+# Project Management Endpoints
+# ================================================================
+
+@app.route('/api/projects', methods=['POST'])
+@require_auth
+def create_new_project():
+    """Create a new research project."""
+    data = request.json
+    project = create_project(
+        name=data.get('name'),
+        owner_id=request.user['user_id'],
+        program=data.get('program'),  # ALS, Parkinsons, Shriners
+        description=data.get('description', '')
+    )
+    return jsonify(project.to_dict()), 201
+
+@app.route('/api/projects', methods=['GET'])
+@require_auth
+def get_projects():
+    """List user's projects."""
+    projects = list_user_projects(request.user['user_id'])
+    return jsonify([p.to_dict() for p in projects]), 200
+
+@app.route('/api/projects/<project_id>', methods=['GET'])
+@require_auth
+def get_project_details(project_id):
+    """Get project details."""
+    project = get_project(project_id)
+    if not project:
+        return jsonify({'error': 'Project not found'}), 404
+    return jsonify(project.to_dict()), 200
+
+# ================================================================
+# Disease Panels Endpoints
+# ================================================================
+
+@app.route('/api/disease-panels', methods=['GET'])
+def get_disease_panels():
+    """List available disease panels."""
+    panels = {}
+    for disease in list_panels():
+        panel = get_panel(disease)
+        panels[disease] = {
+            'name': panel['name'],
+            'description': panel['description'],
+            'target_count': len(panel['targets']),
+            'programs': panel['programs'],
+        }
+    return jsonify(panels), 200
+
+@app.route('/api/disease-panels/<disease>', methods=['GET'])
+def get_disease_panel(disease):
+    """Get full disease panel with all targets."""
+    panel = get_panel(disease)
+    if not panel:
+        return jsonify({'error': 'Disease panel not found'}), 404
+    return jsonify(panel), 200
+
+@app.route('/api/disease-panels/<disease>/top-targets', methods=['GET'])
+def get_top_targets(disease):
+    """Get top targets by prevalence in a disease."""
+    top_n = request.args.get('top_n', 5, type=int)
+    from disease_panels import get_top_targets_by_prevalence
+    targets = get_top_targets_by_prevalence(disease, top_n)
+    return jsonify(targets), 200
+
+# ================================================================
+# Reporting & Paper Generation Endpoints
+# ================================================================
+
+@app.route('/api/reports/<campaign_id>/generate', methods=['POST'])
+@require_auth
+def generate_report(campaign_id):
+    """Generate a publication-ready report for a screening campaign."""
+    data = request.json
+    results = data.get('results', [])
+    
+    report = generate_screening_report(
+        project_id=data.get('project_id'),
+        campaign_id=campaign_id,
+        target=data.get('target'),
+        results=results
+    )
+    
+    return jsonify({
+        'markdown': report.to_markdown(),
+        'json': json.loads(report.to_json()),
+    }), 200
+
+@app.route('/api/papers/generate', methods=['POST'])
+@require_auth
+def generate_paper():
+    """Generate a full research paper from a screening session."""
+    session_data = request.json
+    paper = generate_paper_from_session(session_data)
+    
+    format = request.args.get('format', 'markdown')  # markdown, latex, json
+    
+    if format == 'latex':
+        return paper.to_latex(), 200, {'Content-Type': 'text/plain'}
+    elif format == 'json':
+        return paper.to_json(), 200, {'Content-Type': 'application/json'}
+    else:  # markdown
+        return paper.to_markdown(), 200, {'Content-Type': 'text/markdown'}
+
+# ================================================================
+# Multi-Agent System Endpoints
+# ================================================================
+
+opt_agent = OptimizationAgent()
+ana_agent = AnalysisAgent()
+orchestrator = WorkflowOrchestrator()
+
+@app.route('/api/agents', methods=['GET'])
+def list_agents():
+    """List available research agents."""
+    agents = {
+        'optimizer': opt_agent.to_dict(),
+        'analyst': ana_agent.to_dict(),
+    }
+    return jsonify(agents), 200
+
+@app.route('/api/agents/optimize/docking-params', methods=['POST'])
+@require_auth
+def optimize_docking_params():
+    """Agent: Optimize docking parameters for a target."""
+    data = request.json
+    result = opt_agent.optimize_docking_params(
+        target_id=data.get('target_id'),
+        validation_compounds=data.get('validation_compounds', [])
+    )
+    return jsonify(result), 200
+
+@app.route('/api/agents/analyze/hotspots', methods=['POST'])
+@require_auth
+def analyze_hotspots():
+    """Agent: Identify chemical hotspots in screening results."""
+    data = request.json
+    result = ana_agent.identify_hotspots(
+        compounds=data.get('compounds', []),
+        target=data.get('target')
+    )
+    return jsonify(result), 200
+
+@app.route('/api/agents/analyze/sa-score', methods=['POST'])
+@require_auth
+def predict_sa():
+    """Agent: Predict synthetic accessibility of compounds."""
+    data = request.json
+    result = ana_agent.predict_synthetic_accessibility(
+        compound_ids=data.get('compound_ids', [])
+    )
+    return jsonify(result), 200
+
+@app.route('/api/workflows/lead-optimization', methods=['POST'])
+@require_auth
+def create_lead_opt_workflow():
+    """Create an automated lead optimization workflow."""
+    data = request.json
+    workflow = orchestrator.create_lead_optimization_workflow(
+        target_id=data.get('target_id'),
+        lead_compound=data.get('lead_compound')
+    )
+    return jsonify(workflow), 201
+
+@app.route('/api/workflows/validation', methods=['POST'])
+@require_auth
+def create_validation_workflow():
+    """Create an automated validation workflow (MD + MMGBSA + report)."""
+    data = request.json
+    workflow = orchestrator.create_validation_workflow(
+        top_compounds=data.get('top_compounds', []),
+        target_id=data.get('target_id')
+    )
+    return jsonify(workflow), 201
+
+if __name__ == '__main__':
+    app.run(debug=True, port=8000)

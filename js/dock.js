@@ -1,3 +1,5 @@
+import { yieldToEventLoop } from './util.js';
+
 // Docking toolkit: Vina-like empirical scoring, pocket detection, flexible Monte Carlo docking.
 // The scoring terms and weights follow AutoDock Vina (Trott & Olson 2010); this is a re-implementation for
 // interactive use, not a validated replacement for Vina/Glide. Treat scores as relative rankings.
@@ -230,7 +232,7 @@ export async function dockLigand(grid, lig, center, { runs = 8, steps = 1500, bo
       if (s % 250 === 0) {
         if (shouldStop && shouldStop()) break;
         onProgress && onProgress({ run, step: s, best: poses.length ? Math.min(bestE, poses[0].score) : bestE, coords: best });
-        await new Promise((r) => setTimeout(r, 0));
+        await yieldToEventLoop();
       }
     }
     poses.push({ coords: best, score: vinaScore(grid, lig, best, { nrot: rot.length }) });
