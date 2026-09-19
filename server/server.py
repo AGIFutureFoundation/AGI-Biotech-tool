@@ -846,3 +846,241 @@ def start_agent_workflow(workflow_name):
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
+
+# ========================================================================== Phase 3: Async Workflows
+
+from server.agent_orchestrator import AgentOrchestrator, WorkflowExecutor
+from server.websocket_streaming import StreamingServer, VRDataFrame
+import asyncio
+import websockets
+from datetime import datetime
+
+# Initialize orchestrator and streaming server
+orchestrator = AgentOrchestrator()
+streaming_server = None
+
+@app.route('/api/workflows/execute', methods=['POST'])
+@require_auth
+def execute_workflow():
+    """Start an async workflow (lead_optimization, validation_campaign, discovery_sprint)."""
+    data = request.json
+    template = data.get('template')
+    target = data.get('target')
+    compounds = data.get('compounds', [])
+    
+    if template not in ['lead_optimization', 'validation_campaign', 'discovery_sprint']:
+        return jsonify({'error': 'Unknown template'}), 400
+    
+    # Async execution in background
+    workflow_id = str(uuid.uuid4())
+    user = g.user if hasattr(g, 'user') else 'anonymous'
+    
+    try:
+        # Don't await here - Flask can't do async natively
+        # Just queue the work in orchestrator
+        orchestrator.queue_workflow(
+            workflow_id=workflow_id,
+            template=template,
+            target=target,
+            compounds=compounds,
+            user_id=user,
+        )
+        
+        return jsonify({
+            'workflow_id': workflow_id,
+            'template': template,
+            'target': target,
+            'status': 'queued',
+            'progress_url': f'/api/workflows/{workflow_id}/progress',
+            'results_url': f'/api/workflows/{workflow_id}/results',
+        }), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/workflows/<workflow_id>/progress', methods=['GET'])
+@require_auth
+def get_workflow_progress(workflow_id):
+    """Get real-time progress for a running workflow."""
+    progress = orchestrator.get_workflow_progress(workflow_id)
+    
+    if progress is None:
+        return jsonify({'error': 'Workflow not found'}), 404
+    
+    return jsonify(progress), 200
+
+@app.route('/api/workflows/<workflow_id>/results', methods=['GET'])
+@require_auth
+def get_workflow_results(workflow_id):
+    """Fetch final results from completed workflow."""
+    results = orchestrator.get_workflow_results(workflow_id)
+    
+    if results is None:
+        return jsonify({'error': 'Workflow not found or not complete'}), 404
+    
+    return jsonify(results), 200
+
+@app.route('/api/workflows/<workflow_id>/cancel', methods=['POST'])
+@require_auth
+def cancel_workflow(workflow_id):
+    """Cancel a running workflow."""
+    success = orchestrator.cancel_workflow(workflow_id)
+    
+    if not success:
+        return jsonify({'error': 'Workflow not found or already finished'}), 404
+    
+    return jsonify({'workflow_id': workflow_id, 'status': 'cancelled'}), 200
+
+@app.route('/api/agent/memory/suggest', methods=['GET'])
+@require_auth
+def get_memory_suggestions():
+    """Get AI suggestions based on past experiments."""
+    target = request.args.get('target')
+    
+    if not target:
+        return jsonify({'error': 'target parameter required'}), 400
+    
+    suggestions = orchestrator.agent_memory.suggest_optimization(target, {})
+    
+    return jsonify({
+        'target': target,
+        'suggestions': suggestions,
+    }), 200
+
+@app.route('/api/agent/patterns', methods=['GET'])
+@require_auth
+def get_learned_patterns():
+    """List all learned optimization patterns."""
+    patterns = orchestrator.agent_memory.get_learned_patterns()
+    
+    return jsonify({
+        'patterns': patterns,
+        'count': len(patterns),
+    }), 200
+
+@app.route('/api/stream/subscribe', methods=['POST'])
+@require_auth
+def subscribe_to_stream():
+    """Get WebSocket URL for real-time updates."""
+    data = request.json
+    stream_types = data.get('stream_types', ['docking', 'md', 'analysis'])
+    
+    return jsonify({
+        'ws_url': f'ws://localhost:8000/ws',
+        'stream_types': stream_types,
+        'message': 'Connect to WebSocket for real-time updates',
+    }), 200
+
+# ========================================================================== WebSocket Streaming
+
+async def websocket_handler(websocket, path):
+    """Handle WebSocket connections for real-time VR updates."""
+    client_id = str(uuid.uuid4())
+    
+    try:
+        # Register client
+        await streaming_server.register_client(client_id, websocket)
+        
+        # Keep connection alive and forward any messages
+        async for message in websocket:
+            data = json.loads(message)
+            
+            if data.get('type') == 'subscribe':
+                # Client is subscribing to specific streams
+                stream_types = data.get('stream_types', [])
+                await streaming_server.subscribe_client(client_id, stream_types)
+            
+            elif data.get('type') == 'heartbeat':
+                # Keep-alive ping
+                await websocket.send(json.dumps({'type': 'pong'}))
+    
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    finally:
+        await streaming_server.unregister_client(client_id)
+
+def start_websocket_server():
+    """Start WebSocket server in background thread."""
+    global streaming_server
+    streaming_server = StreamingServer()
+    
+    async def run_ws():
+        async with websockets.serve(websocket_handler, '0.0.0.0', 8001):
+            await asyncio.Future()  # run forever
+    
+    def ws_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_ws())
+    
+    t = threading.Thread(target=ws_thread, daemon=True)
+    t.start()
+
+# ========================================================================== Master Agent Integration
+
+from server.master_agent import MasterAgent
+
+master_agent = None
+
+def initialize_master_agent():
+    """Initialize master agent on server startup."""
+    global master_agent
+    master_agent = MasterAgent(
+        orchestrator=orchestrator,
+        streaming_server=streaming_server,
+    )
+
+@app.route('/api/voice/process', methods=['POST'])
+@require_auth
+def process_voice_command():
+    """Process voice command through master agent."""
+    data = request.json
+    voice_text = data.get('text', '')
+    
+    if not master_agent:
+        return jsonify({'error': 'Master agent not initialized'}), 500
+    
+    try:
+        response = master_agent.process_voice_command(voice_text)
+        
+        return jsonify({
+            'command': voice_text,
+            'response': response,
+            'timestamp': datetime.utcnow().isoformat(),
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/voice/status', methods=['GET'])
+@require_auth
+def get_voice_status():
+    """Get master agent and team status."""
+    if not master_agent:
+        return jsonify({'error': 'Master agent not initialized'}), 500
+    
+    return jsonify({
+        'master_agent': {
+            'status': 'ready',
+            'listening': True,
+        },
+        'team': {
+            'optimizer': orchestrator.get_agent_status('optimizer'),
+            'analyst': orchestrator.get_agent_status('analyst'),
+            'orchestrator': orchestrator.get_agent_status('orchestrator'),
+        },
+        'active_workflows': orchestrator.get_active_workflow_count(),
+    }), 200
+
+# ========================================================================== Startup
+
+if __name__ == '__main__':
+    # Start WebSocket server
+    start_websocket_server()
+    
+    # Initialize master agent
+    initialize_master_agent()
+    
+    print('✅ Phase 3: Agent orchestrator and streaming server initialized')
+    print('🚀 biodao.blockchain server running on http://localhost:8000')
+    print('📡 WebSocket streaming on ws://localhost:8001')
+    
+    app.run(debug=True, port=8000, threaded=True)

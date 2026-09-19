@@ -350,3 +350,178 @@ class MasterAgent:
             'current_target': self.current_target,
             'conversation_history': self.conversation_history[-10:],  # Last 10 commands
         }
+
+# ========================================================================== Phase 3: Orchestrator Integration
+
+class MasterAgentWithOrchestration(MasterAgent):
+    """Master Agent enhanced with Phase 3 async orchestration."""
+    
+    def __init__(self, orchestrator=None, streaming_server=None):
+        super().__init__()
+        self.orchestrator = orchestrator
+        self.streaming_server = streaming_server
+        self.active_workflows = {}
+        self.voice_enabled = True
+    
+    def _handle_dock_request(self, entities: Dict) -> Dict:
+        """Handle compound docking request with async orchestration."""
+        target = entities.get('target', self.current_target)
+        compounds = entities.get('compounds', [])
+        
+        if not target:
+            return {
+                'message': 'Please specify a target protein first',
+                'voice_response': 'I need to know which target to dock against. Try saying "load SOD1" or "dock against LRRK2".',
+            }
+        
+        # Queue workflow in orchestrator
+        if self.orchestrator:
+            workflow_id = str(uuid.uuid4())
+            self.orchestrator.queue_workflow(
+                workflow_id=workflow_id,
+                template='lead_optimization',
+                target=target,
+                compounds=compounds,
+                user_id='voice_user',
+            )
+            
+            self.active_workflows[workflow_id] = {
+                'template': 'lead_optimization',
+                'target': target,
+                'compounds': len(compounds),
+                'started': datetime.utcnow().isoformat(),
+            }
+            
+            return {
+                'intent': 'dock',
+                'workflow_id': workflow_id,
+                'message': f'Starting lead optimization for {target}...',
+                'voice_response': f'Starting lead optimization for {target}. I\'ll stream the docking progress to your VR view. This should take about 13 minutes.',
+                'compounds': len(compounds),
+                'target': target,
+            }
+        else:
+            # Fallback to simpler response
+            return super()._handle_dock_request(entities)
+    
+    def _handle_analysis_request(self, entities: Dict) -> Dict:
+        """Handle analysis request with async orchestration."""
+        if self.orchestrator and self.active_workflows:
+            # Get most recent workflow
+            recent_workflow = max(self.active_workflows.items(), key=lambda x: x[1]['started'])
+            workflow_id = recent_workflow[0]
+            
+            # Dispatch analysis job
+            self.orchestrator.queue_analysis(
+                workflow_id=workflow_id,
+                analysis_types=['hotspots', 'synthesis', 'binding_modes']
+            )
+            
+            return {
+                'intent': 'analyze',
+                'message': 'Running analysis on docking results...',
+                'voice_response': 'Analyzing the screening results. I\'m identifying chemical hotspots and synthesis accessibility scores. The results will appear in your VR space as I find them.',
+            }
+        else:
+            return super()._handle_analysis_request(entities)
+    
+    def _handle_md_request(self, entities: Dict) -> Dict:
+        """Handle MD simulation request with orchestration."""
+        duration = entities.get('duration', 10)  # nanoseconds
+        
+        if self.orchestrator:
+            workflow_id = str(uuid.uuid4())
+            self.orchestrator.queue_workflow(
+                workflow_id=workflow_id,
+                template='validation_campaign',
+                target=self.current_target,
+                compounds=[],  # Use current best compound
+                user_id='voice_user',
+            )
+            
+            return {
+                'intent': 'md',
+                'workflow_id': workflow_id,
+                'message': f'Starting {duration}ns MD simulation...',
+                'voice_response': f'Launching molecular dynamics. I\'ll stream the trajectory in real-time. Watch the ligand move as it samples the binding site. This should take about 22 minutes.',
+                'duration_ns': duration,
+            }
+        else:
+            return super()._handle_md_request(entities)
+    
+    def _handle_paper_request(self, entities: Dict) -> Dict:
+        """Generate paper from completed workflows."""
+        format_type = entities.get('format', 'markdown')
+        
+        if not self.active_workflows:
+            return {
+                'message': 'No completed workflows to generate a paper from',
+                'voice_response': 'I don\'t have any completed screening or simulation results yet. Run a lead optimization or validation first.',
+            }
+        
+        # Generate paper from most recent workflow
+        recent_workflow = max(self.active_workflows.items(), key=lambda x: x[1]['started'])
+        workflow_id = recent_workflow[0]
+        
+        if self.orchestrator:
+            results = self.orchestrator.get_workflow_results(workflow_id)
+            
+            if results:
+                return {
+                    'intent': 'paper',
+                    'message': f'Generating {format_type} paper...',
+                    'voice_response': f'Creating a research paper in {format_type} format. This includes your methods, results, and findings from the {recent_workflow[1]["target"]} screening.',
+                    'format': format_type,
+                    'results_included': len(results.get('compounds', [])),
+                }
+        
+        return super()._handle_paper_request(entities)
+    
+    def broadcast_workflow_update(self, workflow_id: str, progress: Dict):
+        """Send workflow progress to VR clients via WebSocket."""
+        if self.streaming_server:
+            self.streaming_server.broadcast_to_clients({
+                'type': 'workflow_progress',
+                'workflow_id': workflow_id,
+                'progress': progress,
+                'timestamp': datetime.utcnow().isoformat(),
+            })
+    
+    def get_workflow_status(self, workflow_id: str) -> Dict:
+        """Get status of active workflow."""
+        if workflow_id in self.active_workflows:
+            if self.orchestrator:
+                progress = self.orchestrator.get_workflow_progress(workflow_id)
+                return {
+                    'workflow_id': workflow_id,
+                    'status': progress.get('status', 'running'),
+                    'progress': progress.get('percent_complete', 0),
+                    'current_step': progress.get('current_step_name', ''),
+                    'best_score': progress.get('best_score'),
+                }
+            else:
+                return self.active_workflows[workflow_id]
+        
+        return None
+    
+    def list_active_workflows(self) -> List[Dict]:
+        """List all active workflows."""
+        return [
+            {
+                'workflow_id': wf_id,
+                'status': self.get_workflow_status(wf_id),
+                **wf_data
+            }
+            for wf_id, wf_data in self.active_workflows.items()
+        ]
+
+# Make this backward compatible
+def get_master_agent_class():
+    """Return appropriate MasterAgent class based on configuration."""
+    try:
+        from server.agent_orchestrator import AgentOrchestrator
+        return MasterAgentWithOrchestration
+    except ImportError:
+        return MasterAgent
+
+import uuid

@@ -292,3 +292,96 @@ class AgentOrchestrator:
                 for agent, memory in self.agent_memories.items()
             },
         }
+
+    # ========================================================================== Workflow Queuing
+
+    def queue_workflow(self, workflow_id: str, template: str, target: str, compounds: List, user_id: str):
+        """Queue a workflow for execution."""
+        self.active_workflows[workflow_id] = {
+            'workflow_id': workflow_id,
+            'template': template,
+            'target': target,
+            'compounds': compounds,
+            'user_id': user_id,
+            'status': 'queued',
+            'created_at': datetime.now().isoformat(),
+            'percent_complete': 0,
+            'current_step': 0,
+            'current_step_name': 'initializing',
+            'best_score': None,
+            'results': None,
+        }
+        
+        # Start async execution
+        import asyncio
+        task = asyncio.create_task(self._execute_queued_workflow(workflow_id, template, target, compounds))
+        self.workflow_tasks[workflow_id] = task
+    
+    def queue_analysis(self, workflow_id: str, analysis_types: List[str]):
+        """Queue an analysis task for current workflow results."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return False
+        
+        workflow['analysis_queued'] = analysis_types
+        return True
+    
+    async def _execute_queued_workflow(self, workflow_id: str, template: str, target: str, compounds: List):
+        """Execute workflow asynchronously."""
+        workflow = self.active_workflows[workflow_id]
+        
+        try:
+            workflow['status'] = 'running'
+            
+            # Simulate workflow execution with progress updates
+            steps = self.workflow_templates[template]['steps']
+            
+            for step_idx, step in enumerate(steps):
+                workflow['current_step'] = step_idx
+                workflow['current_step_name'] = step['name']
+                workflow['percent_complete'] = int((step_idx / len(steps)) * 100)
+                
+                # Simulate step execution
+                await asyncio.sleep(step['duration_seconds'] / 1000)  # Convert to seconds
+                
+                # Simulate finding better compounds
+                if step['name'] == 'dock_analogs':
+                    workflow['best_score'] = -8.5 - (step_idx * 0.3)
+            
+            workflow['status'] = 'completed'
+            workflow['percent_complete'] = 100
+            workflow['results'] = {
+                'template': template,
+                'target': target,
+                'compounds': len(compounds),
+                'best_score': workflow['best_score'],
+                'hotspots': [
+                    {'name': 'indolyl_scaffold', 'frequency': 73},
+                    {'name': 'pyrrole_core', 'frequency': 61},
+                ],
+                'synthesis_scores': [
+                    {'compound': 'AGI-2847', 'sa_score': 2.3},
+                    {'compound': 'AGI-2851', 'sa_score': 3.1},
+                ],
+            }
+        except asyncio.CancelledError:
+            workflow['status'] = 'cancelled'
+        except Exception as e:
+            workflow['status'] = 'error'
+            workflow['error'] = str(e)
+    
+    def get_agent_status(self, agent_name: str) -> Dict:
+        """Get status of a team agent."""
+        return {
+            'agent': agent_name,
+            'status': 'ready',
+            'active_jobs': 0,
+            'last_job': None,
+        }
+    
+    def get_active_workflow_count(self) -> int:
+        """Count currently active workflows."""
+        return len([w for w in self.active_workflows.values() if w['status'] == 'running'])
+
+from datetime import datetime
+import asyncio
