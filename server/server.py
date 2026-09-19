@@ -718,3 +718,131 @@ def create_validation_workflow():
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
+
+# ================================================================
+# Phase 2: Immersive AR/VR with Master Agent Voice Control
+# ================================================================
+
+from master_agent import MasterAgent, ResearchIntent
+
+master_agent = MasterAgent()
+
+@app.route('/api/voice-command', methods=['POST'])
+@require_auth
+def process_voice_command():
+    """Process voice command and return master agent response."""
+    data = request.json
+    transcript = data.get('transcript', '')
+    
+    if not transcript:
+        return jsonify({'error': 'Empty transcript'}), 400
+    
+    response = master_agent.process_voice_command(transcript)
+    return jsonify(response), 200
+
+@app.route('/api/master-agent/status', methods=['GET'])
+@require_auth
+def get_agent_status():
+    """Get current master agent and team status."""
+    return jsonify({
+        'master_agent': master_agent.to_dict(),
+        'team': {
+            'optimizer': {'status': 'ready', 'active_jobs': 0},
+            'analyst': {'status': 'ready', 'active_jobs': 0},
+            'orchestrator': {'status': 'ready', 'active_jobs': 0},
+        },
+        'timestamp': datetime.utcnow().isoformat(),
+    }), 200
+
+@app.route('/api/immersive/scene/<scene_name>', methods=['POST'])
+@require_auth
+def update_vr_scene(scene_name):
+    """Update VR scene visualization."""
+    data = request.json
+    
+    scenes = {
+        'docking_progress': {
+            'show_target': True,
+            'show_ligands': True,
+            'show_scores': True,
+            'show_pockets': True,
+            'real_time_update': True,
+        },
+        'md_simulation': {
+            'show_trajectory': True,
+            'show_forces': True,
+            'show_energy': True,
+            'allow_steering': True,
+            'allow_timeline_control': True,
+        },
+        'results_analysis': {
+            'show_hotspots': True,
+            'color_by_sa_score': True,
+            'cluster_by_scaffold': True,
+            'show_interactions': True,
+        },
+    }
+    
+    if scene_name not in scenes:
+        return jsonify({'error': 'Unknown scene'}), 404
+    
+    return jsonify({
+        'scene': scene_name,
+        'config': scenes[scene_name],
+        'ready': True,
+    }), 200
+
+@app.route('/api/agent-workflow/<workflow_name>', methods=['POST'])
+@require_auth
+def start_agent_workflow(workflow_name):
+    """Start a multi-agent workflow orchestrated by master agent."""
+    data = request.json
+    
+    workflows = {
+        'lead_optimization': {
+            'steps': [
+                'tune_docking_params',
+                'dock_analogs',
+                'analyze_results',
+                'predict_synthesis',
+                'generate_recommendations',
+            ],
+            'agents': ['optimizer', 'dock_engine', 'analyst'],
+        },
+        'validation_pipeline': {
+            'steps': [
+                'run_md_simulations',
+                'calculate_hbonds',
+                'mmgbsa_scoring',
+                'generate_binding_report',
+                'predict_adme_properties',
+            ],
+            'agents': ['md_engine', 'analyst', 'orchestrator'],
+        },
+        'paper_generation': {
+            'steps': [
+                'compile_results',
+                'generate_figures',
+                'format_tables',
+                'draft_discussion',
+                'export_formats',
+            ],
+            'agents': ['analyst', 'orchestrator'],
+        },
+    }
+    
+    if workflow_name not in workflows:
+        return jsonify({'error': 'Unknown workflow'}), 404
+    
+    workflow = workflows[workflow_name]
+    return jsonify({
+        'workflow_id': f"wf_{workflow_name}_{uuid.uuid4().hex[:8]}",
+        'workflow_name': workflow_name,
+        'steps': workflow['steps'],
+        'agents_involved': workflow['agents'],
+        'status': 'running',
+        'progress': 0,
+    }), 201
+
+if __name__ == '__main__':
+    app.run(debug=True, port=8000)

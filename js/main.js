@@ -1517,3 +1517,159 @@ async function boot() {
 boot();
 Object.assign(S, { scene, camera, renderer, workspace, model, overlay, xr, controls });
 window.AGI = S; // handy for the console
+
+// ================================================================
+// Phase 2: Immersive Voice Control & Master Agent Integration
+// ================================================================
+
+import { ImmersiveXRInterface } from './immersive-xr.js';
+
+let immersiveInterface = null;
+
+async function initializeImmersiveXR() {
+  /**Initialize voice control and master agent in VR.*/
+  if (!navigator.xr) return;  // XR not supported
+  
+  immersiveInterface = new ImmersiveXRInterface(renderer, scene, workspace);
+  console.log('✅ Immersive XR initialized with voice control');
+}
+
+async function sendVoiceCommand(transcript) {
+  /**Process voice input through master agent.*/
+  if (!transcript.trim()) return;
+  
+  try {
+    const response = await fetch('/api/voice-command', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`,
+      },
+      body: JSON.stringify({ transcript }),
+    });
+    
+    const result = await response.json();
+    
+    // Display response in immersive interface
+    if (immersiveInterface) {
+      immersiveInterface.processMasterAgentResponse(result);
+    }
+    
+    // Log to UI
+    toast(`🎤 Command: ${transcript}`);
+    
+    // Execute action
+    if (result.action) {
+      await executeAgentAction(result.action);
+    }
+    
+  } catch (error) {
+    console.error('Voice command error:', error);
+    toast('Voice command failed', true);
+  }
+}
+
+async function executeAgentAction(action) {
+  /**Execute the action dictated by master agent.*/
+  const type = action.type;
+  
+  if (type === 'dock_campaign') {
+    await doDock({ runs: 8, steps: 2000 });
+  } else if (type === 'analysis_campaign') {
+    // Trigger analyst agent
+    const response = await fetch('/api/agents/analyze/hotspots', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+      body: JSON.stringify({ compounds: S.dock.poses }),
+    });
+    const result = await response.json();
+    toast(`Found hotspots: ${result.hotspot_motifs.join(', ')}`);
+  } else if (type === 'run_md') {
+    startMD();
+    setTimeout(() => stopMD(), (action.duration.split(' ')[0] * 1000));
+  } else if (type === 'generate_report') {
+    const response = await fetch(`/api/reports/camp_001/generate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+      body: JSON.stringify({ project_id: 'proj_001', target: S.protein?.name }),
+    });
+    const report = await response.json();
+    downloadReport(report.markdown, 'screening_report.md');
+  } else if (type === 'generate_paper') {
+    const response = await fetch('/api/papers/generate?format=latex', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+      body: JSON.stringify({ disease: 'ALS', target: S.protein?.name }),
+    });
+    const paper = await response.text();
+    downloadReport(paper, 'research_paper.tex');
+  }
+}
+
+// Wire up voice button in VR headset
+function setupVoiceButton() {
+  /**Enable voice input via VR controller or microphone button.*/
+  const voiceButton = document.createElement('button');
+  voiceButton.id = 'btn-voice-control';
+  voiceButton.textContent = '🎤 Voice';
+  voiceButton.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: #39d98a;
+    color: #0a0f18;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1000;
+  `;
+  
+  let isListening = false;
+  
+  voiceButton.onclick = () => {
+    if (!immersiveInterface) {
+      toast('XR not available', true);
+      return;
+    }
+    
+    if (isListening) {
+      // Stop and process
+      const transcript = immersiveInterface.stopVoiceSession();
+      if (transcript) {
+        sendVoiceCommand(transcript);
+      }
+      voiceButton.textContent = '🎤 Voice';
+      voiceButton.style.background = '#39d98a';
+      isListening = false;
+    } else {
+      // Start listening
+      immersiveInterface.startVoiceSession();
+      voiceButton.textContent = '⏹️ Stop';
+      voiceButton.style.background = '#ff6b6b';
+      isListening = true;
+    }
+  };
+  
+  document.body.appendChild(voiceButton);
+}
+
+// Initialize immersive XR on scene load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeImmersiveXR();
+    setupVoiceButton();
+  });
+} else {
+  initializeImmersiveXR();
+  setupVoiceButton();
+}
+
+// Animation loop update for agent avatars
+const originalAnimateLoop = () => {
+  if (immersiveInterface) {
+    immersiveInterface.animate();
+  }
+};
