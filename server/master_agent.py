@@ -138,7 +138,7 @@ class MasterAgent:
         elif intent == ResearchIntent.GENERATE_REPORT:
             return self._handle_report_request()
         elif intent == ResearchIntent.GENERATE_PAPER:
-            return self._handle_paper_request()
+            return self._handle_paper_request(entities)
         elif intent == ResearchIntent.RUN_MD:
             return self._handle_md_request(entities)
         elif intent == ResearchIntent.LOAD_TARGET:

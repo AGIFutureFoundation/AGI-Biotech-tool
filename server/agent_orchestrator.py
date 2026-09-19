@@ -121,8 +121,8 @@ class WorkflowExecutor:
     async def execute_workflow(self, workflow_name: str, context: Dict, agent_team: Dict) -> Dict:
         """Execute a workflow template with given context."""
         if workflow_name not in self.workflow_templates:
-            return {'error': f'Unknown workflow: {workflow_name}'}
-        
+            raise ValueError(f'Unknown workflow: {workflow_name}')
+
         template = self.workflow_templates[workflow_name]
         workflow_id = str(uuid.uuid4())[:8]
         
@@ -173,7 +173,7 @@ class WorkflowExecutor:
         """Execute a single workflow step."""
         agent = agent_team.get(agent_name)
         if not agent:
-            return {'error': f'Agent not found: {agent_name}'}
+            raise ValueError(f'Agent not found: {agent_name}')
         
         # Simulate task execution
         await asyncio.sleep(0.5)  # Placeholder for actual task
@@ -204,25 +204,46 @@ class WorkflowExecutor:
 
 class AgentOrchestrator:
     """Orchestrates team of agents with persistent memory and async execution."""
-    
+
     def __init__(self, master_agent, agent_team: Dict):
         self.master_agent = master_agent
         self.agent_team = agent_team
         self.workflow_executor = WorkflowExecutor()
-        
+
         # Persistent memory for each agent
         self.agent_memories = {
             name: AgentMemory(name) for name in agent_team.keys()
         }
-        
+
         # Communication channels
         self.message_queue = asyncio.Queue()
         self.broadcast_listeners = []
-        
+
         # State tracking
         self.team_state = {agent: AgentState.IDLE.value for agent in agent_team}
         self.current_project = None
         self.research_history = []
+
+        # Workflow tracking
+        self.active_workflows = {}
+        self.workflow_tasks = {}
+        self.workflow_templates = {
+            'lead_optimization': {'steps': [
+                {'name': 'tune_params', 'duration_seconds': 120},
+                {'name': 'dock_analogs', 'duration_seconds': 300},
+                {'name': 'analyze_results', 'duration_seconds': 180},
+                {'name': 'predict_synthesis', 'duration_seconds': 120},
+            ]},
+            'validation_campaign': {'steps': [
+                {'name': 'run_md', 'duration_seconds': 600},
+                {'name': 'analyze_binding', 'duration_seconds': 300},
+            ]},
+            'discovery_sprint': {'steps': [
+                {'name': 'screen_library', 'duration_seconds': 480},
+                {'name': 'find_hotspots', 'duration_seconds': 240},
+            ]},
+        }
+        self.agent_memory = self.agent_memories.get('orchestrator') or AgentMemory('orchestrator')
 
     async def broadcast_message(self, sender: str, message: Dict):
         """Broadcast message to all agents and listeners."""
@@ -312,10 +333,13 @@ class AgentOrchestrator:
             'results': None,
         }
         
-        # Start async execution
-        import asyncio
-        task = asyncio.create_task(self._execute_queued_workflow(workflow_id, template, target, compounds))
-        self.workflow_tasks[workflow_id] = task
+        # Start async execution (if event loop is running)
+        try:
+            task = asyncio.create_task(self._execute_queued_workflow(workflow_id, template, target, compounds))
+            self.workflow_tasks[workflow_id] = task
+        except RuntimeError:
+            # No running event loop - will be executed by Flask's async context
+            pass
     
     def queue_analysis(self, workflow_id: str, analysis_types: List[str]):
         """Queue an analysis task for current workflow results."""
@@ -383,5 +407,43 @@ class AgentOrchestrator:
         """Count currently active workflows."""
         return len([w for w in self.active_workflows.values() if w['status'] == 'running'])
 
-from datetime import datetime
-import asyncio
+
+    def get_workflow_progress(self, workflow_id: str) -> Optional[Dict]:
+        """Get progress of a queued/running workflow."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return None
+        
+        return {
+            'workflow_id': workflow_id,
+            'status': workflow['status'],
+            'percent_complete': workflow['percent_complete'],
+            'current_step': workflow['current_step'],
+            'current_step_name': workflow['current_step_name'],
+            'best_score': workflow['best_score'],
+            'template': workflow['template'],
+            'target': workflow['target'],
+        }
+    
+    def get_workflow_results(self, workflow_id: str) -> Optional[Dict]:
+        """Get results from a completed workflow."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow or workflow['status'] != 'completed':
+            return None
+        
+        return workflow['results']
+    
+    def cancel_workflow(self, workflow_id: str) -> bool:
+        """Cancel a running workflow."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return False
+        
+        workflow['status'] = 'cancelled'
+        
+        # Cancel the task if it's running
+        task = self.workflow_tasks.get(workflow_id)
+        if task:
+            task.cancel()
+        
+        return True
