@@ -1,21 +1,20 @@
-"""Biotech Database Integration via MCP
+"""Registry of biotech databases, and a query router over the ones with a real client.
 
-Connects biodao.blockchain to 30+ free biotech & research databases
-including literature, proteins, genomics, drugs, and clinical data.
-
-Enables researchers to query:
-- PubMed, ArXiv, bioRxiv (literature)
-- UniProt, PDB, AlphaFold (proteins)
-- Ensembl, GenBank, ClinVar (genomics)
-- ChEMBL, PubChem (compounds)
-- STRING, Reactome, KEGG (pathways)
-- ClinicalTrials.gov (clinical data)
+History: this module used to "connect" 29 databases by writing {'status': 'connected'} into a dict and
+answered every query with results_count=42 and 'Data from <name>'. No network call was ever made.
+Now a database is marked live only when db_clients.py has a client for it that makes a real request;
+the others are listed for planning but answer with status 'no_client' instead of invented results.
+There are no MCP servers behind any of these; mcp_endpoint is kept only for backward compatibility.
 """
 
-from enum import Enum
+import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Dict, List, Optional
+
+import db_clients as dbc
+
 
 class DatabaseCategory(Enum):
     """Categories of biotech databases."""
@@ -27,9 +26,10 @@ class DatabaseCategory(Enum):
     CLINICAL = "clinical"
     STRUCTURAL = "structural"
 
+
 @dataclass
 class DatabaseEndpoint:
-    """MCP-compatible database endpoint."""
+    """A public database. live=True means db_clients has a working, exercised client for it."""
     name: str
     category: DatabaseCategory
     url: str
@@ -38,529 +38,293 @@ class DatabaseEndpoint:
     free_tier_available: bool
     description: str
     query_types: List[str]
+    live: bool = False
+    api: Optional[str] = None
+
+
+def _db(name, cat, url, desc, query_types, api=None, key=False):
+    return DatabaseEndpoint(name, cat, url, None, key, True, desc, query_types, live=api is not None, api=api)
+
+
+C = DatabaseCategory
+
 
 class BiotechDatabaseRegistry:
-    """Registry of all 30+ connectable biotech databases."""
-    
+    """Known databases. Descriptions state content only; no record counts are claimed."""
+
     DATABASES = [
-        # Literature & Preprints (7)
-        DatabaseEndpoint(
-            name="PubMed",
-            category=DatabaseCategory.LITERATURE,
-            url="https://www.ncbi.nlm.nih.gov/pubmed/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/pubmed",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Biomedical literature citations (30M+ articles)",
-            query_types=["keyword_search", "pmid_lookup", "author_search", "mesh_terms"],
-        ),
-        DatabaseEndpoint(
-            name="ArXiv",
-            category=DatabaseCategory.LITERATURE,
-            url="https://arxiv.org/",
-            mcp_endpoint="mcp://arxiv.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Scientific preprints (q-bio focus)",
-            query_types=["keyword_search", "author_search", "category_browse"],
-        ),
-        DatabaseEndpoint(
-            name="bioRxiv",
-            category=DatabaseCategory.LITERATURE,
-            url="https://www.biorxiv.org/",
-            mcp_endpoint="mcp://biorxiv.org/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Biology preprints (50K+ articles)",
-            query_types=["keyword_search", "date_range", "doi_lookup"],
-        ),
-        DatabaseEndpoint(
-            name="medRxiv",
-            category=DatabaseCategory.LITERATURE,
-            url="https://www.medrxiv.org/",
-            mcp_endpoint="mcp://medrxiv.org/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Health sciences preprints",
-            query_types=["keyword_search", "category_search"],
-        ),
-        DatabaseEndpoint(
-            name="Semantic Scholar",
-            category=DatabaseCategory.LITERATURE,
-            url="https://www.semanticscholar.org/",
-            mcp_endpoint="mcp://semanticscholar.org/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="AI-powered academic search (200M papers)",
-            query_types=["semantic_search", "citation_network", "author_h-index"],
-        ),
-        DatabaseEndpoint(
-            name="CrossRef",
-            category=DatabaseCategory.LITERATURE,
-            url="https://www.crossref.org/",
-            mcp_endpoint="mcp://crossref.org/metadata",
-            api_key_required=False,
-            free_tier_available=True,
-            description="DOI metadata and citation linking (140M+ works)",
-            query_types=["doi_lookup", "citation_count", "metadata_retrieval"],
-        ),
-        DatabaseEndpoint(
-            name="Google Scholar",
-            category=DatabaseCategory.LITERATURE,
-            url="https://scholar.google.com/",
-            mcp_endpoint="mcp://scholar.google.com/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Broad academic literature search",
-            query_types=["keyword_search", "author_search", "citation_metrics"],
-        ),
-        
-        # Clinical & Drug Data (6)
-        DatabaseEndpoint(
-            name="ClinicalTrials.gov",
-            category=DatabaseCategory.CLINICAL,
-            url="https://clinicaltrials.gov/",
-            mcp_endpoint="mcp://clinicaltrials.gov/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Clinical study registry (500K+ studies)",
-            query_types=["disease_search", "phase_filter", "status_filter", "location_search"],
-        ),
-        DatabaseEndpoint(
-            name="ChEMBL",
-            category=DatabaseCategory.DRUG_CHEMICAL,
-            url="https://www.ebi.ac.uk/chembl/",
-            mcp_endpoint="mcp://ebi.ac.uk/chembl",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Bioactive molecules & drug targets (2.5M compounds)",
-            query_types=["structure_search", "target_search", "activity_data", "binding_affinity"],
-        ),
-        DatabaseEndpoint(
-            name="PubChem",
-            category=DatabaseCategory.DRUG_CHEMICAL,
-            url="https://pubchem.ncbi.nlm.nih.gov/",
-            mcp_endpoint="mcp://pubchem.ncbi.nlm.nih.gov/compound",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Chemical compounds & bioactivities (119M substances)",
-            query_types=["cid_lookup", "name_search", "similarity_search", "bioassay_data"],
-        ),
-        DatabaseEndpoint(
-            name="Open Targets",
-            category=DatabaseCategory.DRUG_CHEMICAL,
-            url="https://www.opentargets.org/",
-            mcp_endpoint="mcp://opentargets.org/api",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Drug-target-disease associations",
-            query_types=["target_disease_search", "drug_lookup", "evidence_scores"],
-        ),
-        DatabaseEndpoint(
-            name="OpenFDA",
-            category=DatabaseCategory.CLINICAL,
-            url="https://open.fda.gov/",
-            mcp_endpoint="mcp://fda.gov/drug",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Drug labels, adverse events (10M+ records)",
-            query_types=["adverse_event_search", "label_lookup", "event_frequency"],
-        ),
-        DatabaseEndpoint(
-            name="SureChEMBL",
-            category=DatabaseCategory.DRUG_CHEMICAL,
-            url="https://www.surechembl.org/",
-            mcp_endpoint="mcp://surechembl.org/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Patent chemistry search (17M patent compounds)",
-            query_types=["structure_search", "patent_number", "assignee_search"],
-        ),
-        
-        # Protein & Structural Biology (4)
-        DatabaseEndpoint(
-            name="UniProt",
-            category=DatabaseCategory.PROTEIN,
-            url="https://www.uniprot.org/",
-            mcp_endpoint="mcp://uniprot.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Protein sequences & annotations (570K reviewed)",
-            query_types=["accession_lookup", "keyword_search", "sequence_search", "alignment"],
-        ),
-        DatabaseEndpoint(
-            name="RCSB PDB",
-            category=DatabaseCategory.STRUCTURAL,
-            url="https://www.rcsb.org/",
-            mcp_endpoint="mcp://rcsb.org/search",
-            api_key_required=False,
-            free_tier_available=True,
-            description="3D protein/nucleic acid structures (200K+ structures)",
-            query_types=["pdb_id_lookup", "structure_search", "similarity_search", "download"],
-        ),
-        DatabaseEndpoint(
-            name="AlphaFold DB",
-            category=DatabaseCategory.STRUCTURAL,
-            url="https://alphafold.ebi.ac.uk/",
-            mcp_endpoint="mcp://alphafold.ebi.ac.uk/predictions",
-            api_key_required=False,
-            free_tier_available=True,
-            description="AI-predicted protein structures (200M structures)",
-            query_types=["accession_lookup", "structure_download", "confidence_scores"],
-        ),
-        DatabaseEndpoint(
-            name="InterPro",
-            category=DatabaseCategory.PROTEIN,
-            url="https://www.ebi.ac.uk/interpro/",
-            mcp_endpoint="mcp://ebi.ac.uk/interpro",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Protein domain & family classification (43K signatures)",
-            query_types=["accession_search", "domain_search", "alignment_search"],
-        ),
-        
-        # Genomics & Genetics (6)
-        DatabaseEndpoint(
-            name="Ensembl",
-            category=DatabaseCategory.GENOMICS,
-            url="https://www.ensembl.org/",
-            mcp_endpoint="mcp://ensembl.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Genome browser & gene annotations (230K genes/human)",
-            query_types=["gene_search", "region_search", "variant_search", "ortholog_search"],
-        ),
-        DatabaseEndpoint(
-            name="NCBI GenBank",
-            category=DatabaseCategory.GENOMICS,
-            url="https://www.ncbi.nlm.nih.gov/genbank/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/genbank",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Genetic sequence database (500M+ sequences)",
-            query_types=["accession_lookup", "sequence_search", "taxonomy_search"],
-        ),
-        DatabaseEndpoint(
-            name="ClinVar",
-            category=DatabaseCategory.GENOMICS,
-            url="https://www.ncbi.nlm.nih.gov/clinvar/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/clinvar",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Genomic variants & clinical significance (2M+ variants)",
-            query_types=["variant_search", "gene_search", "phenotype_search", "clinical_significance"],
-        ),
-        DatabaseEndpoint(
-            name="dbSNP",
-            category=DatabaseCategory.GENOMICS,
-            url="https://www.ncbi.nlm.nih.gov/projects/SNP/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/dbsnp",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Small genetic variations (700M+ SNPs)",
-            query_types=["rs_number_lookup", "genomic_region", "allele_frequency"],
-        ),
-        DatabaseEndpoint(
-            name="GTEx",
-            category=DatabaseCategory.GENOMICS,
-            url="https://gtexportal.org/",
-            mcp_endpoint="mcp://gtex.org/expression",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Gene expression by tissue (54 tissues, 1K individuals)",
-            query_types=["gene_expression", "tissue_search", "eqtl_data"],
-        ),
-        DatabaseEndpoint(
-            name="RefSeq",
-            category=DatabaseCategory.GENOMICS,
-            url="https://www.ncbi.nlm.nih.gov/refseq/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/refseq",
-            api_key_required=False,
-            free_tier_available=True,
-            description="NCBI reference sequences (260K genes)",
-            query_types=["accession_lookup", "gene_search", "sequence_download"],
-        ),
-        
-        # Functional Genomics & Pathways (6)
-        DatabaseEndpoint(
-            name="GEO",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="https://www.ncbi.nlm.nih.gov/geo/",
-            mcp_endpoint="mcp://ncbi.nlm.nih.gov/geo",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Gene Expression Omnibus (5M+ datasets)",
-            query_types=["dataset_search", "series_search", "sample_search", "data_download"],
-        ),
-        DatabaseEndpoint(
-            name="Reactome",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="https://reactome.org/",
-            mcp_endpoint="mcp://reactome.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Biological pathway analysis (13K pathways)",
-            query_types=["pathway_search", "protein_pathway", "disease_pathway", "visualization"],
-        ),
-        DatabaseEndpoint(
-            name="KEGG",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="https://www.genome.jp/kegg/",
-            mcp_endpoint="mcp://kegg.jp/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Pathways, genes, genomes (500K genes, 5000 pathways)",
-            query_types=["pathway_search", "gene_search", "organism_pathway", "module_search"],
-        ),
-        DatabaseEndpoint(
-            name="STRING",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="https://string-db.org/",
-            mcp_endpoint="mcp://string-db.org/api",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Protein-protein interaction networks (24K species)",
-            query_types=["interaction_search", "network_retrieval", "neighborhood_analysis"],
-        ),
-        DatabaseEndpoint(
-            name="BioGRID",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="https://thebiogrid.org/",
-            mcp_endpoint="mcp://biogrid.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Molecular interaction repository (1.8M interactions)",
-            query_types=["interaction_search", "gene_search", "network_analysis"],
-        ),
-        DatabaseEndpoint(
-            name="Gene Ontology",
-            category=DatabaseCategory.PATHWAY_FUNCTIONAL,
-            url="http://geneontology.org/",
-            mcp_endpoint="mcp://geneontology.org/query",
-            api_key_required=False,
-            free_tier_available=True,
-            description="Gene function classification (50K terms)",
-            query_types=["term_search", "gene_annotation", "enrichment_analysis"],
-        ),
+        _db("PubMed", C.LITERATURE, "https://pubmed.ncbi.nlm.nih.gov/", "Biomedical literature citations",
+            ["keyword_search", "pmid_lookup"], dbc.EUTILS),
+        _db("ArXiv", C.LITERATURE, "https://arxiv.org/", "Preprints", ["keyword_search"]),
+        _db("bioRxiv", C.LITERATURE, "https://www.biorxiv.org/", "Biology preprints", ["keyword_search"]),
+        _db("medRxiv", C.LITERATURE, "https://www.medrxiv.org/", "Clinical preprints", ["keyword_search"]),
+        _db("Semantic Scholar", C.LITERATURE, "https://www.semanticscholar.org/", "Scholarly graph", ["keyword_search"]),
+        _db("CrossRef", C.LITERATURE, "https://www.crossref.org/", "DOI metadata", ["doi_lookup"]),
+        _db("Google Scholar", C.LITERATURE, "https://scholar.google.com/", "No public API; not integrable",
+            ["keyword_search"]),
+        _db("ClinicalTrials.gov", C.CLINICAL, "https://clinicaltrials.gov/", "Registered clinical studies",
+            ["keyword_search", "condition_search", "intervention_search"], dbc.CTGOV),
+        _db("ChEMBL", C.DRUG_CHEMICAL, "https://www.ebi.ac.uk/chembl/", "Bioactive molecules and measured potencies",
+            ["keyword_search", "compound_search", "target_search", "similarity_search"], dbc.CHEMBL),
+        _db("PubChem", C.DRUG_CHEMICAL, "https://pubchem.ncbi.nlm.nih.gov/", "Chemical structures, synonyms, bioassays",
+            ["keyword_search", "compound_search", "structure_search", "similarity_search"], dbc.PUBCHEM),
+        _db("Open Targets", C.DRUG_CHEMICAL, "https://platform.opentargets.org/", "Target-disease-drug evidence",
+            ["target_search", "known_drugs"], dbc.OPENTARGETS),
+        _db("OpenFDA", C.CLINICAL, "https://open.fda.gov/", "Drug labels and adverse events", ["drug_search"]),
+        _db("SureChEMBL", C.DRUG_CHEMICAL, "https://www.surechembl.org/", "Chemistry in patents", ["compound_search"]),
+        _db("UniProt", C.PROTEIN, "https://www.uniprot.org/", "Protein sequence and function",
+            ["keyword_search", "accession_lookup", "gene_search"], dbc.UNIPROT),
+        _db("RCSB PDB", C.STRUCTURAL, "https://www.rcsb.org/", "Experimental 3D structures",
+            ["accession_lookup", "keyword_search"], dbc.RCSB_SEARCH),
+        _db("AlphaFold DB", C.STRUCTURAL, "https://alphafold.ebi.ac.uk/", "Predicted protein structures",
+            ["accession_lookup"], dbc.ALPHAFOLD),
+        _db("InterPro", C.PROTEIN, "https://www.ebi.ac.uk/interpro/", "Protein families and domains", ["domain_search"]),
+        _db("Ensembl", C.GENOMICS, "https://www.ensembl.org/", "Genome annotation", ["gene_search"]),
+        _db("NCBI GenBank", C.GENOMICS, "https://www.ncbi.nlm.nih.gov/genbank/", "Nucleotide sequences", ["accession_lookup"]),
+        _db("ClinVar", C.GENOMICS, "https://www.ncbi.nlm.nih.gov/clinvar/", "Clinically interpreted variants",
+            ["keyword_search", "gene_search"], dbc.EUTILS),
+        _db("dbSNP", C.GENOMICS, "https://www.ncbi.nlm.nih.gov/snp/", "Short genetic variants", ["variant_lookup"]),
+        _db("GTEx", C.GENOMICS, "https://gtexportal.org/", "Tissue expression", ["gene_expression"]),
+        _db("RefSeq", C.GENOMICS, "https://www.ncbi.nlm.nih.gov/refseq/", "Reference sequences", ["accession_lookup"]),
+        _db("GEO", C.PATHWAY_FUNCTIONAL, "https://www.ncbi.nlm.nih.gov/geo/", "Expression datasets", ["dataset_search"]),
+        _db("Reactome", C.PATHWAY_FUNCTIONAL, "https://reactome.org/", "Curated pathways",
+            ["keyword_search", "pathway_lookup"], dbc.REACTOME),
+        _db("KEGG", C.PATHWAY_FUNCTIONAL, "https://www.kegg.jp/", "Pathway maps (academic licence terms)", ["pathway_lookup"]),
+        _db("STRING", C.PATHWAY_FUNCTIONAL, "https://string-db.org/", "Protein interaction networks",
+            ["keyword_search", "interaction_search"], dbc.STRING),
+        _db("BioGRID", C.PATHWAY_FUNCTIONAL, "https://thebiogrid.org/", "Interactions (API needs BIOGRID_ACCESS_KEY)",
+            ["interaction_search"], key=True),
+        _db("Gene Ontology", C.PATHWAY_FUNCTIONAL, "https://geneontology.org/", "Gene function terms", ["term_search"]),
     ]
-    
+
     @classmethod
     def get_all_databases(cls) -> List[DatabaseEndpoint]:
-        """Get all registered databases."""
         return cls.DATABASES
-    
+
+    @classmethod
+    def get_live(cls) -> List[DatabaseEndpoint]:
+        return [db for db in cls.DATABASES if db.live]
+
     @classmethod
     def get_by_category(cls, category: DatabaseCategory) -> List[DatabaseEndpoint]:
-        """Get databases by category."""
         return [db for db in cls.DATABASES if db.category == category]
-    
+
     @classmethod
     def search_database(cls, name_query: str) -> List[DatabaseEndpoint]:
-        """Search databases by name."""
-        query = name_query.lower()
-        return [db for db in cls.DATABASES if query in db.name.lower()]
+        q = name_query.lower()
+        exact = [db for db in cls.DATABASES if db.name.lower() == q]
+        return exact or [db for db in cls.DATABASES if q in db.name.lower()]
+
+
+def _q(p: Dict) -> str:
+    return p.get("query") or p.get("target") or p.get("gene") or p.get("name") or ""
+
+
+def _uniprot(p: Dict):
+    """(UniProt entry or None, error) for the gene named in the query params."""
+    if p.get("uniprot"):
+        return {"accession": p["uniprot"], "ensembl_genes": []}, None
+    r = dbc.uniprot_gene(_q(p), limit=1)
+    return (r["entries"] or [None])[0], r.get("error")
+
+
+def _pubchem(t, p):
+    if t == "similarity_search" and p.get("smiles"):
+        r = dbc.pubchem_similar(p["smiles"])
+        return dbc.pubchem_properties(r["cids"]), r.get("error")
+    r = dbc.pubchem_identify(smiles=p.get("smiles"), inchikey=p.get("inchikey"),
+                             name=None if p.get("smiles") else _q(p), similar=bool(p.get("smiles")))
+    return ([r] if r.get("match") == "exact" else r.get("nearest", [])), r.get("error")
+
+
+def _chembl(t, p):
+    if t == "similarity_search" and p.get("smiles"):
+        r = dbc.chembl_similar(p["smiles"])
+        return r["molecules"], r.get("error")
+    if t == "target_search":  # molecules with measured activity against the target's gene product
+        up, e = _uniprot(p)
+        if not up:
+            return [], e
+        acc = up["accession"]
+        d, e = dbc._get(f"{dbc.CHEMBL}/target.json", target_components__accession=acc, limit=1)
+        tid = ((d or {}).get("targets") or [{}])[0].get("target_chembl_id")
+        if not tid:
+            return [], e
+        d, e = dbc._get(f"{dbc.CHEMBL}/activity.json", target_chembl_id=tid, pchembl_value__isnull="false",
+                        order_by="-pchembl_value", limit=p.get("limit", 20))
+        keep = ("molecule_chembl_id", "molecule_pref_name", "standard_type", "standard_value", "standard_units",
+                "pchembl_value", "canonical_smiles")
+        return [dict({k: a.get(k) for k in keep}, target_chembl_id=tid) for a in (d or {}).get("activities", [])], e
+    r = dbc.chembl_search(_q(p), p.get("limit", 10))
+    return r["molecules"], r.get("error")
+
+
+def _opentargets(t, p):
+    ens = p.get("ensembl")
+    if not ens:
+        up, e = _uniprot(p)
+        ens = (up["ensembl_genes"] or [None])[0] if up else None
+        if not ens:
+            return [], e
+    r = dbc.opentargets_target_drugs(ens)
+    return r["drugs"], r.get("error")
+
+
+def _pdb(t, p):
+    up, e = _uniprot(p)
+    if not up:
+        return [], e
+    r = dbc.pdb_structures(up["accession"], p.get("limit", 10))
+    return [dbc.pdb_entry(i) for i in r["ids"][:5]], r.get("error")
+
+
+def _alphafold(t, p):
+    up, e = _uniprot(p)
+    r = dbc.alphafold_model(up["accession"]) if up else {"error": e}
+    return ([r] if r.get("model") else []), r.get("error")
+
+
+def _reactome(t, p):
+    up, e = _uniprot(p)
+    r = dbc.reactome_pathways(up["accession"]) if up else {"pathways": [], "error": e}
+    return r["pathways"], r.get("error")
+
+
+def _lst(fn, key):
+    def run(t, p):
+        r = fn(p)
+        return r[key], r.get("error")
+    return run
+
+
+HANDLERS = {
+    "PubMed": _lst(lambda p: dbc.pubmed_search(_q(p), p.get("limit", 10)), "articles"),
+    "ClinicalTrials.gov": _lst(lambda p: dbc.clinical_trials(p.get("condition") or _q(p), p.get("intervention"),
+                                                             p.get("pediatric", False), p.get("status"),
+                                                             p.get("limit", 10)), "trials"),
+    "ChEMBL": _chembl,
+    "PubChem": _pubchem,
+    "Open Targets": _opentargets,
+    "UniProt": _lst(lambda p: dbc.uniprot_gene(_q(p)), "entries"),
+    "RCSB PDB": _pdb,
+    "AlphaFold DB": _alphafold,
+    "ClinVar": _lst(lambda p: dbc.clinvar_variants(_q(p), p.get("pathogenic_only", True), p.get("limit", 20)), "variants"),
+    "Reactome": _reactome,
+    "STRING": _lst(lambda p: dbc.string_partners(_q(p), limit=p.get("limit", 10)), "partners"),
+}
+
 
 class MCP_ServerManager:
-    """Manage MCP server connections."""
-    
+    """Routes queries to live clients. (Name kept for compatibility; there is no MCP transport.)"""
+
     def __init__(self):
         self.active_connections = {}
-        self.connection_stats = {
-            'total_requests': 0,
-            'successful_queries': 0,
-            'failed_queries': 0,
-            'databases_connected': 0,
-        }
-    
+        self.connection_stats = {'total_requests': 0, 'successful_queries': 0, 'failed_queries': 0,
+                                 'databases_connected': 0}
+
     def connect_database(self, endpoint: DatabaseEndpoint) -> Dict:
-        """Establish MCP connection to database."""
-        if endpoint.mcp_endpoint in self.active_connections:
-            return {'status': 'already_connected'}
-        
-        # Simulate MCP connection
-        connection = {
-            'database': endpoint.name,
-            'endpoint': endpoint.mcp_endpoint,
-            'status': 'connected',
-            'connected_at': datetime.utcnow().isoformat(),
-            'capabilities': endpoint.query_types,
-        }
-        
-        self.active_connections[endpoint.mcp_endpoint] = connection
-        self.connection_stats['databases_connected'] = len(self.active_connections)
-        
-        return connection
-    
+        """Register a database for routing. No network is touched; 'live' means a real client exists."""
+        live = endpoint.name in HANDLERS
+        conn = {'database': endpoint.name, 'status': 'live' if live else 'no_client', 'api': endpoint.api,
+                'registered_at': datetime.now(timezone.utc).isoformat(), 'capabilities': endpoint.query_types}
+        self.active_connections[endpoint.name] = conn
+        self.connection_stats['databases_connected'] = sum(c['status'] == 'live' for c in self.active_connections.values())
+        return conn
+
     def connect_all_free(self) -> Dict:
-        """Connect all free tier databases."""
-        registry = BiotechDatabaseRegistry()
-        results = {
-            'connected': [],
-            'failed': [],
-            'summary': {},
-        }
-        
-        for db in registry.get_all_databases():
-            if db.free_tier_available:
-                result = self.connect_database(db)
-                results['connected'].append({
-                    'name': db.name,
-                    'category': db.category.value,
-                    'status': 'connected',
-                })
-        
-        results['summary'] = {
-            'total_connected': len(results['connected']),
-            'categories_covered': len(set(db.category for db in registry.get_all_databases())),
-            'databases_available': len(registry.get_all_databases()),
-        }
-        
-        return results
-    
-    def query_database(self, database_name: str, query_type: str, 
-                      query_params: Dict) -> Dict:
-        """Execute query against connected database."""
-        registry = BiotechDatabaseRegistry()
-        matches = registry.search_database(database_name)
-        
+        dbs = BiotechDatabaseRegistry.get_all_databases()
+        conns = [self.connect_database(db) for db in dbs]
+        live = [c['database'] for c in conns if c['status'] == 'live']
+        return {'connected': [{'name': c['database'], 'status': c['status']} for c in conns if c['status'] == 'live'],
+                'failed': [], 'no_client': [c['database'] for c in conns if c['status'] != 'live'],
+                'summary': {'total_connected': len(live), 'categories_covered':
+                            len({db.category for db in dbs if db.name in live}), 'databases_available': len(dbs)}}
+
+    def query_database(self, database_name: str, query_type: str, query_params: Dict) -> Dict:
+        """Run a real query. Never raises; failures come back as status 'error' with results_count 0."""
+        matches = BiotechDatabaseRegistry.search_database(database_name)
         if not matches:
-            return {'error': f'Database {database_name} not found'}
-        
+            return {'error': f'Database {database_name} not found', 'status': 'error', 'results_count': 0,
+                    'query_time_ms': 0}
         db = matches[0]
-        
-        if db.mcp_endpoint not in self.active_connections:
-            return {'error': f'{database_name} not connected'}
-        
-        # Simulate query execution
-        result = {
-            'database': db.name,
-            'query_type': query_type,
-            'status': 'success',
-            'results_count': 42,  # Simulated
-            'query_time_ms': 127,
-            'sample_results': [
-                {f'result_{i}': f'Data from {db.name}'} 
-                for i in range(3)
-            ]
-        }
-        
+        base = {'database': db.name, 'query_type': query_type, 'results': [], 'results_count': 0, 'query_time_ms': 0}
+        if db.name not in HANDLERS:
+            return dict(base, status='no_client', error=f'No client implemented for {db.name}; nothing was queried')
         self.connection_stats['total_requests'] += 1
+        t = time.perf_counter()
+        try:
+            results, err = HANDLERS[db.name](query_type, query_params)
+        except Exception as e:  # noqa: BLE001 - a malformed response must not end a research run
+            results, err = [], f'{type(e).__name__}: {e}'
+        out = dict(base, results=results, results_count=len(results),
+                   query_time_ms=round((time.perf_counter() - t) * 1000))
+        if err:
+            self.connection_stats['failed_queries'] += 1
+            return dict(out, status='error', error=err)
         self.connection_stats['successful_queries'] += 1
-        
-        return result
-    
+        return dict(out, status='success')
+
     def get_connection_health(self) -> Dict:
-        """Get status of all connections."""
-        return {
-            'active_connections': len(self.active_connections),
-            'stats': self.connection_stats,
-            'connections': list(self.active_connections.values()),
-        }
+        return {'active_connections': self.connection_stats['databases_connected'], 'stats': self.connection_stats,
+                'connections': list(self.active_connections.values()), 'http': dbc.status()}
+
 
 class ResearchWorkflowWithDatabases:
-    """Research workflow with full biotech database integration."""
-    
+    """Target-centred research workflow over the live databases."""
+
     def __init__(self):
         self.mcp_manager = MCP_ServerManager()
         self.research_context = {}
-    
+
     def initialize_for_target(self, target_name: str) -> Dict:
-        """Initialize research workflow with all databases connected."""
-        
-        # Connect all databases
         connections = self.mcp_manager.connect_all_free()
-        
         workflow = {
             'target': target_name,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'databases_connected': connections['summary']['total_connected'],
             'research_phase': 'initialized',
             'research_plan': {
-                'phase_1_literature': ['PubMed', 'ArXiv', 'Semantic Scholar'],
+                'phase_1_literature': ['PubMed'],
                 'phase_2_protein': ['UniProt', 'AlphaFold DB', 'RCSB PDB'],
-                'phase_3_genomics': ['Ensembl', 'ClinVar', 'GTEx'],
-                'phase_4_compounds': ['ChEMBL', 'PubChem', 'SureChEMBL'],
-                'phase_5_pathways': ['STRING', 'Reactome', 'Gene Ontology'],
-                'phase_6_clinical': ['ClinicalTrials.gov', 'OpenFDA', 'Open Targets'],
+                'phase_3_genomics': ['ClinVar'],
+                'phase_4_compounds': ['ChEMBL', 'PubChem', 'Open Targets'],
+                'phase_5_pathways': ['STRING', 'Reactome'],
+                'phase_6_clinical': ['ClinicalTrials.gov'],
             },
         }
-        
         self.research_context[target_name] = workflow
         return workflow
-    
+
+    def _phase(self, target, phase, key, dbs, qtype, params):
+        return {'target': target, 'phase': phase,
+                key: {d: self.mcp_manager.query_database(d, qtype, params) for d in dbs}}
+
     def search_literature_for_target(self, target: str) -> Dict:
-        """Search literature across PubMed, bioRxiv, ArXiv."""
-        results = {
-            'target': target,
-            'phase': 'literature_search',
-            'sources': {},
-        }
-        
-        for db_name in ['PubMed', 'bioRxiv', 'Semantic Scholar']:
-            result = self.mcp_manager.query_database(
-                db_name,
-                'keyword_search',
-                {'query': target, 'limit': 50}
-            )
-            results['sources'][db_name] = result
-        
-        return results
-    
+        return self._phase(target, 'literature_search', 'sources', ['PubMed'], 'keyword_search',
+                           {'query': target, 'limit': 20})
+
     def identify_drug_compounds(self, target: str) -> Dict:
-        """Identify known compounds against target."""
-        results = {
-            'target': target,
-            'phase': 'compound_identification',
-            'databases': {},
-        }
-        
-        for db_name in ['ChEMBL', 'PubChem', 'Open Targets']:
-            result = self.mcp_manager.query_database(
-                db_name,
-                'target_search',
-                {'target': target}
-            )
-            results['databases'][db_name] = result
-        
-        return results
-    
+        return self._phase(target, 'compound_identification', 'databases', ['ChEMBL', 'Open Targets'],
+                           'target_search', {'target': target})
+
     def analyze_protein_structure(self, target: str) -> Dict:
-        """Get protein structure from AlphaFold and PDB."""
-        results = {
-            'target': target,
-            'phase': 'structure_analysis',
-            'sources': {},
-        }
-        
-        for db_name in ['AlphaFold DB', 'RCSB PDB', 'UniProt']:
-            result = self.mcp_manager.query_database(
-                db_name,
-                'accession_lookup',
-                {'target': target}
-            )
-            results['sources'][db_name] = result
-        
-        return results
+        return self._phase(target, 'structure_analysis', 'sources', ['UniProt', 'RCSB PDB', 'AlphaFold DB'],
+                           'accession_lookup', {'target': target})
+
 
 def generate_database_integration_report() -> Dict:
-    """Generate comprehensive database integration report."""
-    registry = BiotechDatabaseRegistry()
-    
+    """What is integrated. Record volumes are not reported because they are not measured."""
+    dbs = BiotechDatabaseRegistry.get_all_databases()
+    live = [db.name for db in dbs if db.name in HANDLERS]
     return {
-        'total_databases': len(registry.get_all_databases()),
-        'categories': {
-            cat.value: len(registry.get_by_category(cat))
-            for cat in DatabaseCategory
-        },
+        'total_databases': len(dbs),
+        'live_databases': live,
+        'categories': {cat.value: len(BiotechDatabaseRegistry.get_by_category(cat)) for cat in DatabaseCategory},
         'databases_by_category': {
-            cat.value: [
-                {'name': db.name, 'description': db.description}
-                for db in registry.get_by_category(cat)
-            ]
-            for cat in DatabaseCategory
-        },
-        'free_tier_coverage': 'All 30 databases available free',
-        'mcp_ready': True,
-        'estimated_data_access': '500M+ literature records, 200M+ protein structures, 700M+ genetic variants',
+            cat.value: [{'name': db.name, 'description': db.description, 'live': db.name in HANDLERS}
+                        for db in BiotechDatabaseRegistry.get_by_category(cat)] for cat in DatabaseCategory},
+        'free_tier_coverage': f'{len(live)} of {len(dbs)} have live clients; all live ones are keyless',
+        'mcp_ready': False,
+        'estimated_data_access': 'not measured',
+        'http': dbc.status(),
     }
-
