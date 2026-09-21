@@ -140,7 +140,14 @@ data_capacities = {
     "STRING": "24K species networks",
 }
 
-print(f"   ✓ Total records accessible: {sum([int(v.split()[0].replace('+', '')) for v in data_capacities.values()])}M+")
+def _millions(capacity):
+    """'119M substances' -> 119.0, '13K pathways' -> 0.013."""
+    n = capacity.split()[0].replace('+', '')
+    scale = {'K': 1e-3, 'M': 1.0, 'B': 1e3}
+    return float(n[:-1]) * scale[n[-1].upper()] if n[-1].upper() in scale else float(n) * 1e-6
+
+
+print(f"   ✓ Total records accessible: {sum(_millions(v) for v in data_capacities.values()):,.1f}M+")
 for db, capacity in list(data_capacities.items())[:5]:
     print(f"     • {db}: {capacity}")
 print(f"     ... and {len(data_capacities) - 5} more")

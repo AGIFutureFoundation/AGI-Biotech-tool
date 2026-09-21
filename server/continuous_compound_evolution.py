@@ -72,6 +72,7 @@ class ContinuousCompoundEvolution:
         # Evolution tracking
         self.evolution_cycles = []
         self.best_compounds_per_target = {}
+        self.explored_pairs = 0
         self.learning_history = {}
         self.design_patterns = {}
 
@@ -165,6 +166,7 @@ class ContinuousCompoundEvolution:
             if top_score > best_score:
                 best_score = top_score
                 best_overall = test_results['top_compound']
+                self.best_compounds_per_target[target_protein] = best_overall
 
             # Print cycle summary
             print(f"\n✅ Cycle {cycle_num} Results:")
@@ -232,12 +234,28 @@ class ContinuousCompoundEvolution:
             strategy = "exploitation"  # Polish best compounds
             num_compounds = int(self.compounds_per_iteration * 0.6)
 
+        # Exploration walks new chemistry each cycle; exploitation re-enters the
+        # region around the best compound found so far.
+        best = self.best_compounds_per_target.get(target)
+        if strategy == 'exploitation' and best is not None:
+            offset = 0
+            prefer = [best.warhead_1, best.warhead_2]
+        else:
+            offset = self.explored_pairs
+            prefer = None
+
         print(f"   Strategy: {strategy}")
         print(f"   Compounds to generate: {num_compounds}")
+        if prefer:
+            print(f"   Biasing toward: {' + '.join(prefer)} (from {best.compound_id})")
+        else:
+            print(f"   Pair-space offset: {offset}")
 
         return {
             'strategy': strategy,
             'num_compounds': num_compounds,
+            'offset': offset,
+            'prefer': prefer,
             'focus_areas': self._determine_focus_areas(target, cycle),
         }
 
@@ -276,7 +294,11 @@ class ContinuousCompoundEvolution:
             target_indication=indication,
             num_compounds=plan['num_compounds'],
             apoptotic_mechanism=mechanism,
+            offset=plan['offset'],
+            prefer=plan['prefer'],
         )
+
+        self.explored_pairs = plan['offset'] + len(compounds)
 
         print(f"   ✓ Generated {len(compounds)} compounds")
 
@@ -314,24 +336,6 @@ class ContinuousCompoundEvolution:
             'top_compound': top_compounds[0][1],
             'average_score': sum(s for s, _ in scores) / len(scores),
         }
-
-    def _calculate_composite_score(self, compound: PyreneCompound) -> float:
-        """Calculate overall compound score."""
-
-        # Weighted scoring
-        potency_score = (compound.predicted_potency + 12) / 6  # Normalize to 0-1
-        safety_score = compound.pediatric_safety_score
-        selectivity_score = compound.selectivity_score
-        synergy_score = len(compound.combination_partners) / 5.0
-
-        composite = (
-            0.35 * potency_score +
-            0.30 * safety_score +
-            0.20 * selectivity_score +
-            0.15 * synergy_score
-        )
-
-        return composite
 
     async def _analyst_analyze(
         self,

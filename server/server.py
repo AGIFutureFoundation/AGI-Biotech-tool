@@ -34,11 +34,24 @@ import traceback
 import urllib.parse
 import urllib.request
 import uuid
+from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
+
+# Sibling modules in server/. These sit below the sys.path line above rather than with the
+# stdlib imports because they are only importable once HERE is on the path, which keeps
+# `python server/server.py`, `import server` and an import from the repo root all working.
+from agent_orchestrator import AgentOrchestrator  # noqa: E402
+from agents import AnalysisAgent, OptimizationAgent, WorkflowOrchestrator  # noqa: E402
+from auth import AuthToken, authenticate_user, create_user  # noqa: E402
+from disease_panels import get_panel, get_top_targets_by_prevalence, list_panels  # noqa: E402
+from master_agent import MasterAgentWithOrchestration  # noqa: E402
+from paper_generator import generate_paper_from_session  # noqa: E402
+from projects import create_project, get_project, list_user_projects  # noqa: E402
+from reporting import generate_screening_report  # noqa: E402
 
 
 def _try(mod):
@@ -54,6 +67,7 @@ HAVE = {
     "openmm": _try("openmm") is not None,
     "pdbfixer": _try("pdbfixer") is not None,
     "bigquery": _try("google.cloud.bigquery") is not None,
+    "websockets": _try("websockets") is not None,
 }
 
 # --------------------------------------------------------------------------- chemistry
@@ -281,6 +295,96 @@ def run_bigquery(body):
     return {"rows": rows, "sql": sql}
 
 
+# --------------------------------------------------------------------------- research agents
+
+OPT_AGENT = OptimizationAgent()
+ANA_AGENT = AnalysisAgent()
+# Two different things both historically called "the orchestrator": WORKFLOWS returns static
+# workflow *definitions* (agents.WorkflowOrchestrator), ORCHESTRATOR actually queues and tracks
+# running work (agent_orchestrator.AgentOrchestrator).
+WORKFLOWS = WorkflowOrchestrator()
+MASTER_AGENT = MasterAgentWithOrchestration()
+ORCHESTRATOR = AgentOrchestrator(MASTER_AGENT, {"optimizer": OPT_AGENT, "analyst": ANA_AGENT,
+                                                "orchestrator": WORKFLOWS})
+MASTER_AGENT.orchestrator = ORCHESTRATOR
+
+VR_SCENES = {
+    "docking_progress": {"show_target": True, "show_ligands": True, "show_scores": True,
+                         "show_pockets": True, "real_time_update": True},
+    "md_simulation": {"show_trajectory": True, "show_forces": True, "show_energy": True,
+                      "allow_steering": True, "allow_timeline_control": True},
+    "results_analysis": {"show_hotspots": True, "color_by_sa_score": True,
+                         "cluster_by_scaffold": True, "show_interactions": True},
+}
+
+AGENT_WORKFLOWS = {
+    "lead_optimization": {
+        "steps": ["tune_docking_params", "dock_analogs", "analyze_results", "predict_synthesis",
+                  "generate_recommendations"],
+        "agents": ["optimizer", "dock_engine", "analyst"]},
+    "validation_pipeline": {
+        "steps": ["run_md_simulations", "calculate_hbonds", "mmgbsa_scoring", "generate_binding_report",
+                  "predict_adme_properties"],
+        "agents": ["md_engine", "analyst", "orchestrator"]},
+    "paper_generation": {
+        "steps": ["compile_results", "generate_figures", "format_tables", "draft_discussion",
+                  "export_formats"],
+        "agents": ["analyst", "orchestrator"]},
+}
+
+WORKFLOW_TEMPLATES = ("lead_optimization", "validation_campaign", "discovery_sprint")
+
+
+# --------------------------------------------------------------------------- VR streaming (optional)
+# Real-time trajectory/docking push to headsets. `websockets` is not a declared dependency, so
+# this switches on only when it happens to be installed, like the other optional engines.
+
+STREAMING = None
+WS_PORT = 8001
+
+
+def start_websocket_server(host="0.0.0.0", port=WS_PORT):
+    """Start the VR streaming WebSocket server in a daemon thread. No-op without `websockets`."""
+    global STREAMING
+    if not HAVE["websockets"]:
+        return False
+    import asyncio
+
+    import websockets
+
+    from websocket_streaming import StreamingServer
+
+    STREAMING = StreamingServer()
+
+    async def handler(ws):
+        client_id = uuid.uuid4().hex
+        try:
+            await STREAMING.register_client(client_id, ws)
+            async for message in ws:
+                data = json.loads(message)
+                if data.get("type") == "subscribe":
+                    await STREAMING.subscribe_client(client_id, data.get("stream_types", []))
+                elif data.get("type") == "heartbeat":
+                    await ws.send(json.dumps({"type": "pong"}))
+        except websockets.exceptions.ConnectionClosed:
+            pass
+        finally:
+            await STREAMING.unregister_client(client_id)
+
+    def serve():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        async def run():
+            async with websockets.serve(handler, host, port):
+                await asyncio.Future()
+
+        loop.run_until_complete(run())
+
+    threading.Thread(target=serve, daemon=True).start()
+    return True
+
+
 # --------------------------------------------------------------------------- HTTP
 
 
@@ -310,9 +414,50 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _text(self, text, ctype, code=200):
+        body = text.encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _body(self):
         n = int(self.headers.get("Content-Length") or 0)
         return self.rfile.read(n) if n else b""
+
+    def _payload(self):
+        """Decoded JSON request body, or {} when there is none."""
+        raw = self._body()
+        return json.loads(raw) if raw.strip() else {}
+
+    def _qs(self):
+        return urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+
+    @staticmethod
+    def _seg(path, n):
+        """Path segment n, url-decoded. /api/projects/a1b2 -> _seg(p, 2) == 'a1b2'."""
+        parts = path.strip("/").split("/")
+        return urllib.parse.unquote(parts[n]) if n < len(parts) else ""
+
+    def _user(self):
+        """The caller's JWT claims, or None after emitting 401. Stdlib stand-in for @require_auth."""
+        token = self.headers.get("Authorization", "").replace("Bearer ", "").strip()
+        if not token:
+            self._json({"error": "Missing authentication token"}, 401)
+            return None
+        claims = AuthToken.verify(token)
+        if not claims:
+            self._json({"error": "Invalid or expired token"}, 401)
+            return None
+        return claims
+
+    def _has_role(self, user, *roles):
+        """Stdlib stand-in for @require_role. Emits 403 and returns False on a role mismatch."""
+        if user.get("role") in roles:
+            return True
+        self._json({"error": f"Requires one of: {', '.join(roles)}"}, 403)
+        return False
 
     def do_OPTIONS(self):  # noqa: N802
         self.send_response(204)
@@ -356,6 +501,13 @@ class Handler(SimpleHTTPRequestHandler):
             return self.wfile.write(body)
         if p.startswith("/api/room/") and p.endswith("/events"):
             return self._sse(p.split("/")[3])
+        if p.startswith("/api/"):
+            try:
+                if self._api_get(p):
+                    return
+            except Exception as e:  # noqa: BLE001
+                traceback.print_exc()
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 400)
         return super().do_GET()
 
     def _sse(self, name):
@@ -445,10 +597,186 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"error": "pip install google-cloud-bigquery and run "
                                                 "`gcloud auth application-default login`"}, 501)
                 return self._json(run_bigquery(json.loads(self._body())))
+            if self._api_post(p):
+                return
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
             return self._json({"error": f"{type(e).__name__}: {e}"}, 400)
         return self._json({"error": "unknown endpoint"}, 404)
+
+    # ----------------------------------------------------------------- research platform API
+    # Auth, projects, disease panels, reporting, agents and workflows. Each handler returns True
+    # once it has written a response; returning None lets the caller fall through.
+
+    def _api_get(self, p):  # noqa: C901
+        if p == "/api/disease-panels":
+            panels = {}
+            for disease in list_panels():
+                panel = get_panel(disease)
+                panels[disease] = {"name": panel["name"], "description": panel["description"],
+                                   "target_count": len(panel["targets"]), "programs": panel["programs"]}
+            return self._json(panels) or True
+        if p.startswith("/api/disease-panels/") and p.endswith("/top-targets"):
+            top_n = int((self._qs().get("top_n") or ["5"])[0])
+            return self._json(get_top_targets_by_prevalence(self._seg(p, 2), top_n)) or True
+        if p.startswith("/api/disease-panels/"):
+            panel = get_panel(self._seg(p, 2))
+            if not panel:
+                return self._json({"error": "Disease panel not found"}, 404) or True
+            return self._json(panel) or True
+        if p == "/api/agents":
+            return self._json({"optimizer": OPT_AGENT.to_dict(), "analyst": ANA_AGENT.to_dict()}) or True
+
+        # Everything below needs a bearer token.
+        if p == "/api/projects" or p.startswith("/api/projects/") or p in (
+                "/api/master-agent/status", "/api/agent/memory/suggest", "/api/agent/patterns",
+                "/api/voice/status") or (
+                p.startswith("/api/workflows/") and p.rsplit("/", 1)[-1] in ("progress", "results")):
+            user = self._user()
+            if not user:
+                return True
+        else:
+            return None
+
+        if p == "/api/projects":
+            return self._json([x.to_dict() for x in list_user_projects(user["user_id"])]) or True
+        if p.startswith("/api/projects/"):
+            project = get_project(self._seg(p, 2))
+            if not project:
+                return self._json({"error": "Project not found"}, 404) or True
+            return self._json(project.to_dict()) or True
+        if p == "/api/master-agent/status":
+            return self._json({
+                "master_agent": MASTER_AGENT.to_dict(),
+                "team": {name: ORCHESTRATOR.get_agent_status(name)
+                         for name in ("optimizer", "analyst", "orchestrator")},
+                "timestamp": datetime.utcnow().isoformat()}) or True
+        if p == "/api/agent/memory/suggest":
+            target = (self._qs().get("target") or [""])[0]
+            if not target:
+                return self._json({"error": "target parameter required"}, 400) or True
+            return self._json({"target": target,
+                               "suggestions": ORCHESTRATOR.agent_memory.suggest_optimization(target)}) or True
+        if p == "/api/agent/patterns":
+            patterns = ORCHESTRATOR.agent_memory.learned_patterns
+            return self._json({"patterns": patterns, "count": len(patterns)}) or True
+        if p == "/api/voice/status":
+            return self._json({
+                "master_agent": {"status": MASTER_AGENT.status, "listening": MASTER_AGENT.voice_enabled},
+                "team": {name: ORCHESTRATOR.get_agent_status(name)
+                         for name in ("optimizer", "analyst", "orchestrator")},
+                "active_workflows": ORCHESTRATOR.get_active_workflow_count()}) or True
+        wid = self._seg(p, 2)
+        if p.endswith("/progress"):
+            progress = ORCHESTRATOR.get_workflow_progress(wid)
+            if progress is None:
+                return self._json({"error": "Workflow not found"}, 404) or True
+            return self._json(progress) or True
+        results = ORCHESTRATOR.get_workflow_results(wid)
+        if results is None:
+            return self._json({"error": "Workflow not found or not complete"}, 404) or True
+        return self._json(results) or True
+
+    def _api_post(self, p):  # noqa: C901
+        if p == "/api/auth/login":
+            b = self._payload()
+            token = authenticate_user(b.get("email"), b.get("password"))
+            if not token:
+                return self._json({"error": "Invalid credentials"}, 401) or True
+            return self._json({"token": token, "email": b.get("email")}) or True
+        if p == "/api/auth/register":
+            b = self._payload()
+            user = create_user(b.get("email"), b.get("name"), b.get("role", "researcher"),
+                               b.get("institution", ""))
+            return self._json({"user_id": user.user_id, "token": authenticate_user(user.email, b.get("password", "")),
+                               "message": "Account created"}, 201) or True
+
+        # Everything below needs a bearer token.
+        if not (p.startswith(("/api/projects", "/api/reports/", "/api/papers/", "/api/agents/",
+                              "/api/workflows/", "/api/voice", "/api/immersive/scene/",
+                              "/api/agent-workflow/", "/api/stream/"))):
+            return None
+        user = self._user()
+        if not user:
+            return True
+        b = self._payload()
+
+        if p == "/api/projects":
+            if not self._has_role(user, "admin", "pi", "researcher"):
+                return True
+            project = create_project(name=b.get("name"), owner_id=user["user_id"],
+                                     program=b.get("program"), description=b.get("description", ""))
+            return self._json(project.to_dict(), 201) or True
+        if p.startswith("/api/reports/") and p.endswith("/generate"):
+            report = generate_screening_report(project_id=b.get("project_id"), campaign_id=self._seg(p, 2),
+                                               target=b.get("target"), results=b.get("results", []))
+            return self._json({"markdown": report.to_markdown(), "json": json.loads(report.to_json())}) or True
+        if p == "/api/papers/generate":
+            paper = generate_paper_from_session(b)
+            fmt = (self._qs().get("format") or ["markdown"])[0]
+            if fmt == "latex":
+                return self._text(paper.to_latex(), "text/plain") or True
+            if fmt == "json":
+                return self._text(paper.to_json(), "application/json") or True
+            return self._text(paper.to_markdown(), "text/markdown") or True
+        if p == "/api/agents/optimize/docking-params":
+            return self._json(OPT_AGENT.optimize_docking_params(
+                target_id=b.get("target_id"), validation_compounds=b.get("validation_compounds", []))) or True
+        if p == "/api/agents/analyze/hotspots":
+            return self._json(ANA_AGENT.identify_hotspots(compounds=b.get("compounds", []),
+                                                          target=b.get("target"))) or True
+        if p == "/api/agents/analyze/sa-score":
+            return self._json(ANA_AGENT.predict_synthetic_accessibility(
+                compound_ids=b.get("compound_ids", []))) or True
+        if p == "/api/workflows/lead-optimization":
+            return self._json(WORKFLOWS.create_lead_optimization_workflow(
+                target_id=b.get("target_id"), lead_compound=b.get("lead_compound")), 201) or True
+        if p == "/api/workflows/validation":
+            return self._json(WORKFLOWS.create_validation_workflow(
+                top_compounds=b.get("top_compounds", []), target_id=b.get("target_id")), 201) or True
+        if p == "/api/workflows/execute":
+            template = b.get("template")
+            if template not in WORKFLOW_TEMPLATES:
+                return self._json({"error": "Unknown template"}, 400) or True
+            wid = str(uuid.uuid4())
+            ORCHESTRATOR.queue_workflow(workflow_id=wid, template=template, target=b.get("target"),
+                                        compounds=b.get("compounds", []), user_id=user["user_id"])
+            return self._json({"workflow_id": wid, "template": template, "target": b.get("target"),
+                               "status": "queued",
+                               "progress_url": f"/api/workflows/{wid}/progress",
+                               "results_url": f"/api/workflows/{wid}/results"}, 201) or True
+        if p.startswith("/api/workflows/") and p.endswith("/cancel"):
+            if not ORCHESTRATOR.cancel_workflow(self._seg(p, 2)):
+                return self._json({"error": "Workflow not found or already finished"}, 404) or True
+            return self._json({"workflow_id": self._seg(p, 2), "status": "cancelled"}) or True
+        if p == "/api/stream/subscribe":
+            types = b.get("stream_types", ["docking", "md", "analysis"])
+            return self._json({"ws_url": f"ws://{self.headers.get('Host', 'localhost').split(':')[0]}:{WS_PORT}/ws",
+                               "stream_types": types, "available": STREAMING is not None,
+                               "message": "Connect to WebSocket for real-time updates"}) or True
+        if p in ("/api/voice-command", "/api/voice/process"):
+            transcript = b.get("transcript") or b.get("text") or ""
+            if not transcript:
+                return self._json({"error": "Empty transcript"}, 400) or True
+            response = MASTER_AGENT.process_voice_command(transcript)
+            if p == "/api/voice-command":
+                return self._json(response) or True
+            return self._json({"command": transcript, "response": response,
+                               "timestamp": datetime.utcnow().isoformat()}) or True
+        if p.startswith("/api/immersive/scene/"):
+            scene = self._seg(p, 3)
+            if scene not in VR_SCENES:
+                return self._json({"error": "Unknown scene"}, 404) or True
+            return self._json({"scene": scene, "config": VR_SCENES[scene], "ready": True}) or True
+        if p.startswith("/api/agent-workflow/"):
+            name = self._seg(p, 2)
+            if name not in AGENT_WORKFLOWS:
+                return self._json({"error": "Unknown workflow"}, 404) or True
+            wf = AGENT_WORKFLOWS[name]
+            return self._json({"workflow_id": f"wf_{name}_{uuid.uuid4().hex[:8]}", "workflow_name": name,
+                               "steps": wf["steps"], "agents_involved": wf["agents"],
+                               "status": "running", "progress": 0}, 201) or True
+        return None
 
 
 def lan_ip():
@@ -488,599 +816,10 @@ def main():
         scheme = "https"
     print(f"biodao.blockchain  ->  {scheme}://localhost:{a.port}   (LAN: {scheme}://{lan_ip()}:{a.port})")
     print("engines:", ", ".join(f"{k}={'yes' if v else 'no'}" for k, v in HAVE.items()))
+    if start_websocket_server():
+        print(f"VR streaming     ->  ws://localhost:{WS_PORT}")
     srv.serve_forever()
 
 
 if __name__ == "__main__":
     main()
-
-# ================================================================
-# Phase 1 Enhancements: Auth, Projects, Reporting, Agents
-# ================================================================
-
-from auth import require_auth, require_role, authenticate_user, create_user
-from projects import create_project, get_project, list_user_projects, create_campaign
-from disease_panels import get_panel, list_panels, get_targets_by_program
-from reporting import Report, generate_screening_report
-from paper_generator import generate_paper_from_session
-from agents import OptimizationAgent, AnalysisAgent, WorkflowOrchestrator
-
-# ================================================================
-# User Authentication Endpoints
-# ================================================================
-
-@app.route('/api/auth/login', methods=['POST'])
-def login():
-    """Authenticate a user and return JWT token."""
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    
-    token = authenticate_user(email, password)
-    if token:
-        return jsonify({'token': token, 'email': email}), 200
-    return jsonify({'error': 'Invalid credentials'}), 401
-
-@app.route('/api/auth/register', methods=['POST'])
-def register():
-    """Register a new user account."""
-    data = request.json
-    email = data.get('email')
-    name = data.get('name')
-    role = data.get('role', 'researcher')
-    institution = data.get('institution', '')
-    
-    user = create_user(email, name, role, institution)
-    token = authenticate_user(email, data.get('password', ''))
-    
-    return jsonify({
-        'user_id': user.user_id,
-        'token': token,
-        'message': 'Account created'
-    }), 201
-
-# ================================================================
-# Project Management Endpoints
-# ================================================================
-
-@app.route('/api/projects', methods=['POST'])
-@require_auth
-def create_new_project():
-    """Create a new research project."""
-    data = request.json
-    project = create_project(
-        name=data.get('name'),
-        owner_id=request.user['user_id'],
-        program=data.get('program'),  # ALS, Parkinsons, Shriners
-        description=data.get('description', '')
-    )
-    return jsonify(project.to_dict()), 201
-
-@app.route('/api/projects', methods=['GET'])
-@require_auth
-def get_projects():
-    """List user's projects."""
-    projects = list_user_projects(request.user['user_id'])
-    return jsonify([p.to_dict() for p in projects]), 200
-
-@app.route('/api/projects/<project_id>', methods=['GET'])
-@require_auth
-def get_project_details(project_id):
-    """Get project details."""
-    project = get_project(project_id)
-    if not project:
-        return jsonify({'error': 'Project not found'}), 404
-    return jsonify(project.to_dict()), 200
-
-# ================================================================
-# Disease Panels Endpoints
-# ================================================================
-
-@app.route('/api/disease-panels', methods=['GET'])
-def get_disease_panels():
-    """List available disease panels."""
-    panels = {}
-    for disease in list_panels():
-        panel = get_panel(disease)
-        panels[disease] = {
-            'name': panel['name'],
-            'description': panel['description'],
-            'target_count': len(panel['targets']),
-            'programs': panel['programs'],
-        }
-    return jsonify(panels), 200
-
-@app.route('/api/disease-panels/<disease>', methods=['GET'])
-def get_disease_panel(disease):
-    """Get full disease panel with all targets."""
-    panel = get_panel(disease)
-    if not panel:
-        return jsonify({'error': 'Disease panel not found'}), 404
-    return jsonify(panel), 200
-
-@app.route('/api/disease-panels/<disease>/top-targets', methods=['GET'])
-def get_top_targets(disease):
-    """Get top targets by prevalence in a disease."""
-    top_n = request.args.get('top_n', 5, type=int)
-    from disease_panels import get_top_targets_by_prevalence
-    targets = get_top_targets_by_prevalence(disease, top_n)
-    return jsonify(targets), 200
-
-# ================================================================
-# Reporting & Paper Generation Endpoints
-# ================================================================
-
-@app.route('/api/reports/<campaign_id>/generate', methods=['POST'])
-@require_auth
-def generate_report(campaign_id):
-    """Generate a publication-ready report for a screening campaign."""
-    data = request.json
-    results = data.get('results', [])
-    
-    report = generate_screening_report(
-        project_id=data.get('project_id'),
-        campaign_id=campaign_id,
-        target=data.get('target'),
-        results=results
-    )
-    
-    return jsonify({
-        'markdown': report.to_markdown(),
-        'json': json.loads(report.to_json()),
-    }), 200
-
-@app.route('/api/papers/generate', methods=['POST'])
-@require_auth
-def generate_paper():
-    """Generate a full research paper from a screening session."""
-    session_data = request.json
-    paper = generate_paper_from_session(session_data)
-    
-    format = request.args.get('format', 'markdown')  # markdown, latex, json
-    
-    if format == 'latex':
-        return paper.to_latex(), 200, {'Content-Type': 'text/plain'}
-    elif format == 'json':
-        return paper.to_json(), 200, {'Content-Type': 'application/json'}
-    else:  # markdown
-        return paper.to_markdown(), 200, {'Content-Type': 'text/markdown'}
-
-# ================================================================
-# Multi-Agent System Endpoints
-# ================================================================
-
-opt_agent = OptimizationAgent()
-ana_agent = AnalysisAgent()
-orchestrator = WorkflowOrchestrator()
-
-@app.route('/api/agents', methods=['GET'])
-def list_agents():
-    """List available research agents."""
-    agents = {
-        'optimizer': opt_agent.to_dict(),
-        'analyst': ana_agent.to_dict(),
-    }
-    return jsonify(agents), 200
-
-@app.route('/api/agents/optimize/docking-params', methods=['POST'])
-@require_auth
-def optimize_docking_params():
-    """Agent: Optimize docking parameters for a target."""
-    data = request.json
-    result = opt_agent.optimize_docking_params(
-        target_id=data.get('target_id'),
-        validation_compounds=data.get('validation_compounds', [])
-    )
-    return jsonify(result), 200
-
-@app.route('/api/agents/analyze/hotspots', methods=['POST'])
-@require_auth
-def analyze_hotspots():
-    """Agent: Identify chemical hotspots in screening results."""
-    data = request.json
-    result = ana_agent.identify_hotspots(
-        compounds=data.get('compounds', []),
-        target=data.get('target')
-    )
-    return jsonify(result), 200
-
-@app.route('/api/agents/analyze/sa-score', methods=['POST'])
-@require_auth
-def predict_sa():
-    """Agent: Predict synthetic accessibility of compounds."""
-    data = request.json
-    result = ana_agent.predict_synthetic_accessibility(
-        compound_ids=data.get('compound_ids', [])
-    )
-    return jsonify(result), 200
-
-@app.route('/api/workflows/lead-optimization', methods=['POST'])
-@require_auth
-def create_lead_opt_workflow():
-    """Create an automated lead optimization workflow."""
-    data = request.json
-    workflow = orchestrator.create_lead_optimization_workflow(
-        target_id=data.get('target_id'),
-        lead_compound=data.get('lead_compound')
-    )
-    return jsonify(workflow), 201
-
-@app.route('/api/workflows/validation', methods=['POST'])
-@require_auth
-def create_validation_workflow():
-    """Create an automated validation workflow (MD + MMGBSA + report)."""
-    data = request.json
-    workflow = orchestrator.create_validation_workflow(
-        top_compounds=data.get('top_compounds', []),
-        target_id=data.get('target_id')
-    )
-    return jsonify(workflow), 201
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-
-# ================================================================
-# Phase 2: Immersive AR/VR with Master Agent Voice Control
-# ================================================================
-
-from master_agent import MasterAgent, ResearchIntent
-
-master_agent = MasterAgent()
-
-@app.route('/api/voice-command', methods=['POST'])
-@require_auth
-def process_voice_command():
-    """Process voice command and return master agent response."""
-    data = request.json
-    transcript = data.get('transcript', '')
-    
-    if not transcript:
-        return jsonify({'error': 'Empty transcript'}), 400
-    
-    response = master_agent.process_voice_command(transcript)
-    return jsonify(response), 200
-
-@app.route('/api/master-agent/status', methods=['GET'])
-@require_auth
-def get_agent_status():
-    """Get current master agent and team status."""
-    return jsonify({
-        'master_agent': master_agent.to_dict(),
-        'team': {
-            'optimizer': {'status': 'ready', 'active_jobs': 0},
-            'analyst': {'status': 'ready', 'active_jobs': 0},
-            'orchestrator': {'status': 'ready', 'active_jobs': 0},
-        },
-        'timestamp': datetime.utcnow().isoformat(),
-    }), 200
-
-@app.route('/api/immersive/scene/<scene_name>', methods=['POST'])
-@require_auth
-def update_vr_scene(scene_name):
-    """Update VR scene visualization."""
-    data = request.json
-    
-    scenes = {
-        'docking_progress': {
-            'show_target': True,
-            'show_ligands': True,
-            'show_scores': True,
-            'show_pockets': True,
-            'real_time_update': True,
-        },
-        'md_simulation': {
-            'show_trajectory': True,
-            'show_forces': True,
-            'show_energy': True,
-            'allow_steering': True,
-            'allow_timeline_control': True,
-        },
-        'results_analysis': {
-            'show_hotspots': True,
-            'color_by_sa_score': True,
-            'cluster_by_scaffold': True,
-            'show_interactions': True,
-        },
-    }
-    
-    if scene_name not in scenes:
-        return jsonify({'error': 'Unknown scene'}), 404
-    
-    return jsonify({
-        'scene': scene_name,
-        'config': scenes[scene_name],
-        'ready': True,
-    }), 200
-
-@app.route('/api/agent-workflow/<workflow_name>', methods=['POST'])
-@require_auth
-def start_agent_workflow(workflow_name):
-    """Start a multi-agent workflow orchestrated by master agent."""
-    data = request.json
-    
-    workflows = {
-        'lead_optimization': {
-            'steps': [
-                'tune_docking_params',
-                'dock_analogs',
-                'analyze_results',
-                'predict_synthesis',
-                'generate_recommendations',
-            ],
-            'agents': ['optimizer', 'dock_engine', 'analyst'],
-        },
-        'validation_pipeline': {
-            'steps': [
-                'run_md_simulations',
-                'calculate_hbonds',
-                'mmgbsa_scoring',
-                'generate_binding_report',
-                'predict_adme_properties',
-            ],
-            'agents': ['md_engine', 'analyst', 'orchestrator'],
-        },
-        'paper_generation': {
-            'steps': [
-                'compile_results',
-                'generate_figures',
-                'format_tables',
-                'draft_discussion',
-                'export_formats',
-            ],
-            'agents': ['analyst', 'orchestrator'],
-        },
-    }
-    
-    if workflow_name not in workflows:
-        return jsonify({'error': 'Unknown workflow'}), 404
-    
-    workflow = workflows[workflow_name]
-    return jsonify({
-        'workflow_id': f"wf_{workflow_name}_{uuid.uuid4().hex[:8]}",
-        'workflow_name': workflow_name,
-        'steps': workflow['steps'],
-        'agents_involved': workflow['agents'],
-        'status': 'running',
-        'progress': 0,
-    }), 201
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-
-# ========================================================================== Phase 3: Async Workflows
-
-from server.agent_orchestrator import AgentOrchestrator, WorkflowExecutor
-from server.websocket_streaming import StreamingServer, VRDataFrame
-import asyncio
-import websockets
-from datetime import datetime
-
-# Initialize orchestrator and streaming server
-orchestrator = AgentOrchestrator()
-streaming_server = None
-
-@app.route('/api/workflows/execute', methods=['POST'])
-@require_auth
-def execute_workflow():
-    """Start an async workflow (lead_optimization, validation_campaign, discovery_sprint)."""
-    data = request.json
-    template = data.get('template')
-    target = data.get('target')
-    compounds = data.get('compounds', [])
-    
-    if template not in ['lead_optimization', 'validation_campaign', 'discovery_sprint']:
-        return jsonify({'error': 'Unknown template'}), 400
-    
-    # Async execution in background
-    workflow_id = str(uuid.uuid4())
-    user = g.user if hasattr(g, 'user') else 'anonymous'
-    
-    try:
-        # Don't await here - Flask can't do async natively
-        # Just queue the work in orchestrator
-        orchestrator.queue_workflow(
-            workflow_id=workflow_id,
-            template=template,
-            target=target,
-            compounds=compounds,
-            user_id=user,
-        )
-        
-        return jsonify({
-            'workflow_id': workflow_id,
-            'template': template,
-            'target': target,
-            'status': 'queued',
-            'progress_url': f'/api/workflows/{workflow_id}/progress',
-            'results_url': f'/api/workflows/{workflow_id}/results',
-        }), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/workflows/<workflow_id>/progress', methods=['GET'])
-@require_auth
-def get_workflow_progress(workflow_id):
-    """Get real-time progress for a running workflow."""
-    progress = orchestrator.get_workflow_progress(workflow_id)
-    
-    if progress is None:
-        return jsonify({'error': 'Workflow not found'}), 404
-    
-    return jsonify(progress), 200
-
-@app.route('/api/workflows/<workflow_id>/results', methods=['GET'])
-@require_auth
-def get_workflow_results(workflow_id):
-    """Fetch final results from completed workflow."""
-    results = orchestrator.get_workflow_results(workflow_id)
-    
-    if results is None:
-        return jsonify({'error': 'Workflow not found or not complete'}), 404
-    
-    return jsonify(results), 200
-
-@app.route('/api/workflows/<workflow_id>/cancel', methods=['POST'])
-@require_auth
-def cancel_workflow(workflow_id):
-    """Cancel a running workflow."""
-    success = orchestrator.cancel_workflow(workflow_id)
-    
-    if not success:
-        return jsonify({'error': 'Workflow not found or already finished'}), 404
-    
-    return jsonify({'workflow_id': workflow_id, 'status': 'cancelled'}), 200
-
-@app.route('/api/agent/memory/suggest', methods=['GET'])
-@require_auth
-def get_memory_suggestions():
-    """Get AI suggestions based on past experiments."""
-    target = request.args.get('target')
-    
-    if not target:
-        return jsonify({'error': 'target parameter required'}), 400
-    
-    suggestions = orchestrator.agent_memory.suggest_optimization(target, {})
-    
-    return jsonify({
-        'target': target,
-        'suggestions': suggestions,
-    }), 200
-
-@app.route('/api/agent/patterns', methods=['GET'])
-@require_auth
-def get_learned_patterns():
-    """List all learned optimization patterns."""
-    patterns = orchestrator.agent_memory.get_learned_patterns()
-    
-    return jsonify({
-        'patterns': patterns,
-        'count': len(patterns),
-    }), 200
-
-@app.route('/api/stream/subscribe', methods=['POST'])
-@require_auth
-def subscribe_to_stream():
-    """Get WebSocket URL for real-time updates."""
-    data = request.json
-    stream_types = data.get('stream_types', ['docking', 'md', 'analysis'])
-    
-    return jsonify({
-        'ws_url': f'ws://localhost:8000/ws',
-        'stream_types': stream_types,
-        'message': 'Connect to WebSocket for real-time updates',
-    }), 200
-
-# ========================================================================== WebSocket Streaming
-
-async def websocket_handler(websocket, path):
-    """Handle WebSocket connections for real-time VR updates."""
-    client_id = str(uuid.uuid4())
-    
-    try:
-        # Register client
-        await streaming_server.register_client(client_id, websocket)
-        
-        # Keep connection alive and forward any messages
-        async for message in websocket:
-            data = json.loads(message)
-            
-            if data.get('type') == 'subscribe':
-                # Client is subscribing to specific streams
-                stream_types = data.get('stream_types', [])
-                await streaming_server.subscribe_client(client_id, stream_types)
-            
-            elif data.get('type') == 'heartbeat':
-                # Keep-alive ping
-                await websocket.send(json.dumps({'type': 'pong'}))
-    
-    except websockets.exceptions.ConnectionClosed:
-        pass
-    finally:
-        await streaming_server.unregister_client(client_id)
-
-def start_websocket_server():
-    """Start WebSocket server in background thread."""
-    global streaming_server
-    streaming_server = StreamingServer()
-    
-    async def run_ws():
-        async with websockets.serve(websocket_handler, '0.0.0.0', 8001):
-            await asyncio.Future()  # run forever
-    
-    def ws_thread():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(run_ws())
-    
-    t = threading.Thread(target=ws_thread, daemon=True)
-    t.start()
-
-# ========================================================================== Master Agent Integration
-
-from server.master_agent import MasterAgent
-
-master_agent = None
-
-def initialize_master_agent():
-    """Initialize master agent on server startup."""
-    global master_agent
-    master_agent = MasterAgent(
-        orchestrator=orchestrator,
-        streaming_server=streaming_server,
-    )
-
-@app.route('/api/voice/process', methods=['POST'])
-@require_auth
-def process_voice_command():
-    """Process voice command through master agent."""
-    data = request.json
-    voice_text = data.get('text', '')
-    
-    if not master_agent:
-        return jsonify({'error': 'Master agent not initialized'}), 500
-    
-    try:
-        response = master_agent.process_voice_command(voice_text)
-        
-        return jsonify({
-            'command': voice_text,
-            'response': response,
-            'timestamp': datetime.utcnow().isoformat(),
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/voice/status', methods=['GET'])
-@require_auth
-def get_voice_status():
-    """Get master agent and team status."""
-    if not master_agent:
-        return jsonify({'error': 'Master agent not initialized'}), 500
-    
-    return jsonify({
-        'master_agent': {
-            'status': 'ready',
-            'listening': True,
-        },
-        'team': {
-            'optimizer': orchestrator.get_agent_status('optimizer'),
-            'analyst': orchestrator.get_agent_status('analyst'),
-            'orchestrator': orchestrator.get_agent_status('orchestrator'),
-        },
-        'active_workflows': orchestrator.get_active_workflow_count(),
-    }), 200
-
-# ========================================================================== Startup
-
-if __name__ == '__main__':
-    # Start WebSocket server
-    start_websocket_server()
-    
-    # Initialize master agent
-    initialize_master_agent()
-    
-    print('✅ Phase 3: Agent orchestrator and streaming server initialized')
-    print('🚀 biodao.blockchain server running on http://localhost:8000')
-    print('📡 WebSocket streaming on ws://localhost:8001')
-    
-    app.run(debug=True, port=8000, threaded=True)

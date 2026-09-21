@@ -315,6 +315,8 @@ class PyreneSeries3Generator:
         target_indication: str,
         num_compounds: int = 20,
         apoptotic_mechanism: Optional[ApoptosisType] = None,
+        offset: int = 0,
+        prefer: Optional[List[str]] = None,
     ) -> List[PyreneCompound]:
         """Generate Series 3 pyrene compounds with optimizations.
 
@@ -323,6 +325,10 @@ class PyreneSeries3Generator:
             target_indication: e.g., 'pediatric_lymphoma'
             num_compounds: Number of compounds to generate
             apoptotic_mechanism: Specific apoptotic pathway
+            offset: Start position in the pair enumeration. Successive evolution
+                cycles pass a rising offset so each explores unseen chemistry.
+            prefer: Warheads to prioritize ahead of the target defaults, used to
+                bias generation toward warheads found in earlier top performers.
 
         Returns:
             List of designed PyreneCompound objects
@@ -331,11 +337,9 @@ class PyreneSeries3Generator:
         compounds = []
         series_def = self.series_definitions['series_3']
 
-        for i in range(num_compounds):
-            # Select warheads based on target
-            warhead_1 = self._select_warhead_for_target(target_protein, 1)
-            warhead_2 = self._select_warhead_for_target(target_protein, 2)
-
+        for i, (warhead_1, warhead_2) in enumerate(
+            self._warhead_pairs(target_protein, num_compounds, offset, prefer)
+        ):
             # Determine apoptotic mechanism
             mechanism = apoptotic_mechanism or self._select_mechanism(target_protein)
 
@@ -362,7 +366,7 @@ class PyreneSeries3Generator:
             )
 
             compound = PyreneCompound(
-                compound_id=f"AGI-PYRENE3-{i+1:04d}",
+                compound_id=f"AGI-PYRENE3-{offset+i+1:04d}",
                 series='series_3',
                 base_pyrene=series_def.base_structure,
                 warhead_1=warhead_1,
@@ -386,10 +390,9 @@ class PyreneSeries3Generator:
 
         return compounds
 
-    def _select_warhead_for_target(self, target: str, position: int) -> str:
-        """Select optimal warhead for target protein."""
+    def _target_preferences(self, target: str) -> List[str]:
+        """Warheads with a mechanistic rationale for this target."""
 
-        # Target-specific warhead selection
         warhead_preferences = {
             'BCL2': ['acrylamide', 'vinylsulfonamide'],  # Cysteine-reactive
             'FAS': ['hydroxamate', 'cyanoketone'],  # Metal coordination
@@ -397,12 +400,32 @@ class PyreneSeries3Generator:
             'caspase-3': ['cyanoketone', 'vinylsulfonamide'],  # Active site
         }
 
-        preferred = warhead_preferences.get(target, list(self.warhead_library.keys())[:3])
+        return warhead_preferences.get(target, list(self.warhead_library.keys())[:3])
 
-        if position == 1:
-            return preferred[0]
-        else:
-            return preferred[1] if len(preferred) > 1 else preferred[0]
+    def _warhead_pairs(
+        self,
+        target: str,
+        count: int,
+        offset: int = 0,
+        prefer: Optional[List[str]] = None,
+    ) -> List[Tuple[str, str]]:
+        """Enumerate distinct warhead pairs, target-preferred combinations first.
+
+        Deterministic so a given request reproduces the same library, but it walks
+        the full combinatorial space instead of returning one pair repeatedly.
+        """
+
+        preferred = list(prefer or []) + [
+            w for w in self._target_preferences(target) if w not in (prefer or [])
+        ]
+        ordered = preferred + [w for w in self.warhead_library if w not in preferred]
+
+        pairs = [(a, b) for a in ordered for b in ordered if a != b]
+        # Stable sort keeps `ordered` priority inside each tier: both-preferred,
+        # then one-preferred, then neither.
+        pairs.sort(key=lambda p: (p[0] not in preferred) + (p[1] not in preferred))
+
+        return [pairs[(offset + i) % len(pairs)] for i in range(count)]
 
     def _select_mechanism(self, target: str) -> ApoptosisType:
         """Select apoptotic mechanism for target."""

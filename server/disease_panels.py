@@ -5,6 +5,7 @@ Pre-curated lists of validated targets for:
 - Parkinson's Disease
 - Shriners Children's (Osteogenesis Imperfecta, Skeletal Dysplasia)
 """
+from typing import Dict, List
 
 DISEASE_PANELS = {
     'ALS': {
