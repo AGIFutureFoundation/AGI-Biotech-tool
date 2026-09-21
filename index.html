@@ -6,6 +6,24 @@
 <title>biodao.blockchain — molecular workspace</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🧬</text></svg>">
 <link rel="stylesheet" href="css/app.css">
+<style>
+  /* XR entry and first-use affordances (kept here: this layer owns index.html, not css/). */
+  #btnVR.unavailable, #btnAR.unavailable { opacity: .55; background: #16222f; border-color: var(--line); color: var(--dim); }
+  .tip { position: absolute; z-index: 6; max-width: 240px; pointer-events: none; background: #0e1a28f0; border: 1px solid #2f455f;
+    border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.35; box-shadow: 0 4px 18px #0008; }
+  .tip span { color: var(--dim); }
+  .viewhelp { position: absolute; left: 12px; bottom: 12px; z-index: 5; max-width: min(360px, calc(100% - 24px)); background: #0b1420e6;
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 12px; font-size: 12px; color: var(--dim); }
+  .viewhelp b { color: var(--ink); font-weight: 600; }
+  .viewhelp kbd { font: 11px var(--mono); background: #16222f; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; color: var(--ink); }
+  .viewhelp .x { position: absolute; top: 4px; right: 6px; border: 0; background: none; padding: 2px 6px; color: var(--dim); }
+  .viewhelp a, .xrhelp a { color: var(--accent2); }
+  .xrhelp { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 50; width: min(440px, calc(100% - 32px));
+    background: #0d141ff7; border: 1px solid #2f455f; border-radius: 12px; padding: 16px 18px; font-size: 13px; line-height: 1.5; box-shadow: 0 12px 40px #000a; }
+  .xrhelp h4 { margin: 0 0 6px; font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .xrhelp ul { margin: 8px 0; padding-left: 18px; color: var(--dim); }
+  .xrhelp .row { justify-content: flex-end; margin-top: 10px; }
+</style>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
@@ -176,6 +194,22 @@
     </div>
     <div id="mdBadge" class="badge hidden"></div>
     <div id="toast" class="toast hidden"></div>
+    <div id="hoverTip" class="tip hidden" role="status" aria-live="polite"></div>
+    <div id="viewHelp" class="viewhelp">
+      <button class="x" id="viewHelpClose" title="Hide" aria-label="Hide controls help">×</button>
+      <b>Drag</b> to rotate · <b>right-drag</b> to pan · <b>scroll</b> to zoom · <b>hover</b> or <b>click</b> an atom to identify it · <kbd>F</kbd> recentre
+      <div id="xrStatusLine" style="margin-top:4px">Checking for a headset…</div>
+    </div>
+    <div id="xrHelp" class="xrhelp hidden" role="dialog" aria-labelledby="xrHelpTitle">
+      <h4 id="xrHelpTitle">Immersive mode isn't available here</h4>
+      <div id="xrHelpReason"></div>
+      <ul>
+        <li>Everything works on the desktop: drag to rotate, click atoms to identify and measure.</li>
+        <li>In a headset (Meta Quest, Apple Vision Pro, Pico), open this same page in its browser and press <b>Enter VR</b>.</li>
+        <li>To preview the headset interface here, reload with <a href="?emulate=quest3">?emulate=quest3</a> (controllers) or <a href="?emulate=quest3&amp;input=hands">?emulate=quest3&amp;input=hands</a>.</li>
+      </ul>
+      <div class="row"><button id="xrHelpClose" class="primary">Got it</button></div>
+    </div>
   </main>
 
   <aside id="right">
@@ -210,13 +244,13 @@
         <label><input type="checkbox" id="freezeProtein" checked> rigid protein</label>
       </div>
       <div id="mdStats" class="stats"></div>
-      <div class="hint">In VR: grip to move the workspace, two grips to scale, trigger on the ligand to pull it through the pocket.</div>
+      <div class="hint">In a headset: pinch or pull the trigger on the ligand and move to pull it through the pocket.</div>
     </section>
 
     <section class="block">
       <h4>Measure &amp; select</h4>
       <div class="row wrap"><button id="btnMeasure">Measure mode</button><button id="btnClearSel">Clear</button></div>
-      <div id="selInfo" class="hint">Click an atom to select. Two atoms give a distance, three give an angle.</div>
+      <div id="selInfo" class="hint">Click an atom to select (in a headset: point and tap). Two atoms give a distance, three give an angle.</div>
     </section>
   </aside>
 

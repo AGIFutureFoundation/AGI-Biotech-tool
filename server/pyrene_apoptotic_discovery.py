@@ -7,12 +7,18 @@ Specialized module for:
 - Pediatric safety optimization
 - High-value target discovery
 - Dynamic molecular adaptation
+
+STUB NOTICE: no docking, MD or safety model runs here. Potency, safety,
+selectivity and accessibility are heuristics over hand-set warhead constants,
+emitted as SyntheticValue (prints "[SYNTHETIC]") in records whose `provenance`
+field says so. Warhead enumeration and mechanism mapping are real logic.
 """
 
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
-import json
+
+from synthetic_provenance import SyntheticValue, provenance, stamp
 
 @dataclass
 class PyreneSeries:
@@ -22,9 +28,9 @@ class PyreneSeries:
     base_structure: str  # SMILES
     rings: int  # Number of aromatic rings
     warheads: List[str]  # Available warhead modifications
-    binding_affinity_range: Tuple[float, float]  # kcal/mol
+    binding_affinity_range: Tuple[float, float]  # hand-set design target, kcal/mol-like scale; not measured
     apoptotic_mechanism: str
-    pediatric_safety: float  # 0-1 score
+    pediatric_safety: float  # hand-set 0-1 design assumption; not measured
     target_class: str
 
 class ApoptosisType(Enum):
@@ -57,11 +63,14 @@ class PyreneCompound:
     apoptotic_mechanism: ApoptosisType
     target_protein: str
     target_indication: str
-    pediatric_safety_score: float  # 0-1
-    predicted_potency: float  # -12 to -6 kcal/mol
-    synthetic_accessibility: float  # 0-1 (easy to hard)
-    selectivity_score: float  # 0-1 (off-target toxicity)
+    pediatric_safety_score: float  # SyntheticValue, 0-1 heuristic over hand-set warhead constants
+    predicted_potency: float  # SyntheticValue, -12 to -6 on a kcal/mol-like scale; no docking
+    synthetic_accessibility: float  # SyntheticValue, 0-1 (easy to hard) heuristic
+    selectivity_score: float  # SyntheticValue, 0.6-1.0 heuristic
     combination_partners: List[str]  # Known drugs to combine with
+    provenance: str = provenance(
+        "no docking, MD or safety model was run; scores are heuristics over hand-set warhead constants.",
+        "pediatric_safety_score", "predicted_potency", "synthetic_accessibility", "selectivity_score")
 
 class PyreneSeries3Generator:
     """Generates Series 3 pyrene compounds with apoptotic design."""
@@ -113,7 +122,7 @@ class PyreneSeries3Generator:
                 'type': WarheadType.ELECTROPHILE,
                 'smarts': 'C=CC(=O)N',
                 'targets': ['cysteine', 'lysine'],
-                'potency_boost': 1.5,  # -1.5 kcal/mol improvement
+                'potency_boost': 1.5,  # hand-set heuristic weight, not a measured shift
                 'selectivity_risk': 0.2,
                 'pediatric_safety': 0.88,
             },
@@ -448,21 +457,18 @@ class PyreneSeries3Generator:
         warhead_2: str,
         target: str,
     ) -> float:
-        """Calculate predicted binding energy."""
+        """Placeholder potency: -8.5 minus hand-set warhead constants, clamped
+        at -11.5. No docking; the number is not kcal/mol."""
 
-        base_energy = -8.5  # Series 3 baseline
-
-        # Warhead boost
-        energy = base_energy
+        energy = -8.5
         energy -= self.warhead_library[warhead_1]['potency_boost']
         if warhead_2:
             energy -= self.warhead_library[warhead_2]['potency_boost'] * 0.6
 
-        # Target-specific adjustment
         if 'BCL' in target:
-            energy -= 0.5  # BCL proteins are good binders
+            energy -= 0.5
 
-        return max(energy, -11.5)  # Cap at realistic maximum
+        return SyntheticValue(max(energy, -11.5))
 
     def _calculate_pediatric_safety(
         self,
@@ -470,7 +476,7 @@ class PyreneSeries3Generator:
         warhead_2: str,
         indication: str,
     ) -> float:
-        """Calculate pediatric safety score (0-1)."""
+        """Heuristic 0-1 safety score over hand-set warhead constants; no model."""
 
         safety = 0.9  # Start high
 
@@ -486,7 +492,7 @@ class PyreneSeries3Generator:
         if 'cancer' in indication.lower():
             safety *= 0.95  # Slightly lower for cancer
 
-        return min(safety, 1.0)
+        return SyntheticValue(min(safety, 1.0))
 
     def _calculate_selectivity(
         self,
@@ -494,7 +500,12 @@ class PyreneSeries3Generator:
         warhead_2: str,
         target: str,
     ) -> float:
-        """Calculate selectivity score (0-1, lower is better for toxicity)."""
+        """Selectivity score, higher is better: 1.0 minus accumulated off-target risk.
+
+        Consumers rank on this ascending (the composite score weights it +0.20).
+        Note the floor below clamps the real range to 0.6-1.0, not 0-1, so the
+        documented "selectivity >= 0.80" gate is weaker than it reads.
+        """
 
         selectivity = 1.0
 
@@ -503,7 +514,7 @@ class PyreneSeries3Generator:
         if warhead_2:
             selectivity -= self.warhead_library[warhead_2]['selectivity_risk'] * 0.5
 
-        return max(selectivity, 0.6)
+        return SyntheticValue(max(selectivity, 0.6))
 
     def _estimate_synthetic_accessibility(
         self,
@@ -524,7 +535,7 @@ class PyreneSeries3Generator:
         if warhead_2 and warhead_2 in easy_warheads:
             accessibility -= 0.05
 
-        return max(accessibility, 0.3)
+        return SyntheticValue(max(accessibility, 0.3))
 
     def _find_synergy_partners(
         self,
@@ -571,16 +582,8 @@ class PyreneSeries3Generator:
         target_structure: str,
         duration_ns: int = 100,
     ) -> Dict:
-        """Run MD simulations on compounds to refine design.
-
-        Args:
-            compounds: Generated pyrene compounds
-            target_structure: PDB ID or file path
-            duration_ns: Simulation duration
-
-        Returns:
-            MD results with refined predictions
-        """
+        """MD STUB: no simulation runs and `target_structure` is never opened.
+        Stability is a warhead-type heuristic; every number is synthetic."""
 
         results = {
             'compounds_simulated': len(compounds),
@@ -589,22 +592,21 @@ class PyreneSeries3Generator:
         }
 
         for compound in compounds:
-            # Simulate binding
             stability = self._calculate_md_stability(compound)
             refined_affinity = compound.predicted_potency - stability * 0.5
 
-            results['refined_compounds'].append({
+            results['refined_compounds'].append(stamp({
                 'compound_id': compound.compound_id,
                 'original_affinity': compound.predicted_potency,
                 'refined_affinity': refined_affinity,
                 'stability_score': stability,
                 'recommended': refined_affinity < -9.0,
-            })
+            }, "no MD was run.", "recommended"))
 
-        return results
+        return stamp(results, "no MD was run; duration_ns is the request, not a simulation.")
 
     def _calculate_md_stability(self, compound: PyreneCompound) -> float:
-        """Calculate MD stability from warhead properties."""
+        """Warhead-type heuristic standing in for MD stability."""
 
         # More electrophilic warheads = higher stability
         stability = 0.5
@@ -618,12 +620,12 @@ class PyreneSeries3Generator:
                 elif wtype == WarheadType.HYDROPHOBIC:
                     stability += 0.1
 
-        return min(stability, 1.0)
+        return SyntheticValue(min(stability, 1.0))
 
     def get_compound_summary(self, compound: PyreneCompound) -> Dict:
-        """Get detailed summary of a designed compound."""
+        """Summary of a designed compound; heuristic scores are marked synthetic."""
 
-        return {
+        return stamp({
             'compound_id': compound.compound_id,
             'series': compound.series,
             'target': compound.target_protein,
@@ -631,10 +633,10 @@ class PyreneSeries3Generator:
             'apoptotic_mechanism': compound.apoptotic_mechanism.value,
             'warheads': [compound.warhead_1, compound.warhead_2],
             'warhead_types': [t.value for t in compound.warhead_types],
-            'predicted_potency': f"{compound.predicted_potency:.2f} kcal/mol",
+            'predicted_potency': f"{compound.predicted_potency:.2f} (heuristic, not kcal/mol)",
             'pediatric_safety': f"{compound.pediatric_safety_score:.2%}",
             'selectivity': f"{compound.selectivity_score:.2%}",
             'synthetic_difficulty': f"{compound.synthetic_accessibility:.1f}/1.0",
             'synergy_partners': compound.combination_partners,
             'next_step': 'Molecular Dynamics validation',
-        }
+        }, "heuristic scores over hand-set warhead constants; no docking or safety model was run.")

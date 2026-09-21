@@ -8,12 +8,17 @@ Enables:
 - Pediatric PK/PD modeling
 - IND-enabling studies planning
 - Publication-ready data formatting
+
+STUB NOTICE: assay designs are real planning text, but every predicted Kd,
+confidence, EC50, efficacy and safety number is a placeholder (SyntheticValue,
+prints "[SYNTHETIC]"). Kd is derived from heuristic potency, not docking.
 """
 
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
-import json
+
+from synthetic_provenance import SyntheticValue, derive, provenance, stamp
 
 @dataclass
 class BiochemicalAssay:
@@ -26,6 +31,7 @@ class BiochemicalAssay:
     confidence: float  # 0-1
     expected_duration: str
     resource_requirements: Dict
+    provenance: str = provenance("predicted_kd derives from heuristic potency; confidence is hand-set.", "predicted_kd", "confidence")
 
 @dataclass
 class CellAssay:
@@ -39,6 +45,7 @@ class CellAssay:
     expected_efficacy: float  # % apoptosis at 10µM
     duration_hours: int
     animal_ethics: bool  # Pediatric consideration
+    provenance: str = provenance("EC50 and efficacy are hand-set constants, identical for every compound.", "expected_ec50", "expected_efficacy")
 
 @dataclass
 class SelectivityScreen:
@@ -59,7 +66,8 @@ class FormulationStrategy:
     volume_per_dose: float  # mL
     taste_masking: bool
     stability_requirement: str  # Room temp, refrigerated
-    excipient_safety: float  # 0-1 pediatric safety
+    excipient_safety: float  # hand-set 0-1 placeholder
+    provenance: str = provenance("excipient_safety is a hand-set constant.", "excipient_safety")
 
 class AssayType(Enum):
     """Types of biochemical assays."""
@@ -169,7 +177,7 @@ class PyrenePediatricValidator:
         Args:
             compound_id: e.g., 'AGI-PYRENE3-0001'
             target_protein: e.g., 'BCL2'
-            predicted_affinity: e.g., -9.4 kcal/mol
+            predicted_affinity: heuristic potency, e.g. -9.4 (synthetic if from the generator)
 
         Returns:
             List of planned biochemical assays
@@ -188,7 +196,7 @@ class PyrenePediatricValidator:
             target_protein=target_protein,
             method='SPR',
             predicted_kd=predicted_kd,
-            confidence=0.85,
+            confidence=SyntheticValue(0.85),
             expected_duration='2-3 days',
             resource_requirements={
                 'instrument': 'Biacore T200',
@@ -207,7 +215,7 @@ class PyrenePediatricValidator:
             target_protein=target_protein,
             method='ITC',
             predicted_kd=predicted_kd * 0.9,  # Usually gives slightly better Kd
-            confidence=0.90,
+            confidence=SyntheticValue(0.90),
             expected_duration='1-2 days',
             resource_requirements={
                 'instrument': 'Malvern MicroCal iTC200',
@@ -226,7 +234,7 @@ class PyrenePediatricValidator:
             target_protein=target_protein,
             method='FluorPol',
             predicted_kd=predicted_kd * 1.2,  # Typically slightly weaker
-            confidence=0.80,
+            confidence=SyntheticValue(0.80),
             expected_duration='2-3 days',
             resource_requirements={
                 'instrument': 'Tecan Infinity',
@@ -246,7 +254,7 @@ class PyrenePediatricValidator:
             target_protein=target_protein,
             method='HTRF',
             predicted_kd=predicted_kd,
-            confidence=0.82,
+            confidence=SyntheticValue(0.82),
             expected_duration='1-2 days',
             resource_requirements={
                 'instrument': 'Envision or Cytation',
@@ -277,7 +285,7 @@ class PyrenePediatricValidator:
         kd_m = math.exp(binding_energy / (R * T))
         kd_nm = kd_m * 1e9
 
-        return max(kd_nm, 1.0)  # Minimum 1 nM
+        return derive(max(kd_nm, 1.0), binding_energy)  # floor 1 nM
 
     def design_cell_assays(
         self,
@@ -316,8 +324,8 @@ class PyrenePediatricValidator:
                 mechanism=mechanism,
                 cell_line=cell_line.value,
                 apoptosis_readout='Caspase-3/7 activation',
-                expected_ec50=100,  # nM
-                expected_efficacy=80.0,  # 80% apoptotic cells at 10µM
+                expected_ec50=SyntheticValue(100),  # nM
+                expected_efficacy=SyntheticValue(80.0),  # 80% apoptotic cells at 10µM
                 duration_hours=4,  # Fast kinetics
                 animal_ethics=False,
             )
@@ -330,8 +338,8 @@ class PyrenePediatricValidator:
                 mechanism=mechanism,
                 cell_line=cell_line.value,
                 apoptosis_readout='Annexin V+/PI- (early) and PI+ (late)',
-                expected_ec50=150,  # nM
-                expected_efficacy=75.0,  # 75% apoptotic at 10µM
+                expected_ec50=SyntheticValue(150),  # nM
+                expected_efficacy=SyntheticValue(75.0),  # 75% apoptotic at 10µM
                 duration_hours=6,
                 animal_ethics=False,
             )
@@ -345,8 +353,8 @@ class PyrenePediatricValidator:
                     mechanism=mechanism,
                     cell_line=cell_line.value,
                     apoptosis_readout='TMRM fluorescence loss (ΔΨm)',
-                    expected_ec50=80,  # nM
-                    expected_efficacy=70.0,  # 70% loss of ΔΨm
+                    expected_ec50=SyntheticValue(80),  # nM
+                    expected_efficacy=SyntheticValue(70.0),  # 70% loss of ΔΨm
                     duration_hours=3,
                     animal_ethics=False,
                 )
@@ -446,7 +454,7 @@ class PyrenePediatricValidator:
         Args:
             compound_id: e.g., 'AGI-PYRENE3-0001'
             target_age_group: e.g., 'toddler', 'child', 'adolescent'
-            predicted_potency: binding energy in kcal/mol
+            predicted_potency: heuristic potency score, not a measured energy
 
         Returns:
             Formulation strategy
@@ -504,7 +512,7 @@ class PyrenePediatricValidator:
             volume_per_dose=formulation_params['volume'],
             taste_masking=formulation_params['taste_mask'],
             stability_requirement=formulation_params['stability'],
-            excipient_safety=0.95,  # High for pediatric-approved excipients
+            excipient_safety=SyntheticValue(0.95),  # High for pediatric-approved excipients
         )
 
         return strategy
@@ -699,7 +707,7 @@ class PyrenePediatricValidator:
         report = {
             'compound_id': compound_id,
             'report_date': '2026-09-19',
-            'status': 'Experimental Validation Plan',
+            'status': 'Experimental Validation Plan (predicted values are synthetic placeholders)',
 
             'executive_summary': f"""
 Comprehensive validation plan for {compound_id}:
@@ -755,7 +763,8 @@ Comprehensive validation plan for {compound_id}:
             },
         }
 
-        return report
+        return stamp(report, "predicted Kd, EC50, efficacy and safety values are placeholders; nothing was measured.",
+                     "biochemical_validation", "cellular_validation", "pediatric_formulation")
 
 class ExperimentalTimeline:
     """Manages experimental validation timeline."""

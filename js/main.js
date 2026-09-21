@@ -11,7 +11,7 @@ import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldsee
   stringdb, gnomad, proteinAtlas, unichem, pdbe, europepmc, openfda, pharos, biothings, kegg, bindingdb } from './api.js';
 import { af3LocalJob, afServerJob, downloadJson, downloadText, readPrediction } from './af3.js';
 import { Collab } from './collab.js';
-import { XRManager, xrSupport, startSession } from './xr.js';
+import { XRManager, xrSupport, XR_REASONS, onXRDeviceChange } from './xr.js';
 import { Ledger } from './ledger.js';
 import { Recorder } from './recorder.js';
 import { yieldToEventLoop } from './util.js';
@@ -60,11 +60,24 @@ raycaster.params.Line.threshold = 0.02;
 const pointer = new THREE.Vector2();
 
 const xr = new XRManager(renderer, scene, workspace, camera);
+xr.describe = (hit) => { const p = pickAtom(hit); return p ? describeAtom(p.view, p.atom) : null; };
+xr.priority = () => (S.mdRunning && S.ligandView ? [S.ligandView.group] : []);
 
 function resize() {
   const v = $('#viewport');
-  renderer.setSize(v.clientWidth, v.clientHeight, false);
-  camera.aspect = v.clientWidth / Math.max(1, v.clientHeight);
+  const w = v.clientWidth, h = Math.max(1, v.clientHeight);
+  renderer.setSize(w, h, false);
+  // On narrower windows the right-hand panel floats over the viewport. Shift the projection centre into the part
+  // that is actually visible so the structure is not framed half behind the panel.
+  const vr = v.getBoundingClientRect(), rr = $('#right').getBoundingClientRect();
+  const covered = rr.width && rr.left < vr.right && rr.left > vr.left ? vr.right - rr.left : 0;
+  if (covered > 0 && covered < w * 0.6) {
+    camera.aspect = (w + covered) / h;
+    camera.setViewOffset(w + covered, h, covered, 0, w, h);
+  } else {
+    camera.aspect = w / h;
+    camera.clearViewOffset();
+  }
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
@@ -83,7 +96,7 @@ const logTo = (sel, m) => { const e = $(sel); e.textContent = `${m}\n${e.textCon
 function setProtein(st, meta = {}) {
   if (S.proteinView) { S.proteinView.dispose(); model.remove(S.proteinView.group); }
   stopMD();
-  S.protein = st; S.missense = null; S.pockets = []; S.pocket = null; S.poses = []; clearOverlay();
+  S.protein = st; S.proteinMeta = meta; S.missense = null; S.pockets = []; S.pocket = null; S.poses = []; clearOverlay();
   S.proteinView = new MolView(st, { style: { rep: 'cartoon+pocket', color: meta.alphafold ? 'plddt' : 'chain' } });
   model.add(S.proteinView.group);
   const c = st.center(Array.from(st.heavy));
@@ -101,7 +114,9 @@ function setProtein(st, meta = {}) {
 }
 
 // Frame the structure at a comfortable arm's-length size: about 60 cm across, 80 cm in front, at eye height.
-function fitView(diameter = 0.6) {
+// In a headset it is sized to ~40 cm (fits between two hands) and placed relative to the head by xr.recentre().
+function fitView(diameter = xr.active ? 0.4 : 0.6) {
+  if (xr.active) xr.recentre();
   if (!S.protein) return;
   const r = S.protein.radius(Array.from(S.protein.heavy)) || 20;
   workspace.scale.setScalar(Math.max(0.002, Math.min(0.05, diameter / (2 * r))));
@@ -414,10 +429,34 @@ function pickAtom(hit) {
   return null;
 }
 
-function onPick(hit, worldPoint) {
+const RESIDUE_NAMES = { ALA: 'Alanine', ARG: 'Arginine', ASN: 'Asparagine', ASP: 'Aspartate', CYS: 'Cysteine', GLN: 'Glutamine',
+  GLU: 'Glutamate', GLY: 'Glycine', HIS: 'Histidine', ILE: 'Isoleucine', LEU: 'Leucine', LYS: 'Lysine', MET: 'Methionine',
+  PHE: 'Phenylalanine', PRO: 'Proline', SER: 'Serine', THR: 'Threonine', TRP: 'Tryptophan', TYR: 'Tyrosine', VAL: 'Valine',
+  HOH: 'Water', ZN: 'Zinc ion', CU: 'Copper ion', MG: 'Magnesium ion', CA: 'Calcium ion', FE: 'Iron ion', NA: 'Sodium ion', CL: 'Chloride ion' };
+const ELEMENT_NAMES = { H: 'hydrogen', C: 'carbon', N: 'nitrogen', O: 'oxygen', S: 'sulfur', P: 'phosphorus', F: 'fluorine',
+  CL: 'chlorine', BR: 'bromine', I: 'iodine', B: 'boron', SE: 'selenium', ZN: 'zinc', CU: 'copper', FE: 'iron', MG: 'magnesium' };
+const plddtBand = (b) => (b >= 90 ? 'very high' : b >= 70 ? 'confident' : b >= 50 ? 'low' : 'very low');
+
+// What a researcher sees when pointing at something: residue (or ligand) identity first, then the atom and its confidence.
+function describeAtom(view, i) {
+  const st = view.st, r = st.residues[st.atomRes[i]];
+  const sym = String(st.element[i] || '').toUpperCase(), elName = ELEMENT_NAMES[sym] || sym;
+  if (view === S.ligandView) {
+    // S.compound survives when a ligand comes from elsewhere (co-crystal, known drug), so only trust it if it built this one.
+    const c = S.compound && [S.compound.agiId, S.compound.label].includes(st.name) ? S.compound : {}, id = c.agiId || c.id;
+    const name = c.name || (c.label ? c.label.split(' — ')[0] : null) || id || st.name || 'Ligand';
+    return [name === id || !id ? name : `${name} (${id})`, `atom ${st.atomName[i]} · ${elName}`, c.notes || null].filter(Boolean);
+  }
+  const resName = RESIDUE_NAMES[r.resName] || r.resName;
+  const title = r.polymer ? `${resName} ${r.resSeq} · chain ${r.chain}` : `${resName}${r.resName !== resName ? ` (${r.resName})` : ''} · chain ${r.chain}`;
+  const b = st.bfac[i];
+  const conf = S.proteinMeta?.alphafold ? `pLDDT ${b.toFixed(0)} (${plddtBand(b)})` : b ? `B-factor ${b.toFixed(1)} Å²` : null;
+  return [title, `atom ${st.atomName[i]} · ${elName}`, conf].filter(Boolean);
+}
+
+function onPick(hit) {
   const p = pickAtom(hit);
   if (!p) return;
-  if (S.mdRunning && p.view === S.ligandView) { startSteer(worldPoint); return; }
   S.selection.push(p);
   if (S.selection.length > 3) S.selection = S.selection.slice(-1);
   renderSelection();
@@ -445,6 +484,7 @@ function renderSelection() {
     info += ` — angle ${ang.toFixed(1)}°`;
   }
   $('#selInfo').textContent = info;
+  if (xr.active && S.selection.length) xr.panel.setStatus(info.split('  ·  ').pop());
 }
 
 let steer = null;
@@ -842,18 +882,15 @@ async function renderEvidence(t) {
   const box = $('#evidenceBox');
   if (!t || !t.uniprot) { box.textContent = 'Load a target to see its evidence.'; return; }
   box.innerHTML = '<div class="hint">gathering evidence…</div>';
-  const [dom, path, part, con, exp] = await Promise.all([
+  // gnomAD is not fetched here: its GraphQL endpoint sends no CORS headers, so the browser blocks it on every
+  // target load. It is still attempted from the Evidence tab's explicit "Gather evidence" button.
+  const [dom, path, part, exp] = await Promise.all([
     interpro.domains(t.uniprot).catch(() => []), reactome.pathways(t.uniprot).catch(() => []),
-    stringdb.partners(t.symbol).catch(() => []), gnomad.constraint(t.symbol).catch(() => null),
-    proteinAtlas.expression(t.symbol).catch(() => null),
+    stringdb.partners(t.symbol).catch(() => []), proteinAtlas.expression(t.symbol).catch(() => null),
   ]);
   const chip = (x) => `<span class="badge-sm">${x}</span>`;
   box.innerHTML = `
     <div style="margin-bottom:8px"><b>${t.symbol}</b> ${t.name}</div>
-    ${con ? `<div class="props" style="margin-bottom:8px">
-      <span>pLI <b>${fmt(con.pLI, 2)}</b></span><span>LOEUF <b>${fmt(con.loeuf, 2)}</b></span>
-      <span>missense Z <b>${fmt(con.misZ, 2)}</b></span><span>obs/exp LoF <b>${fmt(con.oeLof, 2)}</b></span></div>
-      <div class="hint" style="margin-bottom:8px">gnomAD constraint: pLI near 1 means loss of one copy is not tolerated.</div>` : ''}
     ${dom.length ? `<div style="margin-bottom:8px"><b>Domains</b><br>${dom.slice(0, 8).map((d) => chip(`${d.name}${d.locations[0] ? ` ${d.locations[0][0]}-${d.locations[0][1]}` : ''}`)).join(' ')}</div>` : ''}
     ${path.length ? `<div style="margin-bottom:8px"><b>Pathways</b> <span class="hint">Reactome</span><br>${path.slice(0, 6).map((p) => chip(p.name.slice(0, 38))).join(' ')}</div>` : ''}
     ${part.length ? `<div style="margin-bottom:8px"><b>Interaction partners</b> <span class="hint">STRING</span><br>${part.slice(0, 12).map((p) => `<span class="badge-sm" data-sym="${p.symbol}" style="cursor:pointer">${p.symbol}</span>`).join(' ')}</div>` : ''}
@@ -1254,28 +1291,81 @@ async function importAf3(file) {
 }
 
 // ---------------------------------------------------------------- XR
-async function enterXR(mode) {
-  try {
-    xr.setPanelVisible(true);
-    await startSession(renderer, mode, () => { xr.setPanelVisible(false); scene.background = null; resize(); });
-    if (mode === 'immersive-ar') scene.background = null;
-    buildWristMenu();
-    toast('In headset: grip to move, two grips to scale, trigger to pick.');
-  } catch (e) { toast(`Could not start ${mode}: ${e.message}`, true); }
+const XR_BUTTONS = { 'immersive-vr': ['#btnVR', 'VR'], 'immersive-ar': ['#btnAR', 'AR'] };
+let xrSup = { vr: false, ar: false, reason: 'no-webxr' };
+
+// Buttons stay clickable when XR is unavailable so a click can explain why and what to do instead.
+async function refreshXRButtons() {
+  xrSup = await xrSupport();
+  for (const [mode, [sel, label]] of Object.entries(XR_BUTTONS)) {
+    const ok = mode === 'immersive-vr' ? xrSup.vr : xrSup.ar, b = $(sel);
+    b.disabled = false;
+    b.dataset.available = ok ? '1' : '';
+    b.classList.toggle('unavailable', !ok);
+    b.setAttribute('aria-disabled', String(!ok));
+    b.title = ok ? `Enter immersive ${label}` : xrUnavailableReason(mode);
+  }
+  const line = $('#xrStatusLine');
+  if (line) line.innerHTML = xrSup.vr || xrSup.ar
+    ? `Headset ready: <b>${[xrSup.vr && 'VR', xrSup.ar && 'AR'].filter(Boolean).join(' + ')}</b>. Press Enter ${xrSup.vr ? 'VR' : 'AR'} to step in.`
+    : 'No headset detected. <a href="#" id="xrWhy">Why?</a>';
+  $('#xrWhy')?.addEventListener('click', (e) => { e.preventDefault(); showXRHelp('immersive-vr'); });
 }
+
+function xrUnavailableReason(mode) {
+  if (xrSup.reason) return XR_REASONS[xrSup.reason];
+  return mode === 'immersive-ar' ? 'This headset or browser does not offer passthrough AR. Use Enter VR instead.' : 'This device does not offer immersive VR.';
+}
+
+function showXRHelp(mode) {
+  const box = $('#xrHelp');
+  $('#xrHelpReason').textContent = xrUnavailableReason(mode);
+  box.classList.remove('hidden');
+}
+
+async function enterXR(mode) {
+  if (xr.session) return xr.end();
+  if (!$(XR_BUTTONS[mode][0]).dataset.available) return showXRHelp(mode);
+  try {
+    // Everything before requestSession() is synchronous so the click's user activation is still valid.
+    buildWristMenu();
+    await xr.enter(mode);
+  } catch (e) {
+    toast(`Could not start ${XR_BUTTONS[mode][1]}: ${e.message}`, true);
+  }
+}
+
+xr.addEventListener('sessionstart', (e) => {
+  const { mode } = e.detail;
+  if (mode === 'immersive-ar') scene.background = null;
+  fitView(0.4);
+  $(XR_BUTTONS[mode][0]).textContent = `Exit ${XR_BUTTONS[mode][1]}`;
+  $('#hoverTip').classList.add('hidden');
+  xr.panel.setStatus(S.protein ? S.protein.name : 'no structure loaded');
+  status(`in ${XR_BUTTONS[mode][1]} (${e.detail.space} reference space)`);
+});
+xr.addEventListener('sessionend', () => {
+  for (const [sel, label] of Object.values(XR_BUTTONS)) $(sel).textContent = `Enter ${label}`;
+  endSteer();
+  resize(); fitView();
+  status('ready');
+});
+xr.addEventListener('visibility', (e) => { if (e.detail.state !== 'visible') endSteer(); });
 
 function buildWristMenu() {
   const repIdx = () => REPS.indexOf(S.proteinView?.style.rep || 'cartoon');
   const colIdx = () => COLORS.indexOf(S.proteinView?.style.color || 'chain');
   xr.panel.setButtons([
-    { label: 'MD', value: () => (S.mdRunning ? 'running' : 'stopped'), active: S.mdRunning, onClick: (b) => { toggleMD(); b.active = S.mdRunning; } },
-    { label: 'Dock', onClick: () => doDock() },
+    { label: 'Style', value: () => S.proteinView?.style.rep || '–', onClick: () => { const r = REPS[(repIdx() + 1) % REPS.length]; S.proteinView?.setStyle({ rep: r }); refreshPickTargets(); } },
+    { label: 'Colour', value: () => S.proteinView?.style.color || '–', onClick: () => { const c = COLORS[(colIdx() + 1) % COLORS.length]; S.proteinView?.setStyle({ color: c }); } },
+    { label: 'Recentre', onClick: () => fitView(0.4) },
+    { label: 'Clear selection', onClick: () => { S.selection = []; renderSelection(); xr.clearSelection(); } },
+    { label: 'Live MD', value: () => (S.mdRunning ? 'running' : 'stopped'), active: () => S.mdRunning, onClick: () => toggleMD() },
     { label: 'Pockets', onClick: () => doPockets() },
-    { label: 'Style', onClick: () => { const r = REPS[(repIdx() + 1) % REPS.length]; S.proteinView?.setStyle({ rep: r }); refreshPickTargets(); xr.panel.setStatus(r); } },
-    { label: 'Colour', onClick: () => { const c = COLORS[(colIdx() + 1) % COLORS.length]; S.proteinView?.setStyle({ color: c }); xr.panel.setStatus(c); } },
-    { label: 'Next cmpd', onClick: () => cycleCompound(1) },
-    { label: 'Prev cmpd', onClick: () => cycleCompound(-1) },
-    { label: 'Recentre', onClick: () => fitView() },
+    { label: 'Dock', onClick: () => doDock() },
+    { label: 'Next compound', onClick: () => cycleCompound(1) },
+    { label: 'Help', onClick: () => xr.showHelp(!xr.hint.sprite.visible) },
+    { label: 'Exit', onClick: () => xr.end() },
   ]);
 }
 
@@ -1287,33 +1377,13 @@ function cycleCompound(dir) {
   loadCompound(next);
 }
 
-// ---------------------------------------------------------------- desktop pointer
-const vp = $('#viewport');
-vp.addEventListener('pointerdown', (e) => {
-  if (xr.active || e.button !== 0) return;
-  const r = vp.getBoundingClientRect();
-  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(xr.pickTargets, true);
-  if (hits[0]) { onPick(hits[0], hits[0].point); if (steer) controls.enabled = false; }
-});
-vp.addEventListener('pointermove', (e) => {
-  if (!steer || xr.active) return;
-  const r = vp.getBoundingClientRect();
-  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  raycaster.setFromCamera(pointer, camera);
-  const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
-  model.localToWorld(c);
-  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), c);
-  const pt = new THREE.Vector3();
-  if (raycaster.ray.intersectPlane(plane, pt)) updateSteer(pt);
-});
-addEventListener('pointerup', () => { endSteer(); controls.enabled = true; });
-
-xr.addEventListener('pick', (e) => {
+// Steering the ligand through the pocket during live MD claims the press; everything else is tap-to-identify.
+const isLigandHit = (hit) => S.mdRunning && S.ligand && pickAtom(hit)?.view === S.ligandView;
+xr.addEventListener('pressstart', (e) => {
   const { hit } = e.detail;
-  if (hit) onPick(hit, hit.point);
+  if (hit && isLigandHit(hit)) { startSteer(hit.point); if (steer) e.preventDefault(); }
 });
+xr.addEventListener('pick', (e) => onPick(e.detail.hit));
 xr.addEventListener('drag', (e) => {
   if (!steer) return;
   const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
@@ -1321,7 +1391,68 @@ xr.addEventListener('drag', (e) => {
   const pt = e.detail.ray.ray.at(e.detail.ray.ray.origin.distanceTo(c), new THREE.Vector3());
   updateSteer(pt);
 });
-xr.addEventListener('pickend', () => endSteer());
+xr.addEventListener('pressend', () => endSteer());
+
+// ---------------------------------------------------------------- desktop pointer
+// Click (press and release without dragging) identifies an atom; dragging orbits. Previously any press that began
+// on an atom selected it, so every attempt to rotate the molecule also changed the selection.
+const vp = $('#viewport');
+let pressAt = null, hoverQueued = false, lastMove = null;
+function rayFromEvent(e) {
+  const r = vp.getBoundingClientRect();
+  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  const pri = xr.priority();
+  return (pri.length && raycaster.intersectObjects(pri, true).find((h) => h.object.visible))
+    || raycaster.intersectObjects(xr.pickTargets, true).find((h) => h.object.visible) || null;
+}
+vp.addEventListener('pointerdown', (e) => {
+  if (xr.active || e.button !== 0 || e.target !== renderer.domElement) return;
+  pressAt = { x: e.clientX, y: e.clientY };
+  const hit = rayFromEvent(e);
+  if (hit && isLigandHit(hit)) { startSteer(hit.point); if (steer) { controls.enabled = false; pressAt = null; } }
+});
+vp.addEventListener('pointermove', (e) => {
+  if (xr.active) return;
+  if (steer) {
+    const r = vp.getBoundingClientRect();
+    pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+    const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
+    model.localToWorld(c);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), c);
+    const pt = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(plane, pt)) updateSteer(pt);
+    return;
+  }
+  // Hover tooltip, at most once per frame.
+  lastMove = e;
+  if (hoverQueued) return;
+  hoverQueued = true;
+  requestAnimationFrame(() => {
+    hoverQueued = false;
+    const ev = lastMove, tip = $('#hoverTip');
+    if (!ev || ev.buttons || ev.target !== renderer.domElement) { tip.classList.add('hidden'); return; }
+    const hit = rayFromEvent(ev), p = hit && pickAtom(hit);
+    if (!p) { tip.classList.add('hidden'); vp.style.cursor = ''; return; }
+    const [title, ...rest] = describeAtom(p.view, p.atom);
+    tip.innerHTML = `<b>${title}</b>${rest.map((x) => `<br><span>${x}</span>`).join('')}`;
+    const r = vp.getBoundingClientRect();
+    tip.style.left = `${Math.min(ev.clientX - r.left + 14, r.width - 240)}px`;
+    tip.style.top = `${ev.clientY - r.top + 14}px`;
+    tip.classList.remove('hidden');
+    vp.style.cursor = 'pointer';
+  });
+});
+vp.addEventListener('pointerleave', () => { lastMove = null; $('#hoverTip').classList.add('hidden'); });
+vp.addEventListener('pointerup', (e) => {
+  if (pressAt && !xr.active && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) < 5) {
+    const hit = rayFromEvent(e);
+    if (hit) onPick(hit);
+  }
+  pressAt = null;
+});
+addEventListener('pointerup', () => { endSteer(); controls.enabled = true; });
 
 // ---------------------------------------------------------------- wiring
 function wire() {
@@ -1437,6 +1568,11 @@ function wire() {
   $('#btnLedgerClear').onclick = () => { if (confirm('Clear the provenance ledger? This cannot be undone.')) { S.ledger.clear(); renderLedger(); } };
   $('#btnVR').onclick = () => enterXR('immersive-vr');
   $('#btnAR').onclick = () => enterXR('immersive-ar');
+  $('#xrHelpClose').onclick = () => $('#xrHelp').classList.add('hidden');
+  // The controls card is a per-viewer convenience; storage may be unavailable (private mode), so never depend on it.
+  const HELP_KEY = 'biodao-viewhelp-hidden';
+  try { if (localStorage.getItem(HELP_KEY)) $('#viewHelp').classList.add('hidden'); } catch {}
+  $('#viewHelpClose').onclick = () => { $('#viewHelp').classList.add('hidden'); try { localStorage.setItem(HELP_KEY, '1'); } catch {} };
 
   addEventListener('keydown', (e) => {
     if (e.target.matches('input, select, textarea')) return;
@@ -1444,13 +1580,15 @@ function wire() {
     if (e.key === 'd') doDock();
     if (e.key === 'p') doPockets();
     if (e.key === 'f') fitView();
+    if (e.key === 'Escape') $('#xrHelp').classList.add('hidden');
     if (e.key === 'n') cycleCompound(1);
   });
 }
 
-// Optional WebXR emulator: open the page with ?emulate=quest3 to try the headset UI on a desktop.
+// Optional WebXR emulator (Meta's IWER, pinned) for trying the headset interface on a desktop:
+//   ?emulate=quest3            controllers        ?emulate=quest3&input=hands   articulated hand tracking
 async function maybeEmulateXR() {
-  const p = new URLSearchParams(location.search).get('emulate');
+  const params = new URLSearchParams(location.search), p = params.get('emulate');
   if (!p) return false;
   try {
     const iwer = await import('https://cdn.jsdelivr.net/npm/iwer@2.4.0/+esm');
@@ -1458,6 +1596,7 @@ async function maybeEmulateXR() {
     device.installRuntime({ forceInstall: true });  // replace Chrome's empty native runtime
     device.controllers.right.position.set(0.25, 1.2, -0.3);
     device.controllers.left.position.set(-0.25, 1.2, -0.3);
+    if (params.get('input') === 'hands') device.primaryInputMode = 'hand';
     window.xrDevice = device;
     toast('WebXR emulator active — "Enter VR" now works in this browser');
     return true;
@@ -1484,9 +1623,8 @@ async function boot() {
   chip.textContent = S.caps ? `server: ${['rdkit', 'openmm', 'pypdf'].filter((k) => S.caps[k]).join(' + ') || 'basic'}` : 'server: browser only';
   chip.className = 'chip ' + (S.caps ? 'ok' : 'off');
 
-  const sup = await xrSupport();
-  $('#btnVR').disabled = !sup.vr; $('#btnAR').disabled = !sup.ar;
-  if (!sup.vr) $('#btnVR').title = 'Open this page in a headset browser (Quest, Vision Pro) or a WebXR emulator.';
+  await refreshXRButtons();
+  onXRDeviceChange(refreshXRButtons);
 
   try {
     const r = await fetch('data/targets.json');
@@ -1517,159 +1655,3 @@ async function boot() {
 boot();
 Object.assign(S, { scene, camera, renderer, workspace, model, overlay, xr, controls });
 window.AGI = S; // handy for the console
-
-// ================================================================
-// Phase 2: Immersive Voice Control & Master Agent Integration
-// ================================================================
-
-import { ImmersiveXRInterface } from './immersive-xr.js';
-
-let immersiveInterface = null;
-
-async function initializeImmersiveXR() {
-  /**Initialize voice control and master agent in VR.*/
-  if (!navigator.xr) return;  // XR not supported
-  
-  immersiveInterface = new ImmersiveXRInterface(renderer, scene, workspace);
-  console.log('✅ Immersive XR initialized with voice control');
-}
-
-async function sendVoiceCommand(transcript) {
-  /**Process voice input through master agent.*/
-  if (!transcript.trim()) return;
-  
-  try {
-    const response = await fetch('/api/voice-command', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify({ transcript }),
-    });
-    
-    const result = await response.json();
-    
-    // Display response in immersive interface
-    if (immersiveInterface) {
-      immersiveInterface.processMasterAgentResponse(result);
-    }
-    
-    // Log to UI
-    toast(`🎤 Command: ${transcript}`);
-    
-    // Execute action
-    if (result.action) {
-      await executeAgentAction(result.action);
-    }
-    
-  } catch (error) {
-    console.error('Voice command error:', error);
-    toast('Voice command failed', true);
-  }
-}
-
-async function executeAgentAction(action) {
-  /**Execute the action dictated by master agent.*/
-  const type = action.type;
-  
-  if (type === 'dock_campaign') {
-    await doDock({ runs: 8, steps: 2000 });
-  } else if (type === 'analysis_campaign') {
-    // Trigger analyst agent
-    const response = await fetch('/api/agents/analyze/hotspots', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ compounds: S.dock.poses }),
-    });
-    const result = await response.json();
-    toast(`Found hotspots: ${result.hotspot_motifs.join(', ')}`);
-  } else if (type === 'run_md') {
-    startMD();
-    setTimeout(() => stopMD(), (action.duration.split(' ')[0] * 1000));
-  } else if (type === 'generate_report') {
-    const response = await fetch(`/api/reports/camp_001/generate`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ project_id: 'proj_001', target: S.protein?.name }),
-    });
-    const report = await response.json();
-    downloadReport(report.markdown, 'screening_report.md');
-  } else if (type === 'generate_paper') {
-    const response = await fetch('/api/papers/generate?format=latex', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ disease: 'ALS', target: S.protein?.name }),
-    });
-    const paper = await response.text();
-    downloadReport(paper, 'research_paper.tex');
-  }
-}
-
-// Wire up voice button in VR headset
-function setupVoiceButton() {
-  /**Enable voice input via VR controller or microphone button.*/
-  const voiceButton = document.createElement('button');
-  voiceButton.id = 'btn-voice-control';
-  voiceButton.textContent = '🎤 Voice';
-  voiceButton.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    padding: 10px 20px;
-    background: #39d98a;
-    color: #0a0f18;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    z-index: 1000;
-  `;
-  
-  let isListening = false;
-  
-  voiceButton.onclick = () => {
-    if (!immersiveInterface) {
-      toast('XR not available', true);
-      return;
-    }
-    
-    if (isListening) {
-      // Stop and process
-      const transcript = immersiveInterface.stopVoiceSession();
-      if (transcript) {
-        sendVoiceCommand(transcript);
-      }
-      voiceButton.textContent = '🎤 Voice';
-      voiceButton.style.background = '#39d98a';
-      isListening = false;
-    } else {
-      // Start listening
-      immersiveInterface.startVoiceSession();
-      voiceButton.textContent = '⏹️ Stop';
-      voiceButton.style.background = '#ff6b6b';
-      isListening = true;
-    }
-  };
-  
-  document.body.appendChild(voiceButton);
-}
-
-// Initialize immersive XR on scene load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeImmersiveXR();
-    setupVoiceButton();
-  });
-} else {
-  initializeImmersiveXR();
-  setupVoiceButton();
-}
-
-// Animation loop update for agent avatars
-const originalAnimateLoop = () => {
-  if (immersiveInterface) {
-    immersiveInterface.animate();
-  }
-};
