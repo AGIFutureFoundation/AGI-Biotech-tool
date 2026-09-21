@@ -1,8 +1,8 @@
 """Read a source document of any supported format into text plus structured records.
 
 One entry point - ingest(path) - returns the same shape for every format, so callers never
-branch on file type. Text-bearing formats (PDF, DOCX, XLSX, CSV/TSV, HTML, XML, JSON, text)
-hand their text to chem_extract.extract(); chemistry-native formats (SDF, MOL, MOL2, SMI, PDB)
+branch on file type. Text-bearing formats (PDF, DOCX, XLSX, CSV/TSV, HTML, XML, JSON, text, and
+Apple Pages via a partial, dependency-free IWA decoder - see _read_pages for its limits) hand their text to chem_extract.extract(); chemistry-native formats (SDF, MOL, MOL2, SMI, PDB)
 take their structures straight from RDKit instead of round-tripping through the text regex.
 
 Every optional library is imported lazily: a missing one costs that single format, which
@@ -28,7 +28,8 @@ HEM FAD NAD NAP NDP ADP ATP ANP GDP GTP SAH SAM UNX UNL PE8 CXS LDA BOG HEZ BTB"
 _EXT = {"pdf": "pdf", "docx": "docx", "xlsx": "xlsx", "xlsm": "xlsx", "csv": "csv", "tsv": "tsv",
         "tab": "tsv", "htm": "html", "html": "html", "xhtml": "html", "xml": "xml", "json": "json",
         "md": "markdown", "markdown": "markdown", "txt": "text", "text": "text", "sdf": "sdf",
-        "sd": "sdf", "mol": "mol", "mol2": "mol2", "smi": "smi", "smiles": "smi", "pdb": "pdb", "ent": "pdb"}
+        "sd": "sdf", "mol": "mol", "mol2": "mol2", "smi": "smi", "smiles": "smi", "pdb": "pdb", "ent": "pdb",
+        "pages": "pages"}
 _COORD = ("ATOM  ", "HETATM", "ANISOU", "TER   ", "CONECT", "SEQRES", "MASTER", "END")
 _PDB_REC = re.compile(r"^(HEADER|TITLE |COMPND|ATOM  |HETATM|CRYST1|SEQRES|MODEL |EXPDTA|REMARK)")
 _COUNTS = re.compile(r"^\s{0,3}\d+\s+\d+.*V[23]000\s*$")
@@ -64,7 +65,11 @@ def detect(path):
         except Exception:  # noqa: BLE001
             names = []
         sniffed = "docx" if any(n.startswith("word/") for n in names) else \
-                  "xlsx" if any(n.startswith("xl/") for n in names) else "zip"
+                  "xlsx" if any(n.startswith("xl/") for n in names) else \
+                  "pages" if any(n.startswith("Index/") and n.endswith(".iwa") for n in names) else "zip"
+        if sniffed == "zip" and ext == "pages":
+            return "unsupported", (f"{os.path.basename(path)}: Pages file with no Index/*.iwa (pre-2013 "
+                                   f"Pages '09 format?); open it in Pages and re-save, or export to .docx")
     elif head[:2] == b"\xd0\xcf":
         sniffed = "ole"  # legacy .doc/.xls
     else:
@@ -214,6 +219,187 @@ def _read_json(path, res):
 def _read_text(path, res):
     res["text"] = _text(path)
     res["meta"] = {"lines": res["text"].count("\n") + 1}
+
+
+# Apple Pages (.pages, iWork 2013+). The archive's Index/*.iwa files are Apple's IWA container:
+# chunks of [0x00][3-byte little-endian length][raw Snappy block] (no stream identifier, no CRC,
+# so python-snappy's framed decoder rejects it). Decompressed, each file is a run of
+# [varint len][ArchiveInfo][message payloads...], ArchiveInfo giving the object id and, per
+# message, its type id and byte length.
+#
+# FIDELITY: this is a partial reader, not full format support. It decodes the container exactly
+# but interprets only two message types, by field number, without Apple's .proto schemas:
+#   2001 TSWP.StorageArchive  field 3 = the text of a text flow (body, text boxes, notes)
+#   6005 TST.TableDataList    field 3 = entries, entry field 3 = a string in a table's string pool
+# Paragraph and character styling, list numbering and the order of text flows are not modelled.
+# Table cells come back as each table's de-duplicated string pool, NOT as rows and columns: the
+# cell grid lives in tile archives this reader does not decode, so which string sits in which
+# row is lost, and numbers stored as numeric cells (not strings) are not recovered at all.
+# Type ids and field numbers are Apple-internal and can change between Pages releases.
+_IWA_STORAGE, _IWA_DATALIST = 2001, 6005
+
+
+def _varint(b, i):
+    r = s = 0
+    while True:
+        c = b[i]
+        i += 1
+        r |= (c & 0x7F) << s
+        s += 7
+        if not c & 0x80:
+            return r, i
+
+
+def _snappy_block(b):
+    """Decode one raw Snappy block (format_description.txt: varint length, then literals/copies)."""
+    n, i = _varint(b, 0)
+    out = bytearray()
+    while i < len(b):
+        t = b[i]
+        i += 1
+        kind = t & 3
+        if kind == 0:
+            ln = t >> 2
+            if ln >= 60:
+                nb = ln - 59
+                ln = int.from_bytes(b[i:i + nb], "little")
+                i += nb
+            ln += 1
+            out += b[i:i + ln]
+            i += ln
+            continue
+        if kind == 1:
+            ln, off = ((t >> 2) & 7) + 4, ((t >> 5) << 8) | b[i]
+            i += 1
+        elif kind == 2:
+            ln, off = (t >> 2) + 1, int.from_bytes(b[i:i + 2], "little")
+            i += 2
+        else:
+            ln, off = (t >> 2) + 1, int.from_bytes(b[i:i + 4], "little")
+            i += 4
+        if not 0 < off <= len(out):
+            raise ValueError("corrupt Snappy block (copy offset out of range)")
+        start = len(out) - off
+        if off >= ln:
+            out += out[start:start + ln]
+        else:  # overlapping copy repeats the last `off` bytes
+            for k in range(ln):
+                out.append(out[start + k])
+    if len(out) != n:
+        raise ValueError(f"corrupt Snappy block ({len(out)} bytes, header says {n})")
+    return bytes(out)
+
+
+def _iwa_decompress(raw):
+    out, i = bytearray(), 0
+    while i + 4 <= len(raw):
+        if raw[i] != 0:
+            raise ValueError(f"unknown IWA chunk type {raw[i]}")
+        ln = int.from_bytes(raw[i + 1:i + 4], "little")
+        out += _snappy_block(raw[i + 4:i + 4 + ln])
+        i += 4 + ln
+    return bytes(out)
+
+
+def _pb_fields(b):
+    """Flat protobuf parse: [(field, wiretype, value)]. Groups (wire types 3/4) are rejected."""
+    out, i = [], 0
+    while i < len(b):
+        key, i = _varint(b, i)
+        f, wt = key >> 3, key & 7
+        if wt == 0:
+            v, i = _varint(b, i)
+        elif wt == 1:
+            v, i = b[i:i + 8], i + 8
+        elif wt == 5:
+            v, i = b[i:i + 4], i + 4
+        elif wt == 2:
+            ln, i = _varint(b, i)
+            v, i = b[i:i + ln], i + ln
+        else:
+            raise ValueError(f"unsupported protobuf wire type {wt}")
+        if i > len(b):
+            raise ValueError("truncated protobuf message")
+        out.append((f, wt, v))
+    return out
+
+
+def _iwa_objects(data):
+    """Yield (object_id, type_id, payload) for every message in a decompressed IWA stream."""
+    i = 0
+    while i < len(data):
+        ln, i = _varint(data, i)
+        info = _pb_fields(data[i:i + ln])
+        i += ln
+        oid = next((v for f, w, v in info if f == 1 and w == 0), None)
+        for f, w, v in info:
+            if f == 2 and w == 2:
+                mi = _pb_fields(v)
+                typ = next((x for g, ww, x in mi if g == 1 and ww == 0), None)
+                mlen = next((x for g, ww, x in mi if g == 3 and ww == 0), 0)
+                yield oid, typ, data[i:i + mlen]
+                i += mlen
+
+
+def _pages_str(v):
+    s = v.decode("utf-8", "replace")
+    # U+2029/U+2028 are paragraph/line breaks; U+FFFC marks an inline attachment (image, table...)
+    return s.replace(" ", "\n").replace(" ", "\n").replace("￼", "")
+
+
+def _read_pages(path, res):
+    zf = zipfile.ZipFile(path)
+    names = sorted(n for n in zf.namelist() if n.startswith("Index/") and n.endswith(".iwa"))
+    # Document.iwa first so the body leads the text; the rest in archive-name order
+    names.sort(key=lambda n: n != "Index/Document.iwa")
+    flows, pool, bad = [], [], []
+    for name in names:
+        try:
+            objs = list(_iwa_objects(_iwa_decompress(zf.read(name))))
+        except Exception as e:  # noqa: BLE001
+            bad.append(f"{name}: {e}")
+            continue
+        for oid, typ, payload in objs:
+            if typ not in (_IWA_STORAGE, _IWA_DATALIST):
+                continue
+            try:
+                fields = _pb_fields(payload)
+            except Exception:  # noqa: BLE001
+                bad.append(f"{name}: object {oid} (type {typ}) did not parse")
+                continue
+            if typ == _IWA_STORAGE:
+                txt = "".join(_pages_str(v) for f, w, v in fields if f == 3 and w == 2)
+                if txt.strip():
+                    flows.append(txt)
+                    res["records"].append({"kind": "text_flow", "object": oid, "file": name,
+                                           "chars": len(txt)})
+                continue
+            for f, w, v in fields:
+                if f != 3 or w != 2:
+                    continue
+                try:
+                    entry = _pb_fields(v)
+                except Exception:  # noqa: BLE001
+                    continue
+                for g, ww, x in entry:
+                    if g == 3 and ww == 2:
+                        s = _pages_str(x).strip()
+                        if s:
+                            pool.append(s)
+                            res["records"].append({"kind": "table_string", "list": oid,
+                                                   "file": name, "text": s})
+    parts = flows + (["# Table strings\n" + "\n".join(pool)] if pool else [])
+    res["text"] = "\n\n".join(parts)
+    res["meta"] = {"iwa_files": len(names), "text_flows": len(flows), "table_strings": len(pool),
+                   "reader": "partial IWA decode: text flows and table string pools only"}
+    for b in bad:
+        res["warnings"].append(f"skipped {b}")
+    if pool:
+        res["warnings"].append(f"{len(pool)} table string(s) recovered without row/column layout, "
+                               "and numeric cells are not recovered; export to .xlsx for exact tables")
+    if not res["text"].strip():
+        res["warnings"].append("no text recovered from this Pages file: its content may be images or "
+                               "shapes, or use a newer layout; export it to .docx or .pdf from Pages")
 
 
 # --------------------------------------------------------------------------- chemistry-native formats
@@ -366,7 +552,7 @@ def _read_pdb(path, res):
 _READERS = {"pdf": _read_pdf, "docx": _read_docx, "xlsx": _read_xlsx, "csv": _read_sep, "tsv": _read_sep,
             "html": _read_html, "xml": _read_xml, "json": _read_json, "markdown": _read_text,
             "text": _read_text, "sdf": _read_sdf, "mol": _read_mol, "mol2": _read_mol2,
-            "smi": _read_smi, "pdb": _read_pdb}
+            "smi": _read_smi, "pdb": _read_pdb, "pages": _read_pages}
 
 
 def _extract_text_smiles(res):
