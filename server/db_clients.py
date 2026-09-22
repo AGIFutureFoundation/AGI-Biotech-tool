@@ -475,14 +475,26 @@ def alphafold_model(uniprot):
 
 # --------------------------------------------------------------------------- clinical, pathways, networks
 
-def clinical_trials(condition=None, intervention=None, pediatric=False, status=None, limit=10):
-    """ClinicalTrials.gov v2. status e.g. 'RECRUITING'; pediatric restricts to trials enrolling children."""
+def clinical_trials(condition=None, intervention=None, pediatric=False, status=None, limit=10,
+                    sponsor=None, lead_sponsor=None):
+    """ClinicalTrials.gov v2. status e.g. 'RECRUITING'; pediatric restricts to trials enrolling children.
+
+    sponsor matches sponsor or collaborator; lead_sponsor matches only trials the
+    organisation runs itself. The two differ materially -- for St. Jude, 490
+    against 437 -- so use lead_sponsor to ask what an institution is running and
+    sponsor to include what it takes part in.
+    """
     p = {"pageSize": limit, "countTotal": "true",
-         "fields": "NCTId,BriefTitle,OverallStatus,Phase,Condition,InterventionName,StdAge,StartDate"}
+         "fields": "NCTId,BriefTitle,OverallStatus,Phase,Condition,InterventionName,StdAge,StartDate,"
+                   "LeadSponsorName"}
     if condition:
         p["query.cond"] = condition
     if intervention:
         p["query.intr"] = intervention
+    if sponsor:
+        p["query.spons"] = sponsor
+    if lead_sponsor:
+        p["query.lead"] = lead_sponsor
     if pediatric:
         p["filter.advanced"] = "AREA[StdAge]CHILD"
     if status:
@@ -495,6 +507,7 @@ def clinical_trials(condition=None, intervention=None, pediatric=False, status=N
         ps = s.get("protocolSection", {})
         nct = ps.get("identificationModule", {}).get("nctId")
         out.append({"nct_id": nct, "title": ps.get("identificationModule", {}).get("briefTitle"),
+                    "lead_sponsor": ps.get("sponsorCollaboratorsModule", {}).get("leadSponsor", {}).get("name"),
                     "status": ps.get("statusModule", {}).get("overallStatus"),
                     "start": ps.get("statusModule", {}).get("startDateStruct", {}).get("date"),
                     "phases": ps.get("designModule", {}).get("phases", []),
