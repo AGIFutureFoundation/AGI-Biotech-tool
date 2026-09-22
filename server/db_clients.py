@@ -182,6 +182,11 @@ class Http:
             return None, text
         if status == 404:
             return None, None
+        if status == 204 or (status < 300 and not (text or "").strip()):
+            # No Content is a successful empty result, not a failure. RCSB
+            # answers a search with zero hits this way, and reporting that as a
+            # parse error made a truthful count of 0 look like an outage.
+            return None, None
         if status >= 400:
             return None, f"HTTP {status}: {text[:200]}"
         try:
