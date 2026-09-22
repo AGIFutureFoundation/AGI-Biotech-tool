@@ -373,7 +373,7 @@ STREAMING = None
 WS_PORT = 8001
 
 
-def start_websocket_server(host="0.0.0.0", port=WS_PORT):
+def start_websocket_server(host="127.0.0.1", port=WS_PORT):
     """Start the VR streaming WebSocket server in a daemon thread. No-op without `websockets`."""
     global STREAMING
     if not HAVE["websockets"]:
@@ -895,7 +895,10 @@ def self_signed(certdir):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8000)
-    ap.add_argument("--host", default="0.0.0.0")
+    # Loopback by default. 56 of the 58 /api routes enforce no token at all,
+    # so binding every interface put the whole surface on the local network.
+    # Pass --host 0.0.0.0 deliberately to reach a headset over Wi-Fi.
+    ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--https", action="store_true", help="self-signed TLS so headsets on Wi-Fi can use WebXR")
     a = ap.parse_args()
     srv = ThreadingHTTPServer((a.host, a.port), Handler)

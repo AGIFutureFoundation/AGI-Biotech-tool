@@ -49,7 +49,7 @@ TOKEN_EXPIRE_HOURS = 24
 
 class User:
     """Represents a researcher or lab member."""
-    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher', 
+    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher',
                  institution: str = '', created_at: str = None):
         self.user_id = user_id
         self.email = email
@@ -57,6 +57,9 @@ class User:
         self.role = role  # admin, pi, researcher, viewer
         self.institution = institution
         self.created_at = created_at or datetime.utcnow().isoformat()
+        # 'salt$hash'. None means the account cannot log in, which is the
+        # correct state for one that has not had a password set.
+        self.password_hash: Optional[str] = None
 
     def to_dict(self):
         return {
@@ -120,68 +123,83 @@ class Permission:
             return True
         return False
 
-# Mock database of users (replace with PostgreSQL)
-USERS_DB = {
-    'user_001': User('user_001', 'researcher@als.org', 'Alice Smith', 'pi', 'ALS Association'),
-    'user_002': User('user_002', 'scientist@mjff.org', 'Bob Chen', 'researcher', 'MJFF'),
-}
+# In-memory user store. Replace with a real database before multi-user use;
+# nothing here survives a restart.
+USERS_DB: Dict[str, User] = {}
 
-def create_user(email: str, name: str, role: str = 'researcher', institution: str = '') -> User:
-    """Create a new user account."""
-    user_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:8]}"
+# scrypt parameters. n is the work factor and dominates cost; these follow the
+# interactive-login end of RFC 7914's guidance. bcrypt and argon2 are better
+# still, but neither is installed and this project keeps to the standard
+# library where it can.
+_SCRYPT = {"n": 2 ** 14, "r": 8, "p": 1, "dklen": 64}
+
+
+def hash_password(password: str, salt: Optional[bytes] = None) -> str:
+    """'salt$hash', both hex. A fresh salt is generated when none is given."""
+    if salt is None:
+        salt = secrets.token_bytes(16)
+    digest = hashlib.scrypt(password.encode(), salt=salt, **_SCRYPT)
+    return f"{salt.hex()}${digest.hex()}"
+
+
+def verify_password(password: str, stored: Optional[str]) -> bool:
+    """Constant-time check of a password against a stored 'salt$hash'."""
+    if not stored or "$" not in stored:
+        return False
+    salt_hex, _, expected = stored.partition("$")
+    try:
+        salt = bytes.fromhex(salt_hex)
+    except ValueError:
+        return False
+    candidate = hashlib.scrypt(password.encode(), salt=salt, **_SCRYPT)
+    return secrets.compare_digest(candidate.hex(), expected)
+
+
+def create_user(email: str, name: str, role: str = 'researcher', institution: str = '',
+                password: Optional[str] = None) -> User:
+    """Create a user account. Without a password the account cannot log in."""
+    # Random, not derived from the email: an id derived by hash leaks the
+    # address and collides under a broken digest. The previous version used
+    # MD5, where a collision would have meant two accounts sharing an id.
+    user_id = f"user_{secrets.token_hex(8)}"
     user = User(user_id, email, name, role, institution)
+    user.password_hash = hash_password(password) if password else None
     USERS_DB[user_id] = user
     return user
+
+
+def set_password(user: User, password: str) -> None:
+    user.password_hash = hash_password(password)
+
 
 def get_user(user_id: str) -> Optional[User]:
     """Fetch a user by ID."""
     return USERS_DB.get(user_id)
 
+
 def authenticate_user(email: str, password: str) -> Optional[str]:
-    """Authenticate a user and return a token.
-    
-    In production, use bcrypt to hash/verify passwords.
-    For now, this is a stub for demo purposes.
+    """Return a token only for a correct email and password.
+
+    The previous implementation took a password argument and never looked at
+    it, so any string -- including an empty one -- returned a valid token for
+    any known email, with that user's role. That was a complete authentication
+    bypass, not a missing feature.
+
+    An account with no password set cannot authenticate at all, so a half-built
+    account fails closed.
     """
     for user in USERS_DB.values():
         if user.email == email:
-            token = AuthToken.create(user)
-            return token
+            if verify_password(password, getattr(user, 'password_hash', None)):
+                return AuthToken.create(user)
+            return None
+    # Hash anyway on an unknown email so a missing account and a wrong password
+    # take comparable time and cannot be told apart by timing.
+    verify_password(password, hash_password("no-such-user"))
     return None
 
-def require_auth(f):
-    """Decorator to require authentication."""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from flask import request, jsonify
-        
-        token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        if not token:
-            return jsonify({'error': 'Missing authentication token'}), 401
-        
-        payload = AuthToken.verify(token)
-        if not payload:
-            return jsonify({'error': 'Invalid or expired token'}), 401
-        
-        # Inject user into request context
-        request.user = payload
-        return f(*args, **kwargs)
-    
-    return decorated
-
-def require_role(*roles):
-    """Decorator to require specific roles."""
-    def decorator(f):
-        @wraps(f)
-        def decorated(*args, **kwargs):
-            from flask import request, jsonify
-            
-            if not hasattr(request, 'user'):
-                return jsonify({'error': 'User not authenticated'}), 401
-            
-            if request.user.get('role') not in roles:
-                return jsonify({'error': f'Requires one of: {", ".join(roles)}'}), 403
-            
-            return f(*args, **kwargs)
-        return decorated
-    return decorator
+# The Flask @require_auth and @require_role decorators that used to live here
+# imported flask, which is not a dependency and is not installed, so calling
+# either raised ImportError. server.py serves over http.server and carries its
+# own stdlib equivalents (_claims and _require_role), which are what the routes
+# actually use.
