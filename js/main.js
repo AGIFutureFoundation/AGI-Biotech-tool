@@ -18,6 +18,8 @@ import { VoiceControl } from './voice.js';
 import { HandTracking } from './hands.js';
 import { computeStats, renderDashboard, buildReport } from './dashboard.js';
 import { EnvironmentManager, Locomotion, HDRI_PRESETS } from './environment.js';
+import { interactionFingerprint, pocketVariantOverlap, clusterSeries } from './analysis.js';
+import { tanimoto } from './chem.js';
 import { Recorder } from './recorder.js';
 import { yieldToEventLoop } from './util.js';
 
@@ -86,6 +88,11 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
+addEventListener('orientationchange', () => setTimeout(resize, 120));
+visualViewport?.addEventListener('resize', resize);
+// A phone rotating, a keyboard opening or a pane being dragged all change the canvas without a window
+// resize event, so watch the element itself.
+new ResizeObserver(() => resize()).observe($('#viewport'));
 
 // ---------------------------------------------------------------- status helpers
 let toastTimer = null;
@@ -320,6 +327,7 @@ async function doDock() {
   $('#btnDock').disabled = false;
   if (poses.length) applyPose(0);
   renderPoses();
+  if (poses.length) { try { analysePose(); } catch { /* analysis is a bonus, never a blocker */ } }
   if (poses.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
       target: S.protein.name, site: S.pocket?.label || null, score: +poses[0].score.toFixed(2),
@@ -1345,6 +1353,7 @@ async function enterXR(mode) {
   try {
     // Everything before requestSession() is synchronous so the click's user activation is still valid.
     buildWristMenu();
+    stageSceneForXR();
     await xr.enter(mode);
   } catch (e) {
     toast(`Could not start ${XR_BUTTONS[mode][1]}: ${e.message}`, true);
@@ -1537,6 +1546,8 @@ function wire() {
   $('#btnScreen').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary());
   $('#btnScreenQuick').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary({ limit: 12, runs: 3, steps: 1200 }));
 
+  $('#btnFingerprint').onclick = () => analysePose();
+  $('#btnSelectivity').onclick = () => selectivityPanel().catch((e) => toast(e.message, true));
   $('#btnPockets').onclick = doPockets;
   $('#btnDock').onclick = doDock;
   $('#btnStopDock').onclick = () => { S.stopFlag = true; };
@@ -1681,6 +1692,19 @@ function buildAppAdapter() {
       return { representation: S.proteinView?.style.rep, colour: S.proteinView?.style.color };
     },
     measure: () => ({ text: $('#selInfo').textContent }),
+    analysePose: () => {
+      const fp = analysePose();
+      if (!fp) throw new Error('load a target and a ligand first');
+      return { summary: fp.summary, counts: fp.counts,
+        residues: fp.residues.slice(0, 10).map((r) => ({ residue: r.label, types: r.types })) };
+    },
+    selectivity: (args) => selectivityPanel(args).then((rows) => ({ compared: rows })),
+    series: ({ cut } = {}) => {
+      const groups = clusterSeries(S.library.compounds, (c) => S.library.fpBytes(c), tanimoto, { cut: cut ?? 0.55 });
+      return { series: groups.length,
+        groups: groups.slice(0, 10).map((g) => ({ size: g.size, members: g.members.slice(0, 6).map((m) => m.agiId),
+          best: g.best ? { id: g.best.agiId, score: g.best.dockScore } : null })) };
+    },
     librarySearch: async ({ text, smarts, maxMw, cnsOnly }) => {
       let list = smarts ? await S.library.substructure(smarts) : S.library.search(text || '');
       if (maxMw) list = list.filter((c) => (c.profile?.desc.mw ?? 1e9) <= maxMw);
@@ -1769,6 +1793,81 @@ function setupHands() {
   return hands;
 }
 
+// ---------------------------------------------------------------- pose analysis
+const INTERACTION_COLOURS = { hbond: '#8ef5c2', saltBridge: '#ffbe0b', piStacking: '#b388eb',
+  halogen: '#4cc9f0', hydrophobic: '#93a7bd' };
+
+function analysePose() {
+  if (!S.protein || !S.ligand) return toast('Load a target and a ligand first', true);
+  const fp = interactionFingerprint(S.protein, S.ligand);
+  S.fingerprint = fp;
+  const box = $('#fingerprintOut');
+  const chips = Object.entries(fp.counts).map(([k, n]) =>
+    `<span class="dash-chip" style="border-color:${INTERACTION_COLOURS[k]};color:${INTERACTION_COLOURS[k]}">${k.replace(/([A-Z])/g, ' $1').toLowerCase()} <b>${n}</b></span>`).join('');
+  const rows = fp.residues.slice(0, 12).map((r) => {
+    const types = Object.keys(r.types).map((t) => `<span style="color:${INTERACTION_COLOURS[t]}">•</span>`).join('');
+    return `<div class="bar-row" data-res="${r.residue}" style="grid-template-columns:70px 1fr 40px">
+      <span class="bar-label">${r.label}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, r.total * 12)}%;background:${INTERACTION_COLOURS[Object.keys(r.types)[0]] || '#39d98a'}"></span></span>
+      <span class="bar-value">${types}</span></div>`;
+  }).join('');
+  box.innerHTML = `<div class="chips" style="margin-bottom:8px">${chips}</div>
+    <p class="hint" style="margin:0 0 8px">${fp.summary}</p><div class="bars">${rows}</div>
+    <p class="hint" style="margin-top:6px">Geometry only, on heavy atoms: a hydrogen bond here means donor and acceptor in range, not a proven one.</p>`;
+  box.querySelectorAll('[data-res]').forEach((el2) => {
+    el2.onclick = () => { S.proteinView.pocketResidues = new Set([+el2.dataset.res]); S.proteinView.build(); refreshPickTargets(); };
+  });
+
+  // Does this pocket sit where variation is poorly tolerated?
+  const overlap = S.missense && S.pocket ? pocketVariantOverlap(S.protein, S.pocket, S.missense) : null;
+  $('#variantOut').innerHTML = overlap
+    ? `<div class="block" style="margin:8px 0 0;padding:8px 10px"><b>Variant sensitivity</b><br>${overlap.summary}
+       <div class="chips" style="margin-top:6px">${overlap.residues.slice(0, 8).map((r) =>
+         `<span class="dash-chip" ${r.pathogenic ? 'style="color:var(--bad);border-color:#6b1f2c"' : ''}>${r.label} ${r.score.toFixed(2)}</span>`).join('')}</div></div>`
+    : (S.missense ? '' : '<span class="hint">Load an AlphaFold model to add variant sensitivity.</span>');
+
+  S.ledger.append('analysis', { target: S.protein.name, ligand: S.ligand.name, counts: fp.counts,
+    residues: fp.residues.slice(0, 10).map((r) => r.label), variantEnrichment: overlap?.enrichment ?? null }).then(renderLedger);
+  return fp;
+}
+
+// Dock the same compound against related targets: a cheap read on selectivity.
+async function selectivityPanel({ limit = 4, runs = 4, steps = 1200 } = {}) {
+  if (!S.ligand) return toast('Load a ligand first', true);
+  const ligandSmiles = S.compound?.canonical;
+  const here = S.target;
+  const others = S.targets
+    .filter((t) => t !== here && t.bestPdb && (here ? t.program === here.program : true))
+    .slice(0, limit);
+  if (!others.length) return toast('No related targets with structures to compare against', true);
+  const out = $('#selectivityOut');
+  out.innerHTML = '<div class="hint">docking against related targets…</div>';
+  const rows = [];
+  const startProtein = S.protein, startTarget = S.target;
+  const onHere = S.lastScore?.total;
+  for (const t of others) {
+    try {
+      status(`selectivity: ${t.symbol}`);
+      await loadPdb(t.bestPdb, { uniprot: t.uniprot, symbol: t.symbol });
+      await doPockets();
+      if (ligandSmiles) { const st = await smilesTo3D(ligandSmiles, { name: S.ligand.name }); await setLigand(st, { smiles: ligandSmiles }); }
+      const poses = await dockLigand(S.grid, S.ligand, S.pocket.center, { runs, steps, box: 8 });
+      rows.push({ symbol: t.symbol, disease: t.disease, score: poses[0] ? +poses[0].score.toFixed(2) : null });
+    } catch (e) { rows.push({ symbol: t.symbol, error: e.message }); }
+  }
+  rows.sort((a, b) => (a.score ?? 99) - (b.score ?? 99));
+  out.innerHTML = `<div class="hint">On ${startTarget?.symbol || startProtein?.name}: <b>${fmt(onHere)}</b> kcal/mol</div>`
+    + rows.map((r) => `<div class="item"><div class="t"><span class="n">${r.symbol}</span>
+        <span class="s">${r.error ? 'failed' : `${r.score} kcal/mol`}</span></div>
+        <div class="d">${esc(r.disease || r.error || '')}</div></div>`).join('')
+    + `<p class="hint">Same compound, same search settings, different sites. A compound that scores much better on
+       the intended target than on its relatives is the one worth pursuing. Approximate scores: treat as a ranking.</p>`;
+  S.ledger.append('selectivity', { ligand: S.ligand.name, onTarget: startTarget?.symbol, onTargetScore: onHere, others: rows }).then(renderLedger);
+  return rows;
+}
+
+function esc(s2) { return String(s2 ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
 // ---------------------------------------------------------------- environments
 async function setupScenes() {
   const env = new EnvironmentManager(renderer, scene, { workspace, camera });
@@ -1801,6 +1900,7 @@ async function setupScenes() {
 
   try {
     const { scenes } = await (await fetch('/api/scenes')).json();
+    S.scenes = scenes;
     const list = $('#sceneList');
     list.innerHTML = scenes.length ? '' : '<div class="hint">No scenes in assets/scenes. Drop a .glb below, or copy files into that folder.</div>';
     for (const sc of scenes) {
@@ -1819,6 +1919,29 @@ function showSceneStats(r) {
   info.innerHTML = `<b>${S.env.current?.name || 'scene'}</b><br>${r.meshes} meshes · ${(r.triangles / 1000).toFixed(0)}k triangles
     · ${r.textures} textures · ${r.size.x}×${r.size.z} m${r.autoScaled ? ` (auto-scaled ${r.scale}×)` : ''}
     ${r.heavy ? '<br><span style="color:var(--warn)">Heavy scene: switch detail to lite before entering VR.</span>' : ''}`;
+}
+
+// Cycle the available backdrops from inside VR, where there are no panels to click.
+async function cycleScene(dir = 1) {
+  const list = [{ label: 'Empty space', url: null }, ...(S.scenes || [])];
+  const current = S.env?.current?.name || 'Empty space';
+  let i = list.findIndex((x) => x.label === current);
+  if (i < 0) i = 0;
+  const next = list[(i + dir + list.length) % list.length];
+  if (!next.url) { S.env.clear(); toast('Backdrop: empty space'); xr.panel.setStatus('backdrop: empty'); return { backdrop: 'none' }; }
+  xr.panel.setStatus(`loading ${next.label}…`);
+  await loadScene(next.url, next.label);
+  xr.panel.setStatus(`backdrop: ${next.label}`);
+  return { backdrop: next.label };
+}
+
+// In a headset the scene is a backdrop, not a place to walk: drop distant detail and keep the molecule
+// at arm's length in front of the viewer.
+function stageSceneForXR() {
+  if (!S.env?.current) return;
+  S.env.setQuality('lite');
+  S.env.placeWorkspace(S.env.stats);
+  fitView(0.45);
 }
 
 async function loadScene(source, name) {

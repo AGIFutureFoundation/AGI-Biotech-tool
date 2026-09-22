@@ -98,6 +98,17 @@ export function buildTools(app) {
         reset: { type: 'boolean' } } },
       async (args) => app.setView(args)),
 
+    t('analyse_pose', 'Classify every contact the bound ligand makes, residue by residue: hydrogen bonds, salt bridges, aromatic stacking, halogen bonds and hydrophobic contacts. Also reports whether the pocket sits where mutations are poorly tolerated.',
+      { type: 'object', properties: {} }, async () => app.analysePose()),
+
+    t('selectivity', 'Dock the current compound against related targets and compare the scores, as a read on selectivity.',
+      { type: 'object', properties: { limit: { type: 'integer', minimum: 1, maximum: 8 } } },
+      async (args) => app.selectivity(args), { slow: true }),
+
+    t('compound_series', 'Group the compound library into structural series by fingerprint similarity, with the best scoring member of each.',
+      { type: 'object', properties: { cut: { type: 'number', minimum: 0.3, maximum: 0.95 } } },
+      async (args) => app.series(args)),
+
     t('measure', 'Report the distance between two selected atoms, or the angle across three.',
       { type: 'object', properties: {} }, async () => app.measure()),
 

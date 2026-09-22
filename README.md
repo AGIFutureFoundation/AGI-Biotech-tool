@@ -142,6 +142,26 @@ two hundred PDB entries, including SOD1 mutants and an ALS drug-candidate comple
 damaging mutation at each position is. On SOD1 the known ALS hotspots stand out clearly: H46 scores 0.98
 and A4 scores 0.89 against a 0.64 average.
 
+**Interaction analysis.** After any pose, one click classifies every contact residue by residue: hydrogen
+bonds, salt bridges, aromatic stacking (parallel and T-shaped), halogen bonds and hydrophobic contacts.
+Aromatic rings are found geometrically when a ligand comes from a crystal and carries no cheminformatics
+record. For AlphaFold models it also asks whether the pocket lining sits where mutations are poorly
+tolerated, using AlphaMissense, and reports the enrichment against the rest of the protein.
+
+**Selectivity.** Dock the same compound against related targets with identical settings and compare. A
+compound that scores far better on its intended target than on its relatives is the one worth pursuing.
+
+**Environments.** Load any glTF or GLB scene as a backdrop: Sketchfab downloads, Unreal's "Export All",
+Unity glTF exports, or photogrammetry. Exports arrive at wildly different scales, so anything implausible
+is normalised (a 2 m yacht becomes 40 m) and stood on the floor, with a manual override. Lighting comes
+from Poly Haven's CC0 library. Heavy scenes get distance culling that follows the viewer, and in a headset
+the backdrop is staged rather than walked. FBX, USD and .blend must be converted to glTF first.
+
+**Voice, hands and agents.** Every panel action is also a named tool with a typed schema, so the same
+nineteen operations can be typed as a sentence, spoken aloud, or called by an external agent over MCP
+(`server/mcp_server.py`). In a headset, hand tracking replaces controllers: pinch to grab, two pinches to
+scale, point to steer, swipe for the next compound, palm up for the menu.
+
 **Pockets and docking.** Pocket detection finds and ranks cavities by volume and how buried they are, with
 their lining residues. Docking is a flexible Monte Carlo search with rotatable bonds, scored by a
 Vina-style empirical function, and it reports the score breakdown, hydrogen bonds, contact residues and
@@ -230,11 +250,19 @@ one feature here that has not been run end to end, because it needs your own Goo
 Docking scores are a re-implementation of the AutoDock Vina scoring function for interactive use, not a
 validated replacement for Vina or Glide. Treat them as a ranking, not a binding affinity.
 
-As a check, the app was asked to re-dock safinamide into the 1.6 Å MAO-B crystal structure it came from,
-with the drug removed from the receptor first. The crystal pose scores −9.62. The search found a top pose
-at −9.98 that sits 1.0 Å from the experimental pose, and through the interface at default settings, 1.5 Å.
-Under 2 Å is the usual bar for calling a redocking successful. That is one favourable case, not a
-benchmark; run your own controls on targets you care about before trusting a ranking.
+There is now a benchmark rather than an anecdote. `node evals/redock.mjs` strips a ligand out of the
+crystal structure it was solved in, docks it back blind, and measures the distance to the experimental pose:
+
+| Complex | Top pose | Crystal score | Docked score | Result |
+| --- | --- | --- | --- | --- |
+| MAO-B with safinamide | 1.20 Å | −9.62 | −10.01 | pass |
+| Oestrogen receptor with 4-hydroxytamoxifen | 1.24 Å | −9.24 | −10.13 | pass |
+| Thrombin with an inhibitor | 3.83 Å | −11.03 | −8.34 | fail |
+| BCL-XL with ABT-737 | 4.04 Å | −9.96 | −6.92 | fail |
+
+**Two of four within 2 Å, median 2.54 Å.** The two failures are a large flexible ligand and a deep
+charged pocket, which is where an empirical score and a short search struggle. Use the scores to triage a
+library, not to predict affinity, and re-run this benchmark whenever the scoring function changes.
 
 The interactive dynamics are deliberately coarse: harmonic bonds and angles rather than a published force
 field, an elastic network for the protein, no explicit water and no electrostatics. It is for feeling how a

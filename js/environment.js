@@ -133,6 +133,7 @@ export class EnvironmentManager extends EventTarget {
 
   // Image-based lighting: one HDRI changes the whole feel and costs one request.
   async setLighting(preset) {
+    this.lightingId = preset;
     if (!preset || preset === 'none') {
       this.scene.environment = null;
       this.scene.background = this.defaultBackground;
