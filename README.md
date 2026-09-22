@@ -314,3 +314,14 @@ the browser, and 3D embedding, all-atom dynamics, server-side PDF reading and sh
 
 Public databases go down from time to time. ChEMBL in particular returns server errors for spells; the app
 reports it and carries on. Everything else has no hard dependency on any single source.
+
+## License
+
+Proprietary. Copyright (c) 2026 AGI Corp / AGI Future Foundation, all rights reserved — see
+[LICENSE](LICENSE). No right to use, copy, modify or distribute is granted without a separate written
+agreement. Third-party dependencies keep their own licenses, and data retrieved from public databases is
+governed by those databases' terms.
+
+This is a research tool. It emits computational predictions and heuristics, and values it labels
+`[SYNTHETIC]` are placeholders rather than measurements. Nothing it produces is a clinical, diagnostic or
+dosing recommendation.

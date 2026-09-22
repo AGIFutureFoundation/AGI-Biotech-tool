@@ -1,0 +1,60 @@
+Copyright (c) 2026 AGI Corp / AGI Future Foundation. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL
+
+This software and its associated documentation, data files, compound
+structures, target panels and research outputs (the "Software") are the
+proprietary property of AGI Corp / AGI Future Foundation (the "Owner").
+
+No license, express or implied, is granted to any person or entity to use,
+copy, modify, merge, publish, distribute, sublicense, sell, reverse engineer,
+or create derivative works of the Software, in whole or in part, except under
+a separate written agreement signed by the Owner.
+
+Viewing this repository, or the act of the Owner making it accessible on any
+hosting platform, does not grant any such license. Where a hosting platform's
+terms of service permit limited viewing or forking, those platform terms
+govern only that platform's mechanics and confer no rights in the Software
+beyond them.
+
+Contributions submitted to this repository are accepted only under a separate
+written agreement with the Owner. Contributors should not submit material they
+are not entitled to assign.
+
+NO WARRANTY
+
+The Software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose and non-infringement.
+
+NOT FOR CLINICAL USE
+
+The Software is a research tool. It produces computational predictions,
+heuristics and, where explicitly labelled "[SYNTHETIC]", placeholder values
+that are not measurements. Nothing it outputs is a clinical, diagnostic,
+therapeutic or dosing recommendation, and nothing it outputs has been reviewed
+or approved by any regulatory authority. Any use in connection with patient
+care, clinical decision-making, or the design or conduct of a clinical study
+is the sole responsibility of the user and requires independent expert
+validation.
+
+IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+THIRD-PARTY COMPONENTS
+
+The Software depends on third-party open-source packages, each governed by its
+own license, which are not covered by this notice and whose terms continue to
+apply to those components. See requirements.txt and the browser-side
+dependencies declared in index.html.
+
+The Software queries public biomedical databases including PubChem, PubMed,
+ChEMBL, UniProt, RCSB PDB, AlphaFold DB, ClinicalTrials.gov, Reactome, STRING
+and Open Targets. Data retrieved from those sources is subject to their
+respective terms of use and licensing, not to this notice.
+
+CONTACT
+
+Licensing enquiries: x@agifuturefoundation.org
