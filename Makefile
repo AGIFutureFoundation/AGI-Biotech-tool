@@ -11,7 +11,7 @@ help:
 	@echo "make test       full pytest suite"
 	@echo "make imports    every module under server/ and scripts/ imports"
 	@echo "make reachable  no orphaned JS modules"
-	@echo "make citations  every disease-panel identifier resolves (hits the network)"
+	@echo "make citations  every identifier in all 5 panels resolves (hits the network)"
 	@echo "make verify     test + imports + reachable"
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
 	@echo "make serve      run the app on http://localhost:8000"

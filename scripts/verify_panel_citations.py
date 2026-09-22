@@ -163,8 +163,24 @@ def check_trials(db, report, symbol, ev):
         protocol = (rec or {}).get("protocolSection", {})
         ages = protocol.get("eligibilityModule", {}).get("stdAges", [])
         status = protocol.get("statusModule", {}).get("overallStatus")
-        report.check(symbol, "nct", nct, bool(protocol) and "CHILD" in ages,
-                     f"{status}, ages={ages}" if protocol else f"did not resolve ({err or 'not found'})")
+        # A trial record may declare whether it enrols children; when it does,
+        # check that claim in whichever direction it points rather than
+        # assuming. The pediatric panels omit the key and keep the original
+        # requirement, while the longevity track's adult geroscience arm cites
+        # genuinely adult-only trials and would otherwise fail for being honest.
+        enrols_children = "CHILD" in ages
+        expected = trial.get("pediatric_enrollment", True)
+        ok = bool(protocol) and enrols_children == expected
+
+        if not protocol:
+            detail = f"did not resolve ({err or 'not found'})"
+        elif ok:
+            detail = f"{status}, ages={ages}"
+        else:
+            want = "CHILD" if expected else "no CHILD"
+            detail = f"{status}, ages={ages} but the panel claims {want}"
+
+        report.check(symbol, "nct", nct, ok, detail)
 
 
 def check_claims(db, report, symbol, ev):
@@ -184,15 +200,36 @@ def check_claims(db, report, symbol, ev):
                      f'"{quote[:58]}"')
 
 
-def verify(panel_name, seed_bad=False, verbose=True):
+def _registry():
+    """Every panel and its evidence map, across the modules that define them.
+
+    The four disease panels live in disease_panels; the longevity track is its
+    own module. Collecting them here means `make citations` covers all five
+    rather than whichever module a caller happened to know about.
+    """
     import disease_panels as panels
+
+    found = {name: (panels.get_panel(name), dict(getattr(panels, f"{name.upper()}_EVIDENCE", {})))
+             for name in panels.list_panels()}
+
+    try:
+        import longevity_panel as lv
+    except ImportError:
+        return found
+
+    for name, panel in lv.LONGEVITY_PANEL.items():
+        found[name] = (panel, dict(lv.LONGEVITY_EVIDENCE))
+    return found
+
+
+def verify(panel_name, seed_bad=False, verbose=True):
     import db_clients as db
 
-    panel = panels.get_panel(panel_name)
-    if not panel:
-        print(f"no such panel: {panel_name}; have {panels.list_panels()}")
+    registry = _registry()
+    if panel_name not in registry:
+        print(f"no such panel: {panel_name}; have {sorted(registry)}")
         return 2
-    evidence = dict(getattr(panels, f"{panel_name.upper()}_EVIDENCE", {}))
+    panel, evidence = registry[panel_name]
     targets = list(panel["targets"])
     if seed_bad:
         symbol, ev, target = BAD_SEED
@@ -229,7 +266,10 @@ def verify(panel_name, seed_bad=False, verbose=True):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("panel", nargs="?", default="StJude", help="panel key in DISEASE_PANELS")
+    # Defaults to every panel. It used to default to StJude alone, so a bare
+    # run reported a clean pass while four other panels went unchecked.
+    ap.add_argument("panel", nargs="?", default="all",
+                    help="panel key, or 'all' (default) for every panel")
     ap.add_argument("--seed-bad", action="store_true",
                     help="add a control target with bad identifiers; the run must then fail")
     ap.add_argument("--no-cache", action="store_true",
@@ -238,7 +278,20 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.no_cache:
         os.environ["AGI_DB_CACHE"] = "off"
-    return verify(args.panel, seed_bad=args.seed_bad, verbose=not args.quiet)
+
+    if args.panel != "all":
+        return verify(args.panel, seed_bad=args.seed_bad, verbose=not args.quiet)
+
+    names = sorted(_registry())
+    worst = 0
+    for name in names:
+        print(f"\n{'=' * 78}\n{name}\n{'=' * 78}")
+        # Seed the control into one panel only; seeding every panel would just
+        # repeat the same failure five times.
+        seed = args.seed_bad and name == names[0]
+        worst = max(worst, verify(name, seed_bad=seed, verbose=not args.quiet))
+    print(f"\nchecked {len(names)} panels: {', '.join(names)}")
+    return worst
 
 
 if __name__ == "__main__":
