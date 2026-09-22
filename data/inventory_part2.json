@@ -1,0 +1,5358 @@
+{
+ "unique_structures": 278,
+ "stats": {
+  "extracted": 250,
+  "repaired": 610,
+  "duplicate": 582,
+  "unparseable": 0
+ },
+ "files_processed": [
+  "AGI-4092.pdf",
+  "Compound AGI-375.pdf",
+  "BCL-XL .pdf",
+  "JP4551962B2.pdf",
+  "Predicted ALS Associated Genes & Pathways.pdf",
+  "AGI Corp-Riluzole_Synthetic_Derivatives_ALS target_500 (1).pdf",
+  "AGI Purine Ring Series 3.pages"
+ ],
+ "compounds": [
+  {
+   "canonical_smiles": "FC(F)(F)c1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(CF3)C=C4",
+   "compound_id": 4092,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 210,
+   "mw": 340.31,
+   "clogp": 4.5,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC(F)(F)Oc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(OCF3)C=C4",
+   "compound_id": 4093,
+   "origin": "repaired",
+   "repairs": [
+    "OCF3 -> OC(F)(F)F"
+   ],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 210,
+   "mw": 356.31,
+   "clogp": 4.38,
+   "tpsa": 52.83,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=C(O)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C(=O)OH",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 27,
+   "mw": 166.14,
+   "clogp": -1.13,
+   "tpsa": 86.08,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC(F)(F)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 26,
+   "mw": 190.13,
+   "clogp": 0.35,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 18,
+   "mw": 137.15,
+   "clogp": -1.3,
+   "tpsa": 74.8,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)OC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 17,
+   "mw": 152.16,
+   "clogp": -0.61,
+   "tpsa": 58.01,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)OH",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 17,
+   "mw": 138.13,
+   "clogp": -0.7,
+   "tpsa": 69.01,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Nn1cnc2nccnc21",
+   "as_written": "C1=NC2=NC=CN=C2N1N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 13,
+   "mw": 135.13,
+   "clogp": -0.46,
+   "tpsa": 69.62,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "On1cnc2nccnc21",
+   "as_written": "C1=NC2=NC=CN=C2N1OH",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 10,
+   "mw": 136.11,
+   "clogp": 0.06,
+   "tpsa": 63.83,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC(F)(F)c1ncnc2nc[nH]c12",
+   "as_written": "C1=NC2=NC=NC(C(F)(F)F)=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 7,
+   "mw": 188.11,
+   "clogp": 1.37,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Nc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(NH2)N=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "NH2 -> N"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 5,
+   "mw": 135.13,
+   "clogp": -0.06,
+   "tpsa": 80.48,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NC(=O)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C(=O)NH2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing NH2 -> N"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 5,
+   "mw": 165.16,
+   "clogp": -1.73,
+   "tpsa": 91.87,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=[N+]([O-])C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)NO2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing NO2 -> [N+](=O)[O-]"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 5,
+   "mw": 167.13,
+   "clogp": -0.98,
+   "tpsa": 91.92,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Nc1ncnc2nc[nH]c12",
+   "as_written": "C1=NC2=NC=NC(NH2)=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "NH2 -> N"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 135.13,
+   "clogp": -0.06,
+   "tpsa": 80.48,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Oc1ncnc2nc[nH]c12",
+   "as_written": "C1=NC2=NC=NC(OH)=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 136.11,
+   "clogp": 0.06,
+   "tpsa": 74.69,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Oc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(OH)N=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 136.11,
+   "clogp": 0.06,
+   "tpsa": 74.69,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC(F)(F)c1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(CF3)N=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 188.11,
+   "clogp": 1.37,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COC(=O)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C(=O)OCH3",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OCH3 -> OC"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 180.17,
+   "clogp": -1.04,
+   "tpsa": 75.08,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(=O)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)COCH3",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing COCH3 -> C(=O)C"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 4,
+   "mw": 164.17,
+   "clogp": -0.62,
+   "tpsa": 65.85,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OCC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 3,
+   "mw": 152.16,
+   "clogp": -1.22,
+   "tpsa": 69.01,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Nc1ccnc2nc[nH]c12",
+   "as_written": "C1=NC2=NC=CC(NH2)=C2N1",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "NH2 -> N"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 3,
+   "mw": 134.14,
+   "clogp": 0.54,
+   "tpsa": 67.59,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=S(=O)(O)C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)S(=O)(=O)OH",
+   "compound_id": 2,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OH -> O"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 3,
+   "mw": 202.2,
+   "clogp": -1.37,
+   "tpsa": 103.15,
+   "hbd": 3,
+   "hba": 6,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC(F)(F)OC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)OCF3",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing OCF3 -> OC(F)(F)F"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 2,
+   "mw": 206.13,
+   "clogp": 0.28,
+   "tpsa": 58.01,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 14,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Clc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(Cl)C=C4",
+   "compound_id": 4094,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 306.76,
+   "clogp": 4.14,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CN(C)Cc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(CN(C)C)C=C4",
+   "compound_id": 4095,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 329.41,
+   "clogp": 3.54,
+   "tpsa": 46.84,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)c1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(C(C)C)C=C4",
+   "compound_id": 4096,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 314.39,
+   "clogp": 4.61,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NCc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(CN)C=C4",
+   "compound_id": 4097,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 301.35,
+   "clogp": 2.94,
+   "tpsa": 69.62,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Nc1ccc(-c2ccncc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=CN=CC=C3C4=CC=C(C=C4)N",
+   "compound_id": 5351,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 322.41,
+   "clogp": 5.66,
+   "tpsa": 38.91,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Nc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N",
+   "compound_id": 5352,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 323.4,
+   "clogp": 5.06,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Nc1ccc(-c2cnc(-c3ccc(-c4ccccc4)cc3)nc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=C(C=N3)C4=CC=C(C=C4)N",
+   "compound_id": 5353,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 323.4,
+   "clogp": 5.06,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Nc1ccc(-c2ncncc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=CN=CN=C3C4=CC=C(C=C4)N",
+   "compound_id": 5354,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 323.4,
+   "clogp": 5.06,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Oc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)O",
+   "compound_id": 5371,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 324.38,
+   "clogp": 5.18,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Sc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)S",
+   "compound_id": 5372,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 340.45,
+   "clogp": 5.77,
+   "tpsa": 25.78,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CN(C)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N(C)C",
+   "compound_id": 5373,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 351.45,
+   "clogp": 5.54,
+   "tpsa": 29.02,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "COc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)OC",
+   "compound_id": 5374,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 338.41,
+   "clogp": 5.49,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Clc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)Cl",
+   "compound_id": 5375,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 342.83,
+   "clogp": 6.13,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Fc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)F",
+   "compound_id": 5376,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 326.37,
+   "clogp": 5.62,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Brc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)Br",
+   "compound_id": 5377,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 387.28,
+   "clogp": 6.24,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Ic1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)I",
+   "compound_id": 5378,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 434.28,
+   "clogp": 6.08,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C",
+   "compound_id": 5379,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 322.41,
+   "clogp": 5.79,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C",
+   "compound_id": 5381,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 352.44,
+   "clogp": 5.53,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "OCc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)CO",
+   "compound_id": 5382,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 338.41,
+   "clogp": 4.97,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "ONc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)NO",
+   "compound_id": 5383,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 339.4,
+   "clogp": 5.28,
+   "tpsa": 58.04,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(=O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(=O)C",
+   "compound_id": 5384,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 350.42,
+   "clogp": 5.68,
+   "tpsa": 42.85,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "N#Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C#N",
+   "compound_id": 5385,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 333.39,
+   "clogp": 5.35,
+   "tpsa": 49.57,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 26,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "C#Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C#C",
+   "compound_id": 5386,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 332.41,
+   "clogp": 5.46,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 26,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "c1ccc(-c2ccc(-c3nccnc3-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)",
+   "compound_id": 5387,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 308.38,
+   "clogp": 5.48,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "C[SH](O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)S(O)C",
+   "compound_id": 5388,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 372.49,
+   "clogp": 5.94,
+   "tpsa": 46.01,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "O[SH](O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)S(O)O",
+   "compound_id": 5389,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 374.47,
+   "clogp": 5.78,
+   "tpsa": 66.24,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CN(c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1)S(C)(=O)=O",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N(C)S(=O)(=O)C",
+   "compound_id": 5392,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 415.52,
+   "clogp": 4.87,
+   "tpsa": 63.16,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 30,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CNS(C)(=O)=O",
+   "as_written": "N(C)S(=O)(=O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 109.15,
+   "clogp": -0.83,
+   "tpsa": 46.17,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 6,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(=O)N(C)C(=O)N(C)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N(C)C(=O)N(C)C(=O)C",
+   "compound_id": 5393,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 436.52,
+   "clogp": 5.51,
+   "tpsa": 66.4,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 33,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CNC(=O)N(C)C(C)=O",
+   "as_written": "N(C)C(=O)N(C)C(=O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 130.15,
+   "clogp": -0.2,
+   "tpsa": 49.41,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=C=Nc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N=C=O",
+   "compound_id": 5394,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 349.39,
+   "clogp": 5.44,
+   "tpsa": 55.21,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC#Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C#C-C",
+   "compound_id": 5395,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 346.43,
+   "clogp": 5.85,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "NC(=O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(=O)N",
+   "compound_id": 5396,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 351.41,
+   "clogp": 4.58,
+   "tpsa": 68.87,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=C(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(=O)O",
+   "compound_id": 5397,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 352.39,
+   "clogp": 5.18,
+   "tpsa": 63.08,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(N)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(N)C",
+   "compound_id": 5398,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 351.45,
+   "clogp": 5.5,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(=O)C(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C(=O)C",
+   "compound_id": 5400,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 380.45,
+   "clogp": 5.1,
+   "tpsa": 63.08,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(N)C(N)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(N)C(N)C",
+   "compound_id": 5401,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 380.5,
+   "clogp": 4.82,
+   "tpsa": 77.82,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)C(C)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(C)C(C)C",
+   "compound_id": 5402,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 378.52,
+   "clogp": 7.24,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "S=C=Nc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N=C=S",
+   "compound_id": 5403,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 365.46,
+   "clogp": 6.21,
+   "tpsa": 38.14,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "NN=Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C=N-N",
+   "compound_id": 5404,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 350.43,
+   "clogp": 4.77,
+   "tpsa": 64.16,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(N=C=O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(N=C=O)C",
+   "compound_id": 5405,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 377.45,
+   "clogp": 5.87,
+   "tpsa": 55.21,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "NC(C(=O)O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(N)C(=O)O",
+   "compound_id": 5406,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 381.44,
+   "clogp": 4.56,
+   "tpsa": 89.1,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(O)C(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C(O)C",
+   "compound_id": 5407,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 382.46,
+   "clogp": 4.89,
+   "tpsa": 66.24,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(N)C(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C(N)C",
+   "compound_id": 5408,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 381.48,
+   "clogp": 4.86,
+   "tpsa": 72.03,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NC=Cc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C=C-N",
+   "compound_id": 5409,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 349.44,
+   "clogp": 5.41,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(C)C(N)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(N)C(C)C",
+   "compound_id": 5410,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 379.51,
+   "clogp": 6.13,
+   "tpsa": 51.8,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "CC(C)C(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C(C)C",
+   "compound_id": 5411,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 380.49,
+   "clogp": 6.17,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "N=Nc1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)N=N",
+   "compound_id": 8423,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 336.4,
+   "clogp": 6.14,
+   "tpsa": 61.99,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "OCC(O)c1ccc(-c2nccnc2-c2ccc(-c3ccccc3)cc2)cc1",
+   "as_written": "C1=CC=C(C=C1)C2=CC=C(C=C2)C3=NC=CN=C3C4=CC=C(C=C4)C(O)C(O)",
+   "compound_id": 9328,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI-4092.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 368.44,
+   "clogp": 4.5,
+   "tpsa": 66.24,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 28,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "BrCc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(CBr)C=C4",
+   "compound_id": 376,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Compound AGI-375.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 365.23,
+   "clogp": 4.38,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "ICc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(CI)C=C4",
+   "compound_id": 378,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Compound AGI-375.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 412.23,
+   "clogp": 4.42,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "BrCOc1ccc(-n2ccnc2-c2cccc3nccnc23)cc1",
+   "as_written": "C1=CN=C2C(=N1)C(=CC=C2)C3=NC=CN3C4=CC=C(OCBr)C=C4",
+   "compound_id": 422,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Compound AGI-375.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 381.23,
+   "clogp": 4.21,
+   "tpsa": 52.83,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(O)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(O)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 233.23,
+   "clogp": 2.86,
+   "tpsa": 23.47,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 16,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCC(N)=O)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCC(=O)N)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 290.28,
+   "clogp": 2.02,
+   "tpsa": 55.56,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CN(CCO)Cc1ccc(O)c(C(F)(F)F)c1",
+   "as_written": "CN(CCO)CC1=CC=C(O)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 249.23,
+   "clogp": 1.84,
+   "tpsa": 43.7,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCCOC)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCCOC)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 291.31,
+   "clogp": 3.18,
+   "tpsa": 21.7,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 7,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCC(C)O)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCC(O)C)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 291.31,
+   "clogp": 2.92,
+   "tpsa": 32.7,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCCN(C)Cc1ccc(O)c(C(F)(F)F)c1",
+   "as_written": "CN(CCOC)CC1=CC=C(O)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 263.26,
+   "clogp": 2.49,
+   "tpsa": 32.7,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)OCCN(C)Cc1ccc(O)c(C(F)(F)F)c1",
+   "as_written": "CN(CCOC(C)C)CC1=CC=C(O)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 291.31,
+   "clogp": 3.27,
+   "tpsa": 32.7,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCCO)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCCO)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 277.29,
+   "clogp": 2.53,
+   "tpsa": 32.7,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCCOC(C)C)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCCOC(C)C)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 319.37,
+   "clogp": 3.96,
+   "tpsa": 21.7,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 8,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCC(=O)O)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCC(=O)O)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 291.27,
+   "clogp": 2.62,
+   "tpsa": 49.77,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCN(C)Cc1ccc(OCCN)c(C(F)(F)F)c1",
+   "as_written": "CN(CC)CC1=CC=C(OCCN)C(=C1)C(F)(F)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 276.3,
+   "clogp": 2.49,
+   "tpsa": 38.49,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(C)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(C)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 123.15,
+   "clogp": 0.69,
+   "tpsa": 22.0,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CCO)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CCO)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 153.18,
+   "clogp": 0.15,
+   "tpsa": 42.23,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCCn1ccc(C)cc1=O",
+   "as_written": "CC1=CC(=O)N(CCOC)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 167.21,
+   "clogp": 0.8,
+   "tpsa": 31.23,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CC(C)O)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CC(O)C)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 167.21,
+   "clogp": 0.54,
+   "tpsa": 42.23,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(COC(C)C)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(COC(C)C)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 181.24,
+   "clogp": 1.54,
+   "tpsa": 31.23,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CC(O)CO)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CC(O)CO)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 183.21,
+   "clogp": -0.49,
+   "tpsa": 62.46,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CC(=O)O)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CC(=O)O)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 167.16,
+   "clogp": 0.24,
+   "tpsa": 59.3,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CCN(C)C)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CCN(C)C)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 180.25,
+   "clogp": 0.72,
+   "tpsa": 25.24,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccn(CC(N)=O)c(=O)c1",
+   "as_written": "CC1=CC(=O)N(CC(=O)N)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 166.18,
+   "clogp": -0.36,
+   "tpsa": 65.09,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOCCn1ccc(C)cc1=O",
+   "as_written": "CC1=CC(=O)N(CCOCC)C=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 181.24,
+   "clogp": 1.19,
+   "tpsa": 31.23,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Cc1nc(=O)[nH]c2nc(-c3ccccc3)[nH]c(=O)c12",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)NC(=N2)C3=CC=CC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 296.33,
+   "clogp": 1.87,
+   "tpsa": 91.5,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Cc1nc(=O)[nH]c2nc(C(C)O)n(-c3ccccc3)c(=O)c12",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)N(C3=CC=CC=C3)C(=N2)C(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 340.38,
+   "clogp": 1.72,
+   "tpsa": 100.87,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Cc1nc(=O)[nH]c2nc(C(C)O)n(-c3ccc(O)cc3)c(=O)c12",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)N(C3=CC=C(O)C=C3)C(=N2)C(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 356.38,
+   "clogp": 1.43,
+   "tpsa": 121.1,
+   "hbd": 3,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Cc1nc(=O)[nH]c2nc(C(C)O)n(-c3cccc(=O)cc3)c(=O)c12",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)N(C3=CC=CC(=O)C=C3)C(=N2)C(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 368.39,
+   "clogp": 1.08,
+   "tpsa": 117.94,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Cc1nc(=O)[nH]c2nc(C(C)O)n(-c3cccc(F)c3)c(=O)c12",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)N(C3=CC=CC(F)=C3)C(=N2)C(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 358.37,
+   "clogp": 1.86,
+   "tpsa": 100.87,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1ccc(-n2c(C(C)O)nc3[nH]c(=O)nc(CC(C)C)c3c2=O)cc1",
+   "as_written": "CC(C)CC1=NC(=O)NC2=C1C(=O)N(C3=CC=C(OC)C=C3)C(=N2)C(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 370.41,
+   "clogp": 1.73,
+   "tpsa": 110.1,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 27,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 228.3,
+   "clogp": 3.32,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc(-c2cnccn2)ccc1OC(C)(C)C",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1C)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 242.32,
+   "clogp": 3.63,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1O",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1O)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 244.29,
+   "clogp": 3.03,
+   "tpsa": 55.24,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1Cl",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1Cl)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 262.74,
+   "clogp": 3.97,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cc(-c2cnccn2)ccc1OC(C)(C)C",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1OC)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 258.32,
+   "clogp": 3.33,
+   "tpsa": 44.24,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1Br",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1Br)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 307.19,
+   "clogp": 4.08,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1CO",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1CO)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 258.32,
+   "clogp": 2.81,
+   "tpsa": 55.24,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1C#N",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1C#N)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 253.31,
+   "clogp": 3.19,
+   "tpsa": 58.8,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1N",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1N)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 243.31,
+   "clogp": 2.9,
+   "tpsa": 61.03,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(C)Oc1ccc(-c2cnccn2)cc1F",
+   "as_written": "CC(C)(C)OC1=CC=C(C=C1F)C2=NC=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 246.28,
+   "clogp": 3.46,
+   "tpsa": 35.01,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)c2nn(-c3ccccc3)c(=O)n2C1",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC=C3)C(=O)N2C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 389.44,
+   "clogp": -0.13,
+   "tpsa": 106.07,
+   "hbd": 1,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 27,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)c2nn(-c3ccccc3)c(=O)n2C1F",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC=C3)C(=O)N2C1F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 407.43,
+   "clogp": 0.34,
+   "tpsa": 106.07,
+   "hbd": 1,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 28,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)c2nn(-c3ccccc3)c(=O)n2C1O",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC=C3)C(=O)N2C1O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 405.44,
+   "clogp": -0.64,
+   "tpsa": 126.3,
+   "hbd": 2,
+   "hba": 7,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 28,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)c2nn(-c3cccc(O)c3)c(=O)n2C1",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC(O)=C3)C(=O)N2C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 405.44,
+   "clogp": -0.42,
+   "tpsa": 126.3,
+   "hbd": 2,
+   "hba": 7,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 28,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cccc(-n2nc3n(c2=O)CC(C(=O)NC(C)C)=C(N2CC2)S3(=O)=O)c1",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC(OC)=C3)C(=O)N2C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 419.46,
+   "clogp": -0.12,
+   "tpsa": 115.3,
+   "hbd": 1,
+   "hba": 7,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 29,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)c2nn(-c3cccc(F)c3)c(=O)n2C1",
+   "as_written": "CC(C)NC(=O)C1=C(N2CC2)S(=O)(=O)C2=NN(C3=CC=CC(F)=C3)C(=O)N2C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 407.43,
+   "clogp": 0.01,
+   "tpsa": 106.07,
+   "hbd": 1,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 28,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1",
+   "as_written": "CC(C)OC1=CC=C(C=C1)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 232.29,
+   "clogp": 2.03,
+   "tpsa": 89.95,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc(-c2nc(N)[nH]c2N)ccc1OC(C)C",
+   "as_written": "CC(C)OC1=CC=C(C=C1C)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 246.31,
+   "clogp": 2.34,
+   "tpsa": 89.95,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1F",
+   "as_written": "CC(C)OC1=CC=C(C=C1F)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 250.28,
+   "clogp": 2.17,
+   "tpsa": 89.95,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1Cl",
+   "as_written": "CC(C)OC1=CC=C(C=C1Cl)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 266.73,
+   "clogp": 2.68,
+   "tpsa": 89.95,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1Br",
+   "as_written": "CC(C)OC1=CC=C(C=C1Br)C2=C(NC(=N2)N)N",
+   "compound_id": 4,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 311.18,
+   "clogp": 2.79,
+   "tpsa": 89.95,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cc(-c2nc(N)[nH]c2N)ccc1OC(C)C",
+   "as_written": "CC(C)OC1=CC=C(C=C1OC)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 262.31,
+   "clogp": 2.04,
+   "tpsa": 99.18,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1O",
+   "as_written": "CC(C)OC1=CC=C(C=C1O)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 248.29,
+   "clogp": 1.73,
+   "tpsa": 110.18,
+   "hbd": 4,
+   "hba": 5,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1CO",
+   "as_written": "CC(C)OC1=CC=C(C=C1CO)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 262.31,
+   "clogp": 1.52,
+   "tpsa": 110.18,
+   "hbd": 4,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1C(N)=O",
+   "as_written": "CC(C)OC1=CC=C(C=C1C(=O)N)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 275.31,
+   "clogp": 1.13,
+   "tpsa": 133.04,
+   "hbd": 4,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)Oc1ccc(-c2nc(N)[nH]c2N)cc1C(=O)O",
+   "as_written": "CC(C)OC1=CC=C(C=C1C(=O)O)C2=C(NC(=N2)N)N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 276.3,
+   "clogp": 1.73,
+   "tpsa": 127.25,
+   "hbd": 4,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCO)CCNC(=O)c1ccc(O)cc1",
+   "as_written": "CC(C)CN(CCO)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": 10,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 280.37,
+   "clogp": 1.07,
+   "tpsa": 72.8,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 8,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCCN(CCNC(=O)c1ccc(O)cc1)CC(C)C",
+   "as_written": "CC(C)CN(CCOC)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 294.39,
+   "clogp": 1.73,
+   "tpsa": 61.8,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 9,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCO)CCNC(=O)c1ccc(O)cc1F",
+   "as_written": "CC(C)CN(CCO)CCNC(=O)C1=CC=C(C=C1F)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 298.36,
+   "clogp": 1.21,
+   "tpsa": 72.8,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 8,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCNC(=O)c1ccc(O)cc1)CCOC(C)C",
+   "as_written": "CC(C)CN(CCOC(C)C)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 322.45,
+   "clogp": 2.51,
+   "tpsa": 61.8,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCNC(=O)c1ccc(O)cc1)CCOC(C)O",
+   "as_written": "CC(C)CN(CCOC(O)C)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 324.42,
+   "clogp": 1.43,
+   "tpsa": 82.03,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCNC(=O)c1ccc(O)cc1)CCN(C)C",
+   "as_written": "CC(C)CN(CCN(C)C)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 307.44,
+   "clogp": 1.64,
+   "tpsa": 55.81,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 9,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCO)CCNC(=O)c1ccc(O)cc1O",
+   "as_written": "CC(C)CN(CCO)CCNC(=O)C1=CC=C(C=C1O)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 296.37,
+   "clogp": 0.78,
+   "tpsa": 93.03,
+   "hbd": 4,
+   "hba": 5,
+   "rotatable_bonds": 8,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOCCN(CCNC(=O)c1ccc(O)cc1)CC(C)C",
+   "as_written": "CC(C)CN(CCOCC)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 308.42,
+   "clogp": 2.12,
+   "tpsa": 61.8,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCO)CCNC(=O)c1ccc(O)cc1Cl",
+   "as_written": "CC(C)CN(CCO)CCNC(=O)C1=CC=C(C=C1Cl)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 314.81,
+   "clogp": 1.73,
+   "tpsa": 72.8,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 8,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cc(O)ccc1C(=O)NCCN(CCO)CC(C)C",
+   "as_written": "CC(C)CN(CCO)CCNC(=O)C1=CC=C(C=C1OC)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 310.39,
+   "clogp": 1.08,
+   "tpsa": 82.03,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 9,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2ccccc2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 275.4,
+   "clogp": 2.52,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2cccc(F)c2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC(F)=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 293.39,
+   "clogp": 2.66,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2cccc(O)c2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC(O)=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 291.39,
+   "clogp": 2.22,
+   "tpsa": 47.02,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2ccc(Cl)cc2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=C(Cl)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 309.84,
+   "clogp": 3.17,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(C2=CC=C(c3ccccc3)OC2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=C(OC2)C3=CC=CC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 355.48,
+   "clogp": 3.27,
+   "tpsa": 36.02,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2ccc(Br)cc2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=C(Br)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 354.29,
+   "clogp": 3.28,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOC1C=CC=C(N2CCN(C(=O)N(C)CC(C)C)CC2)C=C1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC(OCC)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 333.48,
+   "clogp": 2.73,
+   "tpsa": 36.02,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2cccc(N)c2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC(N)=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 290.41,
+   "clogp": 2.1,
+   "tpsa": 52.81,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOCC3)c(O)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CCOCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 245.28,
+   "clogp": 1.48,
+   "tpsa": 58.48,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOc1cc2nc(C)ncc2cc1N1CCOCC1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CCOCC3)OCC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 273.34,
+   "clogp": 2.17,
+   "tpsa": 47.48,
+   "hbd": 0,
+   "hba": 5,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOC(O)C3)c(O)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)OCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 261.28,
+   "clogp": 0.8,
+   "tpsa": 78.71,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOC1CN(c2cc3cnc(C)nc3cc2O)CCO1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(OCC)OCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 289.34,
+   "clogp": 1.84,
+   "tpsa": 67.71,
+   "hbd": 1,
+   "hba": 6,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cc2nc(C)ncc2cc1N1CCOCC1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CCOCC3)OC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 259.31,
+   "clogp": 1.78,
+   "tpsa": 47.48,
+   "hbd": 0,
+   "hba": 5,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOCC(O)C3)c(O)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)COCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 275.31,
+   "clogp": 0.84,
+   "tpsa": 78.71,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOC(CO)C(O)C3)c(O)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)C(CO)OCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 305.33,
+   "clogp": 0.2,
+   "tpsa": 98.94,
+   "hbd": 3,
+   "hba": 7,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOCC(O)C3)c(Cl)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)COCC3)Cl",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 293.75,
+   "clogp": 1.79,
+   "tpsa": 58.48,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOCC(O)C3)c(Br)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)COCC3)Br",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 338.2,
+   "clogp": 1.9,
+   "tpsa": 58.48,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOCC(O)C3)c(F)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(O)COCC3)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 277.3,
+   "clogp": 1.27,
+   "tpsa": 58.48,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ncc2cc(N3CCOC(OCCF)C3)c(O)cc2n1",
+   "as_written": "CC1=NC2=CC(=C(C=C2C=N1)N3CC(OCCF)OCC3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 307.33,
+   "clogp": 1.79,
+   "tpsa": 67.71,
+   "hbd": 1,
+   "hba": 6,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(-c3ccncn3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC=NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 210.24,
+   "clogp": 3.2,
+   "tpsa": 38.92,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 16,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1cncnc1-c1ccc2cc(C)oc2c1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC=NC=C3OC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 240.26,
+   "clogp": 3.21,
+   "tpsa": 48.15,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(-c3ccnc(N)n3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(N)=NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 225.25,
+   "clogp": 2.78,
+   "tpsa": 64.94,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(-c3ccnc(CO)n3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(CO)=NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 240.26,
+   "clogp": 2.69,
+   "tpsa": 59.15,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCC1N=C(c2ccc3cc(C)oc3c2)C=CN1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(COC)NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 256.31,
+   "clogp": 2.62,
+   "tpsa": 46.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(C3=NC(CBr)NC=C3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(CBr)NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 305.17,
+   "clogp": 3.37,
+   "tpsa": 37.53,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(C3=NC(C(C)O)NC=C3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(C(O)C)NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 256.31,
+   "clogp": 2.35,
+   "tpsa": 57.76,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(C3=NC(C(N)=O)NC=C3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(C(=O)N)NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 255.28,
+   "clogp": 1.46,
+   "tpsa": 80.62,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOCC1N=C(c2ccc3cc(C)oc3c2)C=CN1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(COCC)NC=C3",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 270.33,
+   "clogp": 3.01,
+   "tpsa": 46.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 115.18,
+   "clogp": 0.12,
+   "tpsa": 32.26,
+   "hbd": 2,
+   "hba": 2,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 8,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 129.2,
+   "clogp": 0.77,
+   "tpsa": 21.26,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COCC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 143.23,
+   "clogp": 1.17,
+   "tpsa": 21.26,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OCCOCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COCCO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 159.23,
+   "clogp": 0.14,
+   "tpsa": 41.49,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(C)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 157.26,
+   "clogp": 1.55,
+   "tpsa": 21.26,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(=O)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(=O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 157.21,
+   "clogp": 0.69,
+   "tpsa": 38.33,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(O)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 159.23,
+   "clogp": 0.48,
+   "tpsa": 41.49,
+   "hbd": 2,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCOC(C)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(OCC)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 187.28,
+   "clogp": 1.53,
+   "tpsa": 30.49,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(Br)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(Br)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 222.13,
+   "clogp": 1.89,
+   "tpsa": 21.26,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COC(C)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(OC)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 173.26,
+   "clogp": 1.14,
+   "tpsa": 30.49,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(OCO)OCC1CCCCN1",
+   "as_written": "C1CCNC(C1)COC(OCO)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 189.25,
+   "clogp": 0.46,
+   "tpsa": 50.72,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)CO",
+   "as_written": "CCCCCCCC(=O)OC(CO)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 218.29,
+   "clogp": 1.24,
+   "tpsa": 66.76,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 9,
+   "heavy_atoms": 15,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COC",
+   "as_written": "CCCCCCCC(=O)OC(COC)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 232.32,
+   "clogp": 1.9,
+   "tpsa": 55.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 16,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COC(C)C",
+   "as_written": "CCCCCCCC(=O)OC(COC(C)C)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 260.37,
+   "clogp": 2.68,
+   "tpsa": 55.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 11,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COCC",
+   "as_written": "CCCCCCCC(=O)OC(COCC)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 246.35,
+   "clogp": 2.29,
+   "tpsa": 55.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 11,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COBr",
+   "as_written": "CCCCCCCC(=O)OC(COBr)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 297.19,
+   "clogp": 2.58,
+   "tpsa": 55.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 16,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COC(C)O",
+   "as_written": "CCCCCCCC(=O)OC(CO)COC(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 262.35,
+   "clogp": 1.61,
+   "tpsa": 75.99,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 11,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COCO",
+   "as_written": "CCCCCCCC(=O)OC(COCO)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 248.32,
+   "clogp": 1.22,
+   "tpsa": 75.99,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 11,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COC(C)=O",
+   "as_written": "CCCCCCCC(=O)OC(CO)COC(=O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 260.33,
+   "clogp": 1.81,
+   "tpsa": 72.83,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)O",
+   "as_written": "CCC(CCC)C(=O)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 130.19,
+   "clogp": 1.9,
+   "tpsa": 37.3,
+   "hbd": 1,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC",
+   "as_written": "CCC(CCC)C(=O)OC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 144.21,
+   "clogp": 1.99,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OCC",
+   "as_written": "CCC(CCC)C(=O)OCC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 158.24,
+   "clogp": 2.38,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)C",
+   "as_written": "CCC(CCC)C(=O)OC(C)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 172.27,
+   "clogp": 2.76,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)O",
+   "as_written": "CCC(CCC)C(=O)OC(O)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 174.24,
+   "clogp": 1.69,
+   "tpsa": 46.53,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)Br",
+   "as_written": "CCC(CCC)C(=O)OC(Br)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 237.14,
+   "clogp": 3.1,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)OCC",
+   "as_written": "CCC(CCC)C(=O)OC(OCC)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 202.29,
+   "clogp": 2.74,
+   "tpsa": 35.53,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 7,
+   "heavy_atoms": 14,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)OC",
+   "as_written": "CCC(CCC)C(=O)OC(OC)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 188.27,
+   "clogp": 2.35,
+   "tpsa": 35.53,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)CO",
+   "as_written": "CCC(CCC)C(=O)OC(CO)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 188.27,
+   "clogp": 1.74,
+   "tpsa": 46.53,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 13,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)C(C)C",
+   "as_written": "CCC(CCC)C(=O)OC(C(C)C)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 200.32,
+   "clogp": 3.4,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 14,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CNC(=O)c1c(C)ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c12",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 297.31,
+   "clogp": 1.35,
+   "tpsa": 94.82,
+   "hbd": 3,
+   "hba": 3,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NC(C)O",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NC(O)C",
+   "compound_id": 8,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 327.34,
+   "clogp": 1.05,
+   "tpsa": 115.05,
+   "hbd": 4,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NCCO",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCCO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 327.34,
+   "clogp": 0.71,
+   "tpsa": 115.05,
+   "hbd": 4,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NCC(=O)O",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCC(=O)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 341.32,
+   "clogp": 0.8,
+   "tpsa": 132.12,
+   "hbd": 4,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NCC(C)Br",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCC(Br)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 404.26,
+   "clogp": 2.5,
+   "tpsa": 94.82,
+   "hbd": 3,
+   "hba": 3,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NCC(C)O",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCC(C)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 341.37,
+   "clogp": 1.1,
+   "tpsa": 115.05,
+   "hbd": 4,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NCC(O)CO",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCC(O)CO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 357.37,
+   "clogp": 0.07,
+   "tpsa": 135.28,
+   "hbd": 5,
+   "hba": 5,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COCNC(=O)c1c(C)ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c12",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCOC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 327.34,
+   "clogp": 1.32,
+   "tpsa": 104.05,
+   "hbd": 3,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c2c1C(=O)NC(C)(F)F",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NC(F)(F)C",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 347.32,
+   "clogp": 2.33,
+   "tpsa": 94.82,
+   "hbd": 3,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 25,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCC(O)CNC(=O)c1c(C)ccc2c(=O)c3c(C)[nH]c(=O)cc3[nH]c12",
+   "as_written": "CC1=C(C2=C(C=C1)C(=O)C3=C(NC(=O)C=C3N2)C)C(=O)NCC(O)CC",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 355.39,
+   "clogp": 1.49,
+   "tpsa": 115.05,
+   "hbd": 4,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1ccccc1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=CC=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 226.32,
+   "clogp": 4.14,
+   "tpsa": 9.23,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 17,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1ccc(O)cc1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=C(O)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 242.32,
+   "clogp": 3.84,
+   "tpsa": 29.46,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1ccc(Cl)cc1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=C(Cl)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 260.76,
+   "clogp": 4.79,
+   "tpsa": 9.23,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1ccc(Br)cc1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=C(Br)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 305.21,
+   "clogp": 4.9,
+   "tpsa": 9.23,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1ccc(COC(C)(C)c2ccccc2)cc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=C(OC)C=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 256.34,
+   "clogp": 4.15,
+   "tpsa": 18.46,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1cccc(OCO)c1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=CC(OCO)=C2",
+   "compound_id": 8,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 272.34,
+   "clogp": 3.47,
+   "tpsa": 38.69,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1cccc(F)c1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=CC(F)=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 244.31,
+   "clogp": 4.28,
+   "tpsa": 9.23,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccc(O)cc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=C(C=C3)O)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 278.31,
+   "clogp": 3.53,
+   "tpsa": 66.24,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccc(F)cc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=C(C=C3)F)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 280.3,
+   "clogp": 3.96,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccc(Br)cc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=C(C=C3)Br)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 341.21,
+   "clogp": 4.59,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 21,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccccc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=CC=C3)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 262.31,
+   "clogp": 3.82,
+   "tpsa": 46.01,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccc(OCF)cc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=C(C=C3)OCF)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 310.33,
+   "clogp": 4.13,
+   "tpsa": 55.24,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COC1C=CC=C(c2nc(-c3ccc(C)cc3)ncc2O)C=C1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=CC(OC)C=C3)O",
+   "compound_id": 10,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 306.37,
+   "clogp": 3.68,
+   "tpsa": 55.24,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 23,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1ccc(-c2ncc(O)c(-c3ccc(CO)cc3)n2)cc1",
+   "as_written": "CC1=CC=C(C=C1)C2=NC=C(C(=N2)C3=CC=C(C=C3)CO)O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 292.34,
+   "clogp": 3.32,
+   "tpsa": 66.24,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(CCNC(=O)c1ccc(O)cc1)CCOC(C)C(F)(F)F",
+   "as_written": "CC(C)CN(CCOC(CF3)C)CCNC(=O)C1=CC=C(C=C1)O",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 376.42,
+   "clogp": 3.05,
+   "tpsa": 61.8,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 10,
+   "heavy_atoms": 26,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "COc1ccc(N2CCN(C(=O)N(C)CC(C)C)CC2)cc1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=C(OCH3)C=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "OCH3 -> OC"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 305.42,
+   "clogp": 2.53,
+   "tpsa": 36.02,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 22,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2ccc(C(F)(F)F)cc2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=C(CF3)C=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 343.39,
+   "clogp": 3.54,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)CN(C)C(=O)N1CCN(c2cccc(C(F)(F)F)c2)CC1",
+   "as_written": "CC(C)CN(C)C(=O)N1CCN(CC1)C2=CC=CC(CF3)=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 343.39,
+   "clogp": 3.54,
+   "tpsa": 26.79,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 3,
+   "heavy_atoms": 24,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cc1cc2ccc(C3=NC(C(F)(F)F)NC=C3)cc2o1",
+   "as_written": "CC1=CC2=C(O1)C=C(C=C2)C3=NC(CF3)NC=C3",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 280.25,
+   "clogp": 3.54,
+   "tpsa": 37.53,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCCCCCC(=O)OC(CO)COCC(F)(F)F",
+   "as_written": "CCCCCCCC(=O)OC(CO)COC(CF3)",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 300.32,
+   "clogp": 2.83,
+   "tpsa": 55.76,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 11,
+   "heavy_atoms": 20,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CCCC(CC)C(=O)OC(C)C(F)(F)F",
+   "as_written": "CCC(CCC)C(=O)OC(CF3)C",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 226.24,
+   "clogp": 3.31,
+   "tpsa": 26.3,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 15,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1ccc(C(F)(F)F)cc1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=C(CF3)C=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "CF3 -> C(F)(F)F"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 294.32,
+   "clogp": 5.16,
+   "tpsa": 9.23,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 21,
+   "lipinski_violations": 1
+  },
+  {
+   "canonical_smiles": "COc1cccc(COC(C)(C)c2ccccc2)c1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=CC(OCH3)=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "OCH3 -> OC"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 256.34,
+   "clogp": 4.15,
+   "tpsa": 18.46,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 19,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC(C)(OCc1cccc(N)c1)c1ccccc1",
+   "as_written": "CC(C)(C1=CC=CC=C1)OCC2=CC=CC(NH2)=C2",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "NH2 -> N"
+   ],
+   "sources": [
+    "Predicted ALS Associated Genes & Pathways.pdf"
+   ],
+   "occurrences": 1,
+   "mw": 241.33,
+   "clogp": 3.72,
+   "tpsa": 35.25,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 18,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Fn1cnc2nccnc21",
+   "as_written": "C1=NC2=NC=CN=C2N1F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 138.1,
+   "clogp": 0.56,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Cln1cnc2nccnc21",
+   "as_written": "C1=NC2=NC=CN=C2N1Cl",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 154.56,
+   "clogp": 0.83,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "ClC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)Cl",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 156.58,
+   "clogp": -0.02,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Brc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(Br)N=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 199.01,
+   "clogp": 1.12,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "BrC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)Br",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 201.03,
+   "clogp": 0.14,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "IC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)I",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 248.03,
+   "clogp": 0.18,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=Cc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(C=O)N=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 148.12,
+   "clogp": 0.17,
+   "tpsa": 71.53,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=CC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C(=O)",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 150.14,
+   "clogp": -1.01,
+   "tpsa": 65.85,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "N#Cc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(C#N)N=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 145.12,
+   "clogp": 0.22,
+   "tpsa": 78.25,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NCc1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=CN=C(CN)N=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 149.16,
+   "clogp": -0.19,
+   "tpsa": 80.48,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 140.12,
+   "clogp": -0.29,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1cnc2ocnc2n1",
+   "as_written": "C1=NC2=NC=CN=C2O1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 121.1,
+   "clogp": 0.62,
+   "tpsa": 51.81,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1ncc2nc[nH]c2n1",
+   "as_written": "C1=NC2=C(N1)N=CN=C2",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 120.11,
+   "clogp": 0.35,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1ccc2nccnc2c1",
+   "as_written": "C1=NC2=CC=CC=C2N=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 130.15,
+   "clogp": 1.63,
+   "tpsa": 25.78,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1cnc2[nH]cnc2n1",
+   "as_written": "C1=NC2=NC=CN=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 120.11,
+   "clogp": 0.35,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "C1=Nc2cnc(nc2)N1",
+   "as_written": "C1=NC2=CN=C(N=C2)N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 120.11,
+   "clogp": 0.56,
+   "tpsa": 50.17,
+   "hbd": 1,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=c1ncnc2nc[nH]c2n1",
+   "as_written": "C1=NC2=NC=NC(=O)N=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 149.11,
+   "clogp": -0.89,
+   "tpsa": 84.42,
+   "hbd": 1,
+   "hba": 5,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "C1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=CNC2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 122.13,
+   "clogp": -0.58,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1ncc2[nH]cnc2n1",
+   "as_written": "C1=NC2=NC=NC=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 120.11,
+   "clogp": 0.35,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1cnc2nc[nH]c2c1",
+   "as_written": "C1=NC2=NC=CC=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 119.13,
+   "clogp": 0.96,
+   "tpsa": 41.57,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Fn1cnc2cncnc21",
+   "as_written": "C1=NC2=CN=CN=C2N1F",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 138.1,
+   "clogp": 0.56,
+   "tpsa": 43.6,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "NCC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)CN",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 151.17,
+   "clogp": -1.25,
+   "tpsa": 74.8,
+   "hbd": 3,
+   "hba": 5,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "O=NC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)N=O",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 151.13,
+   "clogp": -0.49,
+   "tpsa": 78.21,
+   "hbd": 2,
+   "hba": 6,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "c1ccccc1",
+   "as_written": "C1=CC=CC=C1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 78.11,
+   "clogp": 1.69,
+   "tpsa": 0.0,
+   "hbd": 0,
+   "hba": 0,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 6,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OCOC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)OCO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 168.16,
+   "clogp": -1.29,
+   "tpsa": 78.24,
+   "hbd": 3,
+   "hba": 6,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "ONC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)NO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 153.14,
+   "clogp": -1.28,
+   "tpsa": 81.04,
+   "hbd": 4,
+   "hba": 6,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OOCC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)COO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 168.16,
+   "clogp": -0.72,
+   "tpsa": 78.24,
+   "hbd": 3,
+   "hba": 6,
+   "rotatable_bonds": 2,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "OSC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)SO",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 170.2,
+   "clogp": -0.05,
+   "tpsa": 69.01,
+   "hbd": 3,
+   "hba": 6,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "Clc1ncnc2nc[nH]c12",
+   "as_written": "C1=NC2=NC=NC(Cl)=C2N1",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 154.56,
+   "clogp": 1.01,
+   "tpsa": 54.46,
+   "hbd": 1,
+   "hba": 3,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C]=N[C][S](=O)=O",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6]=[#7][#6][S](=[O])=[O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 180.15,
+   "clogp": -1.27,
+   "tpsa": 85.32,
+   "hbd": 0,
+   "hba": 4,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N]C(=O)[C]F",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6](=[O])[#6][F]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 137.07,
+   "clogp": -0.52,
+   "tpsa": 55.89,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C]C(=O)O",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6](=[O])[O][H]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 135.08,
+   "clogp": -0.93,
+   "tpsa": 76.12,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "N#CC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)C#N",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 147.14,
+   "clogp": -0.69,
+   "tpsa": 72.57,
+   "hbd": 2,
+   "hba": 5,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]O[C][N][C]N=[C]N=[C]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][O][#6]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 118.07,
+   "clogp": -0.49,
+   "tpsa": 48.05,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C]Cl",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][Cl]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 125.52,
+   "clogp": 0.18,
+   "tpsa": 38.82,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 8,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][C][N]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6][N]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 116.08,
+   "clogp": -0.91,
+   "tpsa": 61.12,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][S](=O)=O",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][S](=[O])=[O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 154.13,
+   "clogp": -1.18,
+   "tpsa": 72.96,
+   "hbd": 0,
+   "hba": 3,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][NH]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][N][H]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 105.08,
+   "clogp": -0.77,
+   "tpsa": 62.62,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 8,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][N]O[O]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][N][O][O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 136.07,
+   "clogp": -1.18,
+   "tpsa": 82.05,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C]OC(F)(F)F",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][O][#6]([F])([F])[F]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 175.07,
+   "clogp": 0.48,
+   "tpsa": 48.05,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 12,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C][C][N][C]N=[C]N=[C]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][C]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 102.08,
+   "clogp": -0.43,
+   "tpsa": 38.82,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 4,
+   "heavy_atoms": 8,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]O[C][C][N][C]N=[C]N=[C]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6][O][#6]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 130.09,
+   "clogp": -0.41,
+   "tpsa": 48.05,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C]O[C][O]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][O][#6][O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 134.07,
+   "clogp": -0.61,
+   "tpsa": 67.95,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 6,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "FCC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)CF",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 154.15,
+   "clogp": -0.24,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 1,
+   "heavy_atoms": 11,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][C][O]",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6][O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 118.07,
+   "clogp": -0.54,
+   "tpsa": 58.72,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][C]=O",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6]=[O]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 118.07,
+   "clogp": -0.9,
+   "tpsa": 55.89,
+   "hbd": 0,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][C]Cl",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6][Cl]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 137.53,
+   "clogp": 0.26,
+   "tpsa": 38.82,
+   "hbd": 0,
+   "hba": 1,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "[C]=N[C]=N[C][N][C][C]O",
+   "as_written": "[#6]=[#7][#6]=[#7][#6][#7][#6][#6][O][H]",
+   "compound_id": null,
+   "origin": "extracted",
+   "repairs": [],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 119.08,
+   "clogp": -0.6,
+   "tpsa": 59.05,
+   "hbd": 1,
+   "hba": 2,
+   "rotatable_bonds": 5,
+   "heavy_atoms": 9,
+   "lipinski_violations": 0
+  },
+  {
+   "canonical_smiles": "CC1=NC=C2N=CNC2N1",
+   "as_written": "C1=NC2=CN=C(NC2N1)CH3",
+   "compound_id": null,
+   "origin": "repaired",
+   "repairs": [
+    "trailing CH3 -> C"
+   ],
+   "sources": [
+    "AGI Purine Ring Series 3.pages"
+   ],
+   "occurrences": 1,
+   "mw": 136.16,
+   "clogp": -0.19,
+   "tpsa": 48.78,
+   "hbd": 2,
+   "hba": 4,
+   "rotatable_bonds": 0,
+   "heavy_atoms": 10,
+   "lipinski_violations": 0
+  }
+ ]
+}

@@ -21,6 +21,7 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import { paintTag } from './provenance.js';
 
 const SLOTS = 4;              // two hands plus up to two transient pointers (Vision Pro reports both when hands are tracked)
 const GRAB_TRAVEL = 0.015;    // metres of travel that turns a held pinch/trigger from a tap into a grab
@@ -118,7 +119,9 @@ export class WristPanel {
   }
 
   setButtons(list) { this.buttons = list; this.draw(); }
-  setStatus(s) { if (s !== this.status) { this.status = s; this.draw(); } }
+  // `tier` marks a status that carries a score (see provenance.js): the tag is painted into the texture, since
+  // a DOM badge never reaches the headset.
+  setStatus(s, tier = null) { if (s !== this.status || tier !== this.tier) { this.status = s; this.tier = tier; this.draw(); } }
   setHover(b) { if (b !== this.hover) { this.hover = b; this.draw(); } }
 
   layout() {
@@ -133,8 +136,9 @@ export class WristPanel {
     ctx.fillStyle = 'rgba(10,15,24,0.92)'; ctx.fillRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#39d98a'; ctx.font = '600 24px system-ui, sans-serif';
     ctx.fillText('Menu', 16, 30);
+    const tagW = paintTag(ctx, this.tier, c.width - 12, 55, 17);
     ctx.fillStyle = '#9fb3c8'; ctx.font = '19px system-ui, sans-serif';
-    ctx.fillText(fit(ctx, this.status, c.width - 32), 16, 55);
+    ctx.fillText(fit(ctx, this.status, c.width - 32 - (tagW ? tagW + 8 : 0)), 16, 55);
     for (const { b, x, y, w, h } of this.layout()) {
       const active = typeof b.active === 'function' ? b.active() : b.active;
       ctx.fillStyle = active ? 'rgba(57,217,138,0.28)' : b === this.hover ? 'rgba(76,201,240,0.2)' : 'rgba(255,255,255,0.06)';

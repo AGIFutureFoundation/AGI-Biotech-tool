@@ -1,12 +1,15 @@
 // The overview a researcher opens first: what is being worked on, what has been screened, what the
 // evidence says, and what the provenance chain holds. Hand-written SVG so it works offline, in a
 // headset browser and at phone width, with no chart library.
+// Scores are marked by provenance (see provenance.js): real data plain, estimates tagged, placeholders loud.
+import { num, tierOf, tierInfo, worst, mark, tag, plain, note, DOCK_TIER, SCORE_UNIT } from './provenance.js';
 
 const C = { accent: '#39d98a', accent2: '#4cc9f0', warn: '#ffbe0b', bad: '#ff5d73', dim: '#93a7bd', line: '#1e2b3c' };
 
 export function computeStats(S) {
   const lib = S?.library?.compounds || [];
-  const docked = lib.filter((c) => c.dockScore != null);
+  const docked = lib.filter((c) => num(c.dockScore) != null).map((c) => ({ agiId: c.agiId, label: c.label, canonical: c.canonical,
+    dockScore: num(c.dockScore), tier: tierOf(c, 'dockScore', DOCK_TIER) }));
   const profiled = lib.filter((c) => c.profile?.desc);
   const records = S?.ledger?.records || [];
   const byProgramme = {};
@@ -26,10 +29,14 @@ export function computeStats(S) {
     checked: lib.filter((c) => c.known).length,
     leaderboard: best.slice(0, 10),
     scores: docked.map((c) => c.dockScore),
-    property: profiled.map((c) => ({ id: c.agiId, mw: c.profile.desc.mw, clogp: c.profile.desc.clogp, cns: c.profile.rules?.cnsMpo5 ?? 0, score: c.dockScore })),
+    scoreTier: worst(...docked.map((c) => c.tier)),
+    scoreTiers: ['synthetic', 'estimate'].filter((t) => docked.some((c) => c.tier === t)), // one note per tier present
+    property: profiled.map((c) => ({ id: c.agiId, mw: c.profile.desc.mw, clogp: c.profile.desc.clogp, cns: c.profile.rules?.cnsMpo5 ?? 0,
+      score: num(c.dockScore), tier: tierOf(c, 'dockScore', DOCK_TIER) })),
     ledger: { records: records.length, kinds, head: (S?.ledger?.head || '').slice(0, 12), last: records[records.length - 1] },
     current: { target: S?.target?.symbol || null, structure: S?.protein?.name || null, atoms: S?.protein?.n || 0,
-      ligand: S?.ligand?.name || null, score: S?.lastScore?.total ?? null, hbonds: S?.lastScore?.hbonds?.length ?? null,
+      ligand: S?.ligand?.name || null, score: num(S?.lastScore?.total), scoreTier: tierOf(S?.lastScore, 'total', DOCK_TIER),
+      hbonds: S?.lastScore?.hbonds?.length ?? null,
       poses: (S?.poses || []).length },
     activity: activityByHour(records),
   };
@@ -76,19 +83,20 @@ export function renderDashboard(rootEl, data, { onOpenTarget, onOpenCompound, on
   });
 }
 
-function card(title, sub, body, cls = '') {
-  return `<section class="dash-card ${cls}"><h3>${esc(title)}${sub ? `<small>${esc(sub)}</small>` : ''}</h3>${body}</section>`;
+function card(title, sub, body, cls = '', badge = '') {
+  return `<section class="dash-card ${cls}"><h3>${esc(title)}${badge}${sub ? `<small>${esc(sub)}</small>` : ''}</h3>${body}</section>`;
 }
 
 function kpiCard(d) {
   const kpis = [
     ['targets', d.targets], ['compounds', d.compounds], ['docked', d.docked],
-    ['best score', d.leaderboard[0] ? fmt(d.leaderboard[0].dockScore) : '–'],
-    ['brain-penetrant', d.profiled ? `${Math.round(d.cnsShare * 100)}%` : '–'],
+    ['best dock score', d.leaderboard[0] ? mark(fmt(d.leaderboard[0].dockScore), d.leaderboard[0].tier) : '–', true],
+    // bbbLikely is a descriptor rule of thumb, not a permeability measurement: say so in the label.
+    ['pass BBB rule of thumb', d.profiled ? `${Math.round(d.cnsShare * 100)}%` : '–'],
     ['ledger records', d.ledger.records],
   ];
   return card('At a glance', null,
-    `<div class="kpis">${kpis.map(([k, v]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('')}</div>`, 'span2');
+    `<div class="kpis">${kpis.map(([k, v, html]) => `<div class="kpi"><b>${html ? v : esc(v)}</b><span>${esc(k)}</span></div>`).join('')}</div>`, 'span2');
 }
 
 function currentCard(d) {
@@ -99,7 +107,7 @@ function currentCard(d) {
       <div><span>structure</span><b>${esc(c.structure)}</b></div>
       <div><span>atoms</span><b>${c.atoms}</b></div>
       <div><span>ligand</span><b>${esc(c.ligand || 'none')}</b></div>
-      <div><span>score</span><b>${fmt(c.score)} kcal/mol</b></div>
+      <div><span>score</span><b>${c.score == null ? '–' : mark(fmt(c.score), c.scoreTier)}</b></div>
       <div><span>H-bonds</span><b>${c.hbonds ?? '–'}</b></div>
       <div><span>poses</span><b>${c.poses}</b></div>
     </div>`);
@@ -121,16 +129,19 @@ function programmeCard(d) {
 
 function leaderboardCard(d) {
   if (!d.leaderboard.length) {
-    return card('Screening leaderboard', null,
+    return card('Docking score ranking', null,
       '<p class="dash-empty">No compounds docked yet. Load a target, then screen the library.</p>');
   }
-  const worst = Math.max(...d.leaderboard.map((c) => Math.abs(c.dockScore)));
+  // Unmarked (real) scores keep a solid bar; estimates and placeholders are hatched so the bars themselves
+  // read as "not a measurement" even cropped, in greyscale, or to someone who cannot tell the hues apart.
+  const top = Math.max(...d.leaderboard.map((c) => Math.abs(c.dockScore)));
   const rows = d.leaderboard.map((c) => `
     <div class="bar-row" data-compound="${esc(c.agiId)}" title="${esc(c.label || c.canonical)}">
       <span class="bar-label">${esc(c.agiId || '—')}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${(Math.abs(c.dockScore) / worst) * 100}%;background:${C.accent}"></span></span>
-      <span class="bar-value">${fmt(c.dockScore)}</span></div>`).join('');
-  return card('Screening leaderboard', 'kcal/mol, lower is better', `<div class="bars">${rows}</div>`);
+      <span class="bar-track"><span class="bar-fill${c.tier ? ` pv-bar-${c.tier}` : ''}" style="width:${(Math.abs(c.dockScore) / top) * 100}%${c.tier ? '' : `;background:${C.accent}`}"></span></span>
+      <span class="bar-value">${mark(fmt(c.dockScore), c.tier)}</span></div>`).join('');
+  return card('Docking score ranking', `${SCORE_UNIT}, lower ranks higher`,
+    `<div class="bars">${rows}</div>${d.scoreTiers.map((t) => note(t)).join('')}`, d.scoreTier ? `pv-card-${d.scoreTier}` : '', tag(d.scoreTier));
 }
 
 // Molecular weight against lipophilicity, the plot every medicinal chemist reads first.
@@ -146,7 +157,7 @@ function propertyCard(d) {
   const dots = pts.map((p) => {
     const r = p.score != null ? 6 : 3.4;
     const fill = p.score != null ? C.accent : C.accent2;
-    return `<circle cx="${xs(p.mw).toFixed(1)}" cy="${ys(p.clogp).toFixed(1)}" r="${r}" fill="${fill}" fill-opacity="${p.score != null ? 0.85 : 0.5}"><title>${esc(p.id)} MW ${fmt(p.mw, 0)} cLogP ${fmt(p.clogp)}${p.score != null ? ` score ${fmt(p.score)}` : ''}</title></circle>`;
+    return `<circle cx="${xs(p.mw).toFixed(1)}" cy="${ys(p.clogp).toFixed(1)}" r="${r}" fill="${fill}" fill-opacity="${p.score != null ? 0.85 : 0.5}"><title>${esc(p.id)} MW ${fmt(p.mw, 0)} cLogP ${fmt(p.clogp)}${p.score != null ? ` dock score ${plain(fmt(p.score), p.tier)}` : ''}</title></circle>`;
   }).join('');
   const axis = `
     <line x1="${pad}" y1="${H - pad}" x2="${W - 8}" y2="${H - pad}" stroke="${C.line}"/>
@@ -199,14 +210,17 @@ export function buildReport(S, data) {
   const d = data || computeStats(S);
   const L = [];
   L.push(`biodao.blockchain session report`, `generated ${new Date().toISOString()}`, '');
+  // The marker sits on every score line, not only in this header, so a pasted excerpt still carries it.
+  const tiers = new Set([...d.scoreTiers, d.current.score != null ? d.current.scoreTier : null]);
+  const heads = ['synthetic', 'estimate'].filter((t) => tiers.has(t)).map((t) => `${tierInfo(t).plain} ${tierInfo(t).note}`);
+  if (heads.length) L.push(...heads, '');
   L.push(`Loaded: ${d.current.structure || 'nothing'}${d.current.target ? ` (${d.current.target})` : ''}`);
-  if (d.current.ligand) L.push(`Ligand: ${d.current.ligand}, score ${fmt(d.current.score)} kcal/mol, ${d.current.hbonds} H-bonds`);
+  if (d.current.ligand) L.push(`Ligand: ${d.current.ligand}, dock score ${d.current.score == null ? '–' : plain(fmt(d.current.score), d.current.scoreTier)}, ${d.current.hbonds} H-bonds`);
   L.push('', `Library: ${d.compounds} compounds, ${d.profiled} profiled, ${d.docked} docked`);
   if (d.leaderboard.length) {
-    L.push('', 'Ranking (kcal/mol, lower is better):');
-    d.leaderboard.forEach((c, i) => L.push(`  ${i + 1}. ${c.agiId || '—'}  ${fmt(c.dockScore)}  ${c.label ? c.label.slice(0, 48) : ''}`));
+    L.push('', `Ranking (${SCORE_UNIT}, lower ranks higher; not kcal/mol):`);
+    d.leaderboard.forEach((c, i) => L.push(`  ${i + 1}. ${c.agiId || '—'}  ${plain(fmt(c.dockScore), c.tier)}  ${c.label ? c.label.slice(0, 48) : ''}`));
   }
   L.push('', `Provenance: ${d.ledger.records} records, head ${d.ledger.head}…`);
-  L.push('', 'Scores come from a Vina-style empirical function and are approximate; treat them as a ranking.');
   return L.join('\n');
 }

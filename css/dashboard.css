@@ -99,3 +99,9 @@ body.glasses #app { grid-template-columns: 1fr; grid-template-areas: "top" "view
 }
 
 @media (min-width: 701px) { .mobile-bar { display: none; } .sheet-handle { display: none; } }
+
+/* Provenance-marked cards: the value column makes room for the tag; synthetic cards get a solid edge. */
+.pv-card-estimate .bar-row, .pv-card-synthetic .bar-row { grid-template-columns: minmax(52px, 80px) minmax(40px, 1fr) auto; }
+.pv-card-synthetic { border-color: var(--bad); box-shadow: inset 4px 0 0 var(--bad); }
+.kpi .pv-tag { font-size: 10px; vertical-align: 6px; }
+.dash-rows b:has(.pv) { overflow: visible; flex: none; }

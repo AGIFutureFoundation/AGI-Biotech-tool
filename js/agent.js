@@ -5,6 +5,10 @@
 // server's command channel (see server/mcp_server.py). The schema is the single source of truth, so a
 // new tool appears in all three at once.
 import { parseCommand, INTENTS } from './voice.js';
+import { scan, plain, note, tierInfo, DOCK_TIER, SCORE_UNIT } from './provenance.js';
+
+// Stamped on every result that carries a dock score, so an external agent reading the JSON sees it too.
+const DOCK_PROVENANCE = `ESTIMATE: ${tierInfo(DOCK_TIER).note}`;
 
 // ---------------------------------------------------------------- registry
 // `app` is supplied by main.js: the bound functions and state getters the tools act on.
@@ -49,7 +53,7 @@ export function buildTools(app) {
           : ligs.slice().sort((a, b) => b.atoms.length - a.atoms.length)[0];
         if (!lig) throw new Error('this structure has no bound ligand');
         await app.extractCocrystal(lig);
-        return { ligand: lig.resName, atoms: lig.atoms.length, score: app.round(S().lastScore?.total) };
+        return { ligand: lig.resName, atoms: lig.atoms.length, score: app.round(S().lastScore?.total), provenance: DOCK_PROVENANCE };
       }),
 
     t('dock', 'Dock the current ligand into the active site with a flexible Monte Carlo search, and report the ranked poses.',
@@ -58,7 +62,7 @@ export function buildTools(app) {
         await app.doDock({ runs, steps });
         const sc = S().lastScore;
         return { best: app.round(S().poses[0]?.score), poses: S().poses.length, hbonds: sc?.hbonds.length,
-          contacts: sc?.contactResidues.length, units: 'kcal/mol, lower is better, approximate' };
+          contacts: sc?.contactResidues.length, units: `${SCORE_UNIT}, lower is better; not kcal/mol`, provenance: DOCK_PROVENANCE };
       }, { slow: true }),
 
     t('screen_library', 'Dock every compound in the library against the active site and rank them.',
@@ -66,7 +70,8 @@ export function buildTools(app) {
       async (args = {}) => {
         await app.screenLibrary(args);
         const ranked = app.rankedLibrary().slice(0, 10);
-        return { screened: ranked.length, ranking: ranked.map((c) => ({ id: c.agiId, score: c.dockScore })) };
+        return { screened: ranked.length, ranking: ranked.map((c) => ({ id: c.agiId, score: c.dockScore })),
+          units: `${SCORE_UNIT}, lower is better; not kcal/mol`, provenance: DOCK_PROVENANCE };
       }, { slow: true }),
 
     t('simulate', 'Start or stop the interactive molecular dynamics in the viewport.',
@@ -216,8 +221,9 @@ export class AgentRuntime extends EventTarget {
       case 'load_target': return `Loaded ${result.loaded}${result.uniprot ? `, ${result.uniprot}` : ''}.`;
       case 'load_structure': return `Loaded ${result.loaded}: ${result.atoms} atoms, ${result.ligands} bound ligands.`;
       case 'find_pockets': return `Found ${result.pockets.length} pockets. The largest is ${result.pockets[0]?.volume} cubic angstroms.`;
-      case 'dock': return `Best pose scores ${result.best} kcal per mole with ${result.hbonds} hydrogen bonds.`;
-      case 'screen_library': return `Screened ${result.screened}. Best is ${result.ranking[0]?.id} at ${result.ranking[0]?.score}.`;
+      // Spoken aloud too, so the qualifier is in words, not only in a badge.
+      case 'dock': return `Best pose has an estimated, unvalidated score of ${plain(result.best, scan(result))} with ${result.hbonds} hydrogen bonds.`;
+      case 'screen_library': return `Screened ${result.screened}. Best is ${result.ranking[0]?.id} at an estimated ${plain(result.ranking[0]?.score, scan(result))}.`;
       case 'simulate': return result.running ? 'Dynamics running.' : 'Dynamics stopped.';
       case 'describe_scene': return result.text || '';
       case 'measure': return result.text || 'Nothing selected.';
@@ -266,7 +272,7 @@ export class AgentConsole {
       const out = await this.rt.run(text, { source });
       if (!out.tool) { pending.innerHTML = out.help; return; }
       const line = AgentRuntime.summarise(out.tool, out.result);
-      pending.innerHTML = `<b>${out.tool.replace(/_/g, ' ')}</b> — ${line}`
+      pending.innerHTML = `<b>${out.tool.replace(/_/g, ' ')}</b> — ${escapeHtml(line)}${note(scan(out.result))}`
         + (out.result && typeof out.result === 'object' ? `<pre>${escapeHtml(JSON.stringify(out.result, null, 1)).slice(0, 700)}</pre>` : '');
       this.onSpeak && this.onSpeak(line);
     } catch (e) {

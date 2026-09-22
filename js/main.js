@@ -22,6 +22,7 @@ import { interactionFingerprint, pocketVariantOverlap, clusterSeries } from './a
 import { tanimoto } from './chem.js';
 import { Recorder } from './recorder.js';
 import { yieldToEventLoop } from './util.js';
+import { mark, plain, note, num, tierOf, DOCK_TIER, SCORE_UNIT } from './provenance.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -331,9 +332,9 @@ async function doDock() {
   if (poses.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
       target: S.protein.name, site: S.pocket?.label || null, score: +poses[0].score.toFixed(2),
-      poses: poses.length, method: 'Monte Carlo, Vina-style score' }).then(renderLedger);
+      poses: poses.length, method: 'Monte Carlo, Vina-style score', provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
   }
-  toast(`${poses.length} poses · best ${fmt(poses[0]?.score)} kcal/mol · ${Math.round((performance.now() - t0) / 1000)} s`);
+  toast(`${poses.length} poses · best ${plain(fmt(poses[0]?.score), DOCK_TIER)} · ${Math.round((performance.now() - t0) / 1000)} s`);
 }
 
 function applyPose(i) {
@@ -363,17 +364,18 @@ async function screenLibrary({ limit = 200, runs = 4, steps = 1800 } = {}) {
       c.dockScore = poses[0] ? +poses[0].score.toFixed(2) : null;
       c.dockTarget = S.protein.name;
     } catch { c.dockScore = null; }
-    status(`screening ${++done}/${list.length} · ${c.agiId || ''} ${c.dockScore ?? ''}`);
+    status(`screening ${++done}/${list.length} · ${c.agiId || ''} ${c.dockScore != null ? plain(c.dockScore, DOCK_TIER) : ''}`);
     renderLibrary();
   }
   S.screening = false;
   S.library.save();
   const ranked = list.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore);
-  toast(`Screen done. Best: ${ranked.slice(0, 3).map((c) => `${c.agiId} ${c.dockScore}`).join(', ')}`);
+  toast(`Screen done. Best (est.): ${ranked.slice(0, 3).map((c) => `${c.agiId} ${c.dockScore}`).join(', ')}`);
   $('#libSort').value = 'score'; renderLibrary();
   S.ledger.append('screen', { target: S.protein.name, compounds: ranked.length,
     best: ranked[0] ? `${ranked[0].agiId} ${ranked[0].dockScore}` : 'none',
-    ranking: ranked.slice(0, 10).map((c) => ({ id: c.agiId, score: c.dockScore })) }).then(renderLedger);
+    ranking: ranked.slice(0, 10).map((c) => ({ id: c.agiId, score: c.dockScore })),
+    provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
 }
 
 // ---------------------------------------------------------------- interactive MD
@@ -726,11 +728,11 @@ function renderLigandCard(info = {}) {
 function renderScore(r) {
   if (!r) return;
   $('#dockResult').innerHTML = `<div class="props">
-    <span>score <b>${fmt(r.total)} kcal/mol</b></span><span>ligand eff. <b>${fmt(r.ligandEfficiency)}</b></span>
+    <span>score <b>${mark(fmt(r.total), DOCK_TIER)}</b></span><span>ligand eff. <b>${mark(fmt(r.ligandEfficiency), DOCK_TIER)}</b></span>
     <span>H-bonds <b>${r.hbonds.length}</b></span><span>contacts <b>${r.contactResidues.length} res</b></span>
     <span>clash <b>${fmt(r.terms.repulsion, 1)}</b></span><span>hydrophobic <b>${fmt(r.terms.hydrophobic, 1)}</b></span>
-  </div><div class="hint">Vina-style empirical score; lower is better. Approximate, for ranking.</div>`;
-  xr.panel.setStatus(`score ${fmt(r.total)} · ${r.hbonds.length} H-bonds`);
+  </div>${note(DOCK_TIER, 'Lower is better.')}`;
+  xr.panel.setStatus(`score ${fmt(r.total)} · ${r.hbonds.length} H-bonds`, DOCK_TIER);
 }
 
 function renderPockets() {
@@ -747,7 +749,7 @@ function renderPockets() {
 function renderPoses(active = -1) {
   const box = $('#poseList'); box.innerHTML = '';
   S.poses.forEach((p, i) => {
-    const it = el('div', 'item' + (i === active ? ' active' : ''), `<div class="t"><span class="n">Pose ${i + 1}</span><span class="s">${fmt(p.score)} kcal/mol</span></div>`);
+    const it = el('div', 'item' + (i === active ? ' active' : ''), `<div class="t"><span class="n">Pose ${i + 1}</span><span class="s">${mark(fmt(p.score), DOCK_TIER)}</span></div>`);
     it.onclick = () => applyPose(i);
     box.appendChild(it);
   });
@@ -758,8 +760,8 @@ function renderMdStats(sc) {
   const e = S.md.energy;
   $('#mdStats').innerHTML = `<span>time <b>${fmt(S.md.time, 1)} ps</b></span><span>T <b>${fmt(S.md.kineticTemperature(), 0)} K</b></span>
     <span>inter E <b>${fmt(e.inter, 1)}</b></span><span>ligand RMSD <b>${fmt(S.md.ligandRMSD())} Å</b></span>
-    <span>protein RMSF <b>${fmt(S.md.proteinRMSF())} Å</b></span><span>score <b>${fmt(sc?.total)}</b></span>`;
-  $('#mdBadge').textContent = `MD ${fmt(S.md.time, 1)} ps · ${fmt(S.md.kineticTemperature(), 0)} K · score ${fmt(sc?.total)}`;
+    <span>protein RMSF <b>${fmt(S.md.proteinRMSF())} Å</b></span><span>score <b>${mark(fmt(sc?.total), DOCK_TIER)}</b></span>`;
+  $('#mdBadge').textContent = `MD ${fmt(S.md.time, 1)} ps · ${fmt(S.md.kineticTemperature(), 0)} K · score ${plain(fmt(sc?.total), DOCK_TIER)}`;
 }
 
 let libFiltered = null;
@@ -771,14 +773,14 @@ function renderLibrary() {
     if (sort === 'mw') return (a.profile?.desc.mw || 1e9) - (b.profile?.desc.mw || 1e9);
     if (sort === 'clogp') return (a.profile?.desc.clogp ?? 1e9) - (b.profile?.desc.clogp ?? 1e9);
     if (sort === 'cns') return (b.profile?.rules.cnsMpo5 ?? -1) - (a.profile?.rules.cnsMpo5 ?? -1);
-    if (sort === 'score') return (a.dockScore ?? 1e9) - (b.dockScore ?? 1e9);
+    if (sort === 'score') return (num(a.dockScore) ?? 1e9) - (num(b.dockScore) ?? 1e9);
     return (a.agiId || 'zz').localeCompare(b.agiId || 'zz', undefined, { numeric: true });
   });
   $('#libStats').textContent = `${S.library.compounds.length} compounds${libFiltered ? ` · ${list.length} match` : ''}${S.library.rejects.length ? ` · ${S.library.rejects.length} need review` : ''}`;
   for (const c of list.slice(0, 300)) {
     const it = el('div', 'item' + (S.compound === c ? ' active' : ''));
     const info = el('div', '', `<div class="t"><span class="n">${c.agiId || '—'}</span>
-      <span class="s">${c.dockScore != null ? `${c.dockScore} kcal/mol` : c.profile ? `MW ${fmt(c.profile.desc.mw, 0)}` : ''}</span></div>
+      <span class="s">${num(c.dockScore) != null ? mark(fmt(num(c.dockScore)), tierOf(c, 'dockScore', DOCK_TIER)) : c.profile ? `MW ${fmt(c.profile.desc.mw, 0)}` : ''}</span></div>
       <div class="d">${(c.label || c.canonical).slice(0, 46)}</div>`);
     const thumb = el('div', '', '');
     it.append(thumb, info);
@@ -1103,7 +1105,7 @@ function filmStoryboard(shots) {
       onEnter: async () => { setColor('ss'); filmFit(0.6); }, onFrame: spin(0.002) },
 
     { seconds: 7, caption: 'The drug is lifted out of the crystal and stops counting as part of the protein, so it cannot clash with itself.',
-      stats: { 'heavy atoms': S.ligand?.n, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`, 'H-bonds': 1 },
+      stats: { 'heavy atoms': S.ligand?.n, 'crystal score': plain(fmt(shots.crystalScore), DOCK_TIER), 'H-bonds': 1 },
       onFrame: spin(0.0018) },
 
     { seconds: 13, caption: 'Now docking it back in blind: ten Monte Carlo runs searching position, orientation and every rotatable bond.',
@@ -1114,7 +1116,7 @@ function filmStoryboard(shots) {
         S.ligand.pos.set(arr[k]); S.ligandView.refresh({ cartoon: false }); } },
 
     { seconds: 9, caption: 'The best pose lands within about one and a half angstroms of the experimental pose, and scores as well as the crystal.',
-      stats: { 'best score': `${fmt(shots.best.score)} kcal/mol`, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`,
+      stats: { 'best score': plain(fmt(shots.best.score), DOCK_TIER), 'crystal score': plain(fmt(shots.crystalScore), DOCK_TIER),
         'RMSD to crystal': `${fmt(shots.best.rmsd, 1)} A`, 'H-bonds': shots.best.hbonds },
       onEnter: async () => { if (shots.poses[0]) { S.ligand.pos.set(shots.poses[0].coords); S.ligandView.refresh(); scoreNow(); } },
       onFrame: spin(0.0016) },
@@ -1131,7 +1133,7 @@ function filmStoryboard(shots) {
       onFrame: (t, f) => { workspace.rotation.y += 0.004; if (S.md && f % 2 === 0) { S.md.step(8); S.ligandView.refresh({ cartoon: false }); } } },
 
     { seconds: 9, caption: 'Your own compounds import from PDF, spreadsheet or SDF. Screening docks every one against the site and ranks them.',
-      stats: Object.fromEntries(shots.ranked.map((c) => [c.agiId, `${c.dockScore} kcal/mol`])),
+      stats: Object.fromEntries(shots.ranked.map((c) => [c.agiId, plain(c.dockScore, DOCK_TIER)])),
       onEnter: async () => { stopMD(); }, onFrame: spin(0.0016) },
 
     { seconds: 9, caption: 'Every run is written into a SHA-256 hash chain. Alter one record and verification fails, so a result can be anchored on-chain.',
@@ -1856,12 +1858,12 @@ async function selectivityPanel({ limit = 4, runs = 4, steps = 1200 } = {}) {
     } catch (e) { rows.push({ symbol: t.symbol, error: e.message }); }
   }
   rows.sort((a, b) => (a.score ?? 99) - (b.score ?? 99));
-  out.innerHTML = `<div class="hint">On ${startTarget?.symbol || startProtein?.name}: <b>${fmt(onHere)}</b> kcal/mol</div>`
+  out.innerHTML = `<div class="hint">On ${startTarget?.symbol || startProtein?.name}: <b>${mark(fmt(onHere), DOCK_TIER)}</b></div>`
     + rows.map((r) => `<div class="item"><div class="t"><span class="n">${r.symbol}</span>
-        <span class="s">${r.error ? 'failed' : `${r.score} kcal/mol`}</span></div>
+        <span class="s">${r.error ? 'failed' : mark(fmt(r.score), DOCK_TIER)}</span></div>
         <div class="d">${esc(r.disease || r.error || '')}</div></div>`).join('')
     + `<p class="hint">Same compound, same search settings, different sites. A compound that scores much better on
-       the intended target than on its relatives is the one worth pursuing. Approximate scores: treat as a ranking.</p>`;
+       the intended target than on its relatives is the one worth pursuing.</p>${note(DOCK_TIER)}`;
   S.ledger.append('selectivity', { ligand: S.ligand.name, onTarget: startTarget?.symbol, onTargetScore: onHere, others: rows }).then(renderLedger);
   return rows;
 }
