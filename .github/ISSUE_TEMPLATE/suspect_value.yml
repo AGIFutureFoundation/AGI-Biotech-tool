@@ -1,0 +1,78 @@
+name: Suspect value — "this number looks wrong"
+description: A result, score, count or metric that looks implausible, too tidy, or too good.
+labels: ["suspect-value", "scientific-integrity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This is the most valuable report you can file here, and you do not need to know why the
+        number is wrong.** A wrong number that computes cleanly is worse than a crash, because it
+        removes the last visible sign that something is off.
+
+        Every one of these was real in this repository, and every one of them ran without error:
+        twenty "different" compounds that were one molecule repeated; docking, MD and ADMET
+        outputs that were `random()` behind an "AutoDock Vina integration" label; a scoring method
+        defined twice with conflicting weights; a "1.5B+ records" metric produced by `int("30M")`;
+        a "pyrene" core that was phenanthrene; fabricated PDB counts across three target panels.
+
+        "This score is identical for twenty different molecules" is a complete report. File it.
+
+  - type: textarea
+    id: the-value
+    attributes:
+      label: The value, and where it appears
+      description: >-
+        The number itself, and where you saw it — a panel in the app, a field in an exported
+        record, a figure in a doc, a log line. A screenshot or the raw JSON record is ideal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why-suspect
+    attributes:
+      label: Why it looks wrong
+      description: >-
+        Whatever made you look twice. It is enough to say "too round", "identical across inputs
+        that should differ", "does not move when I change the ligand", "better than anything in
+        the literature", or "the units cannot be right". You do not need to be sure.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to produce it
+      description: The exact command, or the click path in the app. Paste raw output where you have it.
+      render: shell
+
+  - type: dropdown
+    id: marked-synthetic
+    attributes:
+      label: Was the value marked as synthetic?
+      description: >-
+        Placeholder numbers that no engine computed are supposed to print with a `[SYNTHETIC]`
+        suffix and to sit in a record carrying a `provenance` field (see
+        `server/synthetic_provenance.py`). A synthetic value appearing unmarked is itself the bug.
+      options:
+        - "No marker, and no provenance field — it is presented as a real result"
+        - "Marked [SYNTHETIC], but presented somewhere it reads as a measurement"
+        - "Marked correctly — I think the value itself is wrong"
+        - "I do not know"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the value should be, if you know
+      description: >-
+        Only if you have a source. **A citation is worth far more than an estimate here, and an
+        estimate that gets written into the code is exactly the failure mode this project guards
+        against.** If you do not know, say so and leave it blank — a recorded gap is a valid
+        outcome and is preferred to a plausible guess.
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: "`git rev-parse --short HEAD`, and the branch."

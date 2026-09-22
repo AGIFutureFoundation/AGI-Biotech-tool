@@ -1,0 +1,65 @@
+# Two ecosystems, because two things here rot silently.
+#
+# pip: requirements.txt is a floor-only spec (>=), so a fresh install already
+# drifts. Dependabot makes that drift a reviewable PR that `make verify` gates
+# rather than a surprise the next time someone rebuilds a venv.
+#
+# github-actions: pinned action majors (checkout@v4, setup-python@v5) stop
+# getting fixes and eventually get deprecated out from under the runner. This
+# is the cheapest way to not discover that on a red build.
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+    groups:
+      # rdkit, openmm, pdbfixer and numpy are a coupled stack -- bumping one
+      # alone routinely produces an unsatisfiable resolve. Review them together.
+      molecular-stack:
+        patterns:
+          - rdkit
+          - openmm
+          - pdbfixer
+          - numpy
+      # Patch/minor churn on the small, well-behaved libraries is noise as
+      # separate PRs. One grouped PR, gated by make verify, is enough.
+      minor-and-patch:
+        patterns:
+          - '*'
+        exclude-patterns:
+          - rdkit
+          - openmm
+          - pdbfixer
+          - numpy
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: 'deps'
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions:
+        patterns:
+          - '*'
+    commit-message:
+      prefix: 'ci'

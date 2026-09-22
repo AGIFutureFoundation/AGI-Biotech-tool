@@ -1,0 +1,86 @@
+name: Bug report
+description: Something errors, hangs, or does not do what it says it does.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: the three usual causes are the wrong interpreter (use `.venv/bin/python`,
+        the system `python3` has neither rdkit nor pytest and several modules degrade silently),
+        the local server not running, or a public database having a bad day. `SUPPORT.md` has the
+        full list.
+
+        If a **number** looks wrong rather than something erroring, use the "Suspect value"
+        template instead — that is a different and more valuable kind of report.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Exact command or steps, and the raw output
+      description: >-
+        Paste the command verbatim and the output verbatim, including the traceback. This project
+        treats a claim as unestablished until it has been executed — that applies to bug reports
+        too. Do not summarise the error.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: interpreter
+    attributes:
+      label: Which interpreter
+      description: "Output of: `.venv/bin/python -V` — and confirm it was the venv, not the system python."
+      placeholder: ".venv/bin/python -V  ->  Python 3.12.12"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: server
+    attributes:
+      label: Was the local server running?
+      description: >-
+        Without it, 3D embedding, all-atom dynamics, server-side PDF reading, shared sessions and
+        the CORS proxy are all switched off, and the app falls back rather than failing.
+      options:
+        - "Yes — started with `make serve`"
+        - "No"
+        - "Not relevant to this bug"
+    validations:
+      required: true
+
+  - type: textarea
+    id: make-verify
+    attributes:
+      label: "`make verify` output"
+      description: >-
+        Run it and paste the tail. Baseline on 2026-09-22 was 525 passed / 1 xfailed, 53 import
+        checks passed, 22 of 22 JS modules reachable. If yours differs, that difference may be
+        the bug.
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS, browser, and headset if any
+      placeholder: "macOS 15.6, Chrome 140, Quest 3"
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output
+      description: For anything in the viewer, WebXR or the panels. Uncaught errors especially.
+      render: shell
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: "`git rev-parse --short HEAD`, and the branch."
