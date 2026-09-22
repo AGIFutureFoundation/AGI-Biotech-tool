@@ -1,3 +1,48 @@
+################################################################################
+##  ⚠  SUPERSEDED HISTORICAL RECORD — DO NOT CITE                             ##
+################################################################################
+##
+##  This is a session log written on 2026-09-19. It is preserved below as a
+##  record of what the project believed at that time. Its figures are NOT
+##  measurements and must not be quoted. For the current verified state see
+##  PROJECT_STATUS.md.
+##
+##  Corrections established on 2026-09-22:
+##
+##  * The "PERFORMANCE ACHIEVEMENTS (All Verified)" block measures nothing.
+##    server/load_testing.py awaits asyncio.sleep(random.uniform(...)) instead
+##    of doing work, so 596 ops/sec, <200ms p99 and the concurrency figures came
+##    from timing those sleeps. 99.5% uptime was never measured by anything.
+##
+##  * The "ML ENHANCEMENTS" block measures nothing.
+##    server/ml_enhanced_recognition.py returns random.choice(gestures) with a
+##    random.gauss confidence. The 94% gesture, 89% voice, 96% active-learning
+##    and 82%->94% transfer-learning figures describe a hardcoded constant fed
+##    through a random number generator. No model was ever trained.
+##
+##  * "29 Free Databases" and "1.5 BILLION+ RECORDS ACCESSIBLE" were string
+##    literals, not query results. 11 databases have working clients; the other
+##    18 return 'no_client'. There are no MCP servers behind any of them.
+##
+##  * "100%+ test coverage (all systems verified)" was written when the
+##    repository had no test suite at all. There are now 708 passing tests
+##    (1 xfailed), run in CI on every push.
+##
+##  * "Security audit complete" was false. No audit was performed. Three real
+##    defects were later found and fixed: an authentication bypass that accepted
+##    any password, a JWT signing key committed as a literal, and both servers
+##    binding 0.0.0.0 by default.
+##
+##  * References to immersive-xr-enhanced.js describe a file that does not exist
+##    in this repository. The real front-end modules are xr.js, hands.js,
+##    voice.js and agent.js.
+##
+##  * Claims naming outside organisations as partners have been removed from the
+##    body below, not merely annotated. No partnership, agreement or endorsement
+##    with any such organisation exists or has ever existed.
+##
+################################################################################
+
 PHASE 7 COMPLETE: Optimization, Scaling & Database Integration
 ================================================================
 
@@ -152,6 +197,7 @@ PRODUCTION DEPLOYMENT STATUS: ✅ READY
 - Performance benchmarks documented
 - Biotech database integration operational
 
-NEXT: Deploy to Kubernetes, enable databases, beta test with foundations
+NEXT: Deploy to Kubernetes, enable databases, beta test with researchers in the
+      covered disease areas
 
 ═══════════════════════════════════════════════════════════════════

@@ -1,403 +1,205 @@
-# biodao.blockchain: Complete Deployment Guide
+# biodao.blockchain: Deployment Guide
 
-## Enterprise-Grade AR/VR Molecular Research Workspace
+**Last verified:** 2026-09-22
 
-**Status:** ✅ **PRODUCTION READY** - All 6 phases complete  
-**Latest Build:** 2026-09-19  
-**Total LOC:** 8,500+ production-grade code
+## What this is
+
+An AR/VR molecular research workspace that runs locally. This guide covers running it on
+your own machine and what would be involved in hosting it for others.
+
+**It is not currently deployed anywhere.** There is no hosted instance, no cluster, no
+managed database and no operational commitment. Nothing below describes a running
+production system; the "hosting it for others" section describes work that has not been
+done.
 
 ---
 
-## Quick Start: 3 Steps to Deploy
+## Quick start
 
-### 1. Start Flask Backend
+### 1. Build the environment
+
 ```bash
 cd ~/Projects/agi-bioxr
-python3 server/server.py
-```
-Runs on `http://localhost:8000` with:
-- 15+ REST API endpoints
-- WebSocket streaming on `ws://localhost:8001`
-- JWT authentication with RBAC
-- SQLite database (ready for PostgreSQL migration)
-
-### 2. Launch WebXR Interface
-Open in **Meta Quest** or **Chrome with WebXR**:
-```
-https://localhost:8000/vr
-```
-Features:
-- Hand gesture recognition (pinch, grab, point, palm_open, swipes)
-- Voice command processing (25+ patterns)
-- Agent team avatars with live status
-- Real-time molecular visualization
-
-### 3. Speak Your First Command
-```
-"Load SOD1 as the target"
-"Run a lead optimization"
-"Show me the hotspots"
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
 
----
+### 2. Start the server
 
-## Architecture Overview
-
-### Backend (Python/Flask)
-
-**Core Server** (`server.py` - 848 lines)
-- RESTful API for projects, workflows, agents
-- WebSocket real-time streaming
-- Session management and error handling
-
-**Agent System**
-- `master_agent.py` - Voice-to-execution pipeline
-- `agent_orchestrator.py` - Multi-agent coordination
-- `agents.py` - Optimizer, Analyst, Orchestrator team
-
-**Persistence & Monitoring**
-- `workflow_persistence.py` - SQLite checkpoint system
-- `error_recovery.py` - Retry + circuit breaker patterns
-- `monitoring.py` - Real-time metrics collection
-
-**Advanced Features**
-- `active_learning.py` - Ensemble uncertainty + transfer learning
-- `database_migration.py` - SQLite → PostgreSQL pipeline
-- `load_testing.py` - 100+ concurrent workflow verification
-
-### Frontend (JavaScript/WebXR)
-
-**Multimodal Input Systems**
-- `hand_gesture_control.js` - WebXR hand tracking (pinch, grab, point, palm, swipes)
-- `advanced_voice_control.js` - NLP voice command processing
-- `gesture_voice_integration.js` - Context-aware multimodal control
-
-**VR Interface**
-- `immersive-xr-enhanced.js` - Complete XR interface with agent avatars
-- `immersive-xr.js` - Original voice control foundation
-- `vr-data-consumer.js` - Real-time visualization from streaming
-
-**Provenance & Tracking**
-- `ledger.js` - SHA-256 tamper-proof audit trail
-- `main.js` - Voice command integration
-
----
-
-## Phase-by-Phase Features
-
-### Phase 0: Foundation
-✅ SHA-256 provenance ledger  
-✅ Blockchain-ready audit trail  
-✅ FAIR-compliant data export
-
-### Phase 1: Enterprise
-✅ JWT + RBAC authentication  
-✅ Project & campaign management  
-✅ 48 curated disease targets  
-✅ Publication-ready reports (Markdown/JSON/LaTeX)
-
-### Phase 2: Immersive Interface
-✅ Voice recognition & synthesis  
-✅ Agent avatars with animations  
-✅ Real-time HUD visualization  
-✅ WebXR support (Quest, Chrome)
-
-### Phase 3: Deep Integrations
-✅ Agent persistent memory  
-✅ Async workflow orchestration (13-22 min workflows)  
-✅ Real-time WebSocket streaming  
-✅ Docking/MD/analysis live visualization
-
-### Phase 4: Production Hardening
-✅ Workflow persistence with checkpoint/resume  
-✅ Automatic retry with exponential backoff  
-✅ Circuit breaker for cascading failures  
-✅ Comprehensive error logging  
-✅ Real-time monitoring dashboard
-
-### Phase 5: Scaling & ML
-✅ 100+ concurrent workflows tested (100% success rate)  
-✅ PostgreSQL migration ready  
-✅ Active learning for compound prioritization  
-✅ Transfer learning across protein targets  
-✅ Performance metrics and observability
-
-### Phase 6: Multimodal Control
-✅ Hand gesture recognition (7 gesture types)  
-✅ Advanced voice command processing (25+ patterns)  
-✅ Gesture-voice context switching (4 modes)  
-✅ Multimodal feedback (voice + haptic + visual)  
-✅ Enhanced agent responsiveness
-
----
-
-## Key Metrics
-
-### Performance
-- **Throughput:** 596 ops/second (p99)
-- **Latency:** 130-200ms average (p95: 157ms, p99: 165ms)
-- **Success Rate:** 100% at 100 concurrent workflows
-- **Uptime:** 99.5% with automatic recovery
-- **Gesture Recognition:** 45-67ms latency, 60fps hand tracking
-
-### Scalability
-- **Concurrent Workflows:** 100+ verified
-- **API Endpoints:** 15+ fully functional
-- **Database Records:** Persistent across crashes
-- **Agent Team Size:** 3 specialized agents
-- **Disease Targets:** 48 curated
-
-### User Experience
-- **Voice Commands:** 25+ recognized patterns
-- **Gestures:** 7 types (pinch, grab, point, palm, swipes)
-- **Agent Avatars:** 3 team members with state animations
-- **HUD Panels:** Conversation, agent status, control modes
-- **Accessibility:** Voice-only and gesture-only modes
-
----
-
-## API Endpoints Summary
-
-### Projects & Campaigns
-```
-GET  /api/projects                    # List user projects
-POST /api/projects                    # Create new project
-GET  /api/projects/<id>              # Get project details
-POST /api/projects/<id>/campaigns    # Start screening campaign
+```bash
+.venv/bin/python server/server.py
 ```
 
-### Workflows
-```
-POST /api/workflows/queue            # Queue workflow
-GET  /api/workflows/<id>/status      # Check progress
-GET  /api/workflows/<id>/results     # Get results
-```
+Or `make serve`. The app listens on <http://localhost:8000> and loads SOD1 so there is
+something on screen immediately.
 
-### Agent Commands
-```
-POST /api/agents/voice               # Process voice command
-GET  /api/agents/status              # Get team status
-POST /api/agents/memory              # Store in agent memory
-```
+The server is a Python standard-library `ThreadingHTTPServer` — not Flask, and not behind
+a WSGI container. Only the standard library is required to start it; RDKit, pypdf, OpenMM,
+PDBFixer and google-cloud-bigquery each enable their own feature when importable. `GET
+/api/health` reports which optional engines are present.
 
-### Analysis
-```
-POST /api/analysis/hotspots          # Find hotspot scaffolds
-POST /api/analysis/synthesis         # Predict synthesis difficulty
-POST /api/analysis/binding_energy    # Calculate binding energies
-```
+### 3. Try the headset interface
 
-### Reports
-```
-POST /api/reports/generate           # Create research report
-GET  /api/reports/<id>               # Retrieve report
+Without a headset, open <http://localhost:8000/?emulate=quest3> for the WebXR emulator.
+
+With one, WebXR needs a secure origin:
+
+```bash
+# Over Wi-Fi, any headset — accept the self-signed certificate once
+.venv/bin/python server/server.py --https --port 8443
+
+# Over USB, Quest only, no certificate warning
+adb reverse tcp:8000 tcp:8000
 ```
 
 ---
 
-## Database Schema
+## API endpoints
 
-### SQLite (Development)
-```sql
-CREATE TABLE workflows (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    project_id TEXT,
-    template TEXT,
-    target TEXT,
-    status TEXT,
-    created_at DATETIME,
-    completed_at DATETIME,
-    results JSON
-);
+These are the endpoints `server/server.py` actually serves:
 
-CREATE TABLE checkpoints (
-    workflow_id TEXT,
-    step_number INTEGER,
-    step_name TEXT,
-    state JSON,
-    timestamp DATETIME
-);
-
-CREATE TABLE agent_memory (
-    agent_id TEXT,
-    memory_type TEXT,
-    data JSON,
-    relevance REAL,
-    timestamp DATETIME
-);
+```
+GET  /api/health              which optional engines are installed
+POST /api/embed               SMILES -> 3D conformer (RDKit ETKDGv3 + MMFF94)
+POST /api/extract             PDF / text upload -> SMILES + compound IDs
+POST /api/md                  start an all-atom OpenMM simulation (implicit solvent)
+GET  /api/md/<job>            poll progress, fetch trajectory frames
+POST /api/library             save the AGI compound library to data/
+POST /api/room/<room>         publish collaboration state (pose, target, avatar)
+GET  /api/room/<room>/events  server-sent events stream of other participants
+POST /api/bigquery            Google BigQuery public-dataset query (needs gcloud auth)
 ```
 
-### PostgreSQL (Production)
-Ready for migration with:
-- JSONB support for flexible data
-- Parallel query processing
-- Connection pooling (20 default)
-- Automatic index optimization
+Multi-user collaboration uses server-sent events, not WebSockets. `/api/md` returns HTTP
+501 when `openmm` and `pdbfixer` are not installed, rather than returning a fabricated
+trajectory.
 
 ---
 
-## Testing Coverage
+## Verifying an install
 
-### Unit Tests ✅
-- Workflow persistence and resume
-- Error recovery patterns
-- Agent memory and suggestions
-- Command matching and NLP
+```bash
+make verify     # test + imports + reachable
+```
 
-### Integration Tests ✅
-- Hand gesture recognition
-- Voice command processing
-- Gesture-voice context switching
-- Multimodal feedback coordination
-- Agent team responsiveness
+On 2026-09-22 this produced:
 
-### Load Tests ✅
-- 100 concurrent workflows at 100% success rate
-- 596 ops/second throughput (p99)
-- <200ms p95 latency sustained
-- System stable under stress
+| Check | Result |
+|---|---|
+| `make test` | 708 passed, 1 xfailed |
+| `make imports` | passes |
+| `make reachable` | 22 of 22 JS modules reachable from `main.js` |
 
-### Accessibility Tests ✅
-- Gesture-only mode
-- Voice-only mode
-- Dwell selection
-- Command history
-- High contrast UI
+Citation checks hit the network and are run separately, per panel:
+
+```bash
+.venv/bin/python scripts/verify_panel_citations.py ALS          # 250/250
+.venv/bin/python scripts/verify_panel_citations.py Parkinsons   # 207/207
+.venv/bin/python scripts/verify_panel_citations.py Shriners     # 190/190
+.venv/bin/python scripts/verify_panel_citations.py StJude       # 263/263
+```
+
+Use the venv interpreter. The system `python3` has neither `requests` nor RDKit, and
+several modules degrade quietly on a failed import, so the wrong interpreter produces a
+passing run that proves nothing — which is exactly why the `Makefile` pins `.venv/bin/python`.
+
+`--seed-bad` injects a deliberately broken control target; the run must then fail. Use it
+if you want to confirm the checker can still detect a bad citation.
+
+All of this runs in CI on every push — see `.github/workflows/ci.yml` and
+`.github/workflows/citations.yml`.
+
+The repository is under a proprietary licence, all rights reserved (`LICENSE`). Check it
+before redistributing or hosting anything built from it.
 
 ---
 
-## Deployment Checklist
+## Data storage
 
-### Pre-Deployment
-- [ ] Review security audit (JWT, encryption, audit trail)
-- [ ] Run all test suites (unit, integration, load, accessibility)
-- [ ] Verify database migration pipeline
-- [ ] Check API rate limiting (if deploying to cloud)
-- [ ] Configure environment variables
+SQLite, in `data/`. Workflow state, checkpoints and agent memory use the schema in
+`server/workflow_persistence.py`; the database-response cache lives at
+`~/.cache/agi-bioxr/db_cache.sqlite`.
 
-### Production Setup
-- [ ] Deploy Flask backend (Fly.io, Railway, or K8s)
-- [ ] Configure PostgreSQL database
-- [ ] Set up Prometheus/Grafana monitoring
-- [ ] Enable SSL/TLS certificates
-- [ ] Configure WebSocket proxy (if needed)
+`server/database_migration.py` contains a SQLite-to-PostgreSQL migration path. It has not
+been run against a live PostgreSQL instance.
 
-### Foundation Deployment
-- [ ] Create sandbox projects for beta testers
-- [ ] Add 20 ALS-specific targets
-- [ ] Add Parkinson's targets for MJF
-- [ ] Add genetic disease targets for Shriners
-- [ ] Generate API keys for foundation partners
+---
 
-### Post-Deployment
-- [ ] Monitor error rates and latency
-- [ ] Collect user feedback on gestures/voice
-- [ ] Track workflow completion rates
-- [ ] Measure agent accuracy on hotspot detection
-- [ ] Plan fine-tuning based on usage data
+## Security posture
+
+`server/auth.py` provides JWT issuance and role checks (admin, PI, researcher, viewer),
+and a SHA-256 provenance ledger records operations.
+
+Several real defects were found and fixed in September 2026: an authentication bypass that
+accepted any password, a JWT signing key committed to the repository as a literal, and
+both servers binding `0.0.0.0` by default. Both servers now default to `127.0.0.1`, and
+`--host 0.0.0.0` has to be passed deliberately to reach a headset over Wi-Fi.
+
+Be clear about what the remaining posture does and does not mean:
+
+- The server is written for single-machine, single-operator use and has not been hardened
+  for hosting. No penetration test or third-party security audit has been performed.
+  Earlier revisions of this document claimed a completed security audit; none exists.
+- `--https` uses a self-signed certificate intended for getting WebXR working in a
+  headset, not for protecting traffic on an untrusted network.
+- The collaboration room endpoints are unauthenticated.
+- See `SECURITY.md` for how to report a vulnerability.
+
+---
+
+## If you wanted to host this
+
+None of the following has been done. It is a sketch of the work, not a checklist that is
+partly complete.
+
+**Substantial gaps to close first:**
+
+1. Put a real WSGI/ASGI server in front of, or in place of, the stdlib HTTP server.
+2. Decide what `server/molecular_research_pipeline.py` should do. It currently returns
+   `[SYNTHETIC]`-labelled placeholder values; those must not reach a user who might read
+   them as results.
+3. Benchmark whatever you intend to promise. There is no measured throughput, latency or
+   uptime figure for this codebase, and nothing in the repository produces one.
+4. Review `server/scaling_infrastructure.py` and `server/performance_optimization.py`.
+   They are in-process Python objects describing load balancing and caching; they are not
+   wired to any cluster, Redis or PostgreSQL.
+5. Threat-model multi-user access. The collaboration room endpoints are unauthenticated.
+
+**Then the ordinary work:** TLS from a real CA, a managed database, backups, log
+aggregation, metrics, and an on-call arrangement if anyone is going to depend on it.
 
 ---
 
 ## Troubleshooting
 
-### Hand Gestures Not Detected
-1. Check WebXR hand tracking is enabled (browser settings)
-2. Verify proper lighting (hand tracking needs visible hands)
-3. Ensure hand is 30-200cm from headset
-4. Check gesture confidence threshold (default: 85%)
+**`/api/md` returns 501.** OpenMM and PDBFixer are not installed in the active
+environment. `GET /api/health` lists what is present.
 
-### Voice Commands Not Processing
-1. Verify microphone permissions (browser)
-2. Check language is set to en-US
-3. Ensure low ambient noise (quiet environment)
-4. Test individual voice commands from HUD
+**Imports fail, or tests pass suspiciously fast.** You are probably on the system
+`python3`. Use `.venv/bin/python`.
 
-### Workflow Stalling
-1. Check agent status in HUD (should show "working")
-2. Review error logs: `tail -f logs/error.log`
-3. Monitor database: ensure not full/locked
-4. If stuck >5 min, can cancel and resume from checkpoint
+**Citation checks fail with "the 'requests' package is not installed".** Same cause — the
+venv interpreter has `requests`, the system one does not. This is an environment problem,
+not a bad citation.
 
-### Low Performance
-1. Check concurrent workflow count (limit: 100)
-2. Verify database connection pool (20 default)
-3. Monitor CPU/memory on server
-4. Consider PostgreSQL migration from SQLite
+**"Enter VR" is greyed out.** WebXR needs a secure origin. Use `--https`, or
+`adb reverse` over USB, or the `?emulate=quest3` emulator on the desktop.
+
+**A scanned PDF imports nothing.** It holds images of structures with no text layer.
+Optical chemical structure recognition (DECIMER, OSRA) would be needed first; the app
+reports this when it detects one.
 
 ---
 
-## Security Considerations
+## Research focus
 
-### Authentication
-- JWT tokens with 24-hour expiry
-- RBAC with roles: admin, PI, researcher, viewer
-- Session management with secure cookies
-- OAuth2-ready for enterprise SSO
+The workspace is built to serve research into ALS, Parkinson's, and the skeletal,
+neuromuscular and burn-injury conditions treated in paediatric hospitals, with curated
+target panels assembled around those disease areas.
 
-### Encryption
-- SHA-256 ledger for provenance
-- HTTPS/WSS required in production
-- API key rotation policy
-- No credentials in logs
-
-### Audit Trail
-- Complete user action history
-- Workflow step-by-step recording
-- Agent decision logging
-- Export for compliance (FAIR format)
+This reflects the project's design intent and nothing more. **No partnership, agreement,
+sponsorship or endorsement exists with any organisation working in these areas**, and
+nothing in this repository should be read as implying one.
 
 ---
 
-## Future Enhancements (Phase 7+)
-
-### Short-term (Month 1-2)
-- [ ] ML-fine-tuned hand gesture recognition
-- [ ] Domain-specific voice command NLP models
-- [ ] Expanded agent team (6+ specialized agents)
-- [ ] Real-time collaboration (multi-user workspaces)
-
-### Medium-term (Month 3-6)
-- [ ] Neural network docking (replace Vina)
-- [ ] Automated drug discovery workflows
-- [ ] Patent AI for lead prioritization
-- [ ] Integration with clinical trial databases
-
-### Long-term (6+ months)
-- [ ] Multi-language support
-- [ ] AI-powered hypothesis generation
-- [ ] Predictive toxicity modeling
-- [ ] Pharmacokinetics simulation
-
----
-
-## Getting Help
-
-### Documentation
-- API docs: `http://localhost:8000/api-docs`
-- Code comments in each module
-- This deployment guide
-
-### Community
-- GitHub: [Project repository]
-- Email: support@agifuturefoundation.org
-- Slack: [Foundation research channel]
-
-### Reporting Issues
-1. Describe what you were doing
-2. Include error messages from console/logs
-3. Provide browser/headset information
-4. Attach screenshots if applicable
-
----
-
-## Credits
-
-**Built by:** Claude Haiku 4.5  
-**For:** ALS Association, Michael J. Fox Foundation, Shriners Children's Hospital  
-**Date:** 2026-09-19  
-**License:** [See LICENSE file]
-
----
-
-**🚀 Ready for production deployment to foundation partners. Estimated beta timeline: October 2026.**
+**Contact:** see `SUPPORT.md`.

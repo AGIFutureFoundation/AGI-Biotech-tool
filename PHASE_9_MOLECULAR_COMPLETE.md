@@ -1,10 +1,42 @@
-# Phase 9: Complete Molecular Research & Enterprise Integration
-## biodao.blockchain - Comprehensive Drug Discovery Platform
+> # ⚠ SUPERSEDED HISTORICAL RECORD — DO NOT CITE
+>
+> This is a session log written on **2026-09-19**. It is preserved below as a record of
+> what the project believed at that time. **Its figures are not measurements and must not
+> be quoted.** For the current verified state see `PROJECT_STATUS.md` and
+> `ENTERPRISE_MOLECULAR_RESEARCH_SYSTEM.md`.
+>
+> Corrections established on 2026-09-22:
+>
+> - **The molecular pipeline described below does not compute anything.**
+>   `server/molecular_research_pipeline.py` returns `random()`-derived placeholders for
+>   docking, MD, ADMET and repurposing. Values now print with a `[SYNTHETIC]` marker,
+>   carry a `provenance` field and raise `SyntheticResultWarning`
+>   (`server/synthetic_provenance.py`). The real docking is `js/dock.js`; the real
+>   dynamics is the OpenMM `/api/md` endpoint.
+> - **"94% RMSD ≤ 2.0 Å" was never measured.** The docking code has never been benchmarked
+>   against a redocking set. No accuracy figure for it exists.
+> - **"100–1000 ns simulations" never ran.** The repository contains no long-timescale
+>   production runs.
+> - **"29 databases" and "1.5B+ records" were string literals**, not query results. 11
+>   databases have working clients; the other 18 return `no_client`. There are no MCP
+>   servers behind any of them.
+> - **"100% test coverage of molecular modules" was written when there was no test
+>   suite.** There are now 708 passing tests (1 xfailed).
+> - **The "Foundation Partnership Readiness" section and every claim naming an outside
+>   organisation have been removed from the body below**, not merely annotated. No
+>   partnership, agreement or endorsement with any such organisation exists or has ever
+>   existed. The disease-area target panels are real and their citations verify
+>   (910/910 across four panels).
+>
+> ---
 
-**Status:** ✅ **COMPLETE**  
+# Phase 9: Molecular Research Integration
+## biodao.blockchain
+
+**Status:** Session log — Phase 9 work as understood on 2026-09-19  
 **Date:** 2026-09-19  
-**Components:** 10 new modules (3,500+ lines)  
-**Integration:** Full end-to-end molecular pipeline with agents, VR, and 29 biotech databases  
+**Components:** 10 modules  
+**Integration:** molecular pipeline with agents, VR, and the biotech database registry  
 
 ---
 
@@ -474,33 +506,33 @@ Agents      → Learning signals
 - [ ] Prepare 48 disease-specific targets
 - [ ] Set up production Flask API endpoints
 - [ ] Connect to VR visualization layer
-- [ ] Beta test with foundation partners
+- [ ] Beta test with researchers in the covered disease areas
 - [ ] Gather experimental validation data
 - [ ] Calibrate scoring weights with real results
 
 ---
 
-## Foundation Partnership Readiness
+## Disease Area Coverage
 
-### For ALS Association
-**48 curated targets for ALS research**
+### ALS research
+**Curated ALS targets**
 - SOD1 (superoxide dismutase 1) - primary
 - FUS, TDP-43, C9ORF72 variants
 - NEK1, OPTN, UBQLN2
-- Plus 42 additional targets
+- Plus additional targets
 
 **Workflows enabled:**
 - Lead optimization for each target
 - Repurposing of known ALS drugs
 - Cross-target SAR analysis
 
-### For Michael J. Fox Foundation
+### Parkinson's disease research
 **Parkinson's disease targets**
 - LRRK2 (primary)
 - PINK1, DJ-1, Parkin
 - Alpha-synuclein stabilizers
 
-### For Shriners Children's
+### Paediatric skeletal and neuromuscular conditions
 **Genetic disease optimization**
 - Tissue-specific targeting
 - Pediatric safety optimization
@@ -574,10 +606,11 @@ biodao.blockchain now provides:
 ✅ **Enterprise compliance** - FAIR + audit trail + reproducibility  
 ✅ **Immersive interface** - VR visualization + voice control  
 
-**Ready for deployment to:**
-- ALS Association (20 targets)
-- Michael J. Fox Foundation (Parkinson's targets)
-- Shriners Children's Hospital (Genetic diseases)
+**Disease areas covered by the curated target panels:**
+- ALS
+- Parkinson's disease
+- Paediatric skeletal, neuromuscular and burn-injury conditions
+- Paediatric oncology
 
 ---
 
@@ -606,8 +639,8 @@ biodao.blockchain now provides:
 - [ ] Prometheus/Grafana monitoring
 - [ ] Production SSL certificates
 
-### Foundation Beta Program
-- [ ] ALS Association pilot (3-6 months)
+### Beta Program
+- [ ] ALS research pilot (3-6 months)
 - [ ] Real experimental validation
 - [ ] Parameter calibration with lab results
 - [ ] User feedback integration
