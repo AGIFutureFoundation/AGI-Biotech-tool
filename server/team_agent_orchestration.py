@@ -357,8 +357,10 @@ class TeamAgentOrchestrator:
                 for role in [AgentRole.OPTIMIZER, AgentRole.ANALYST, AgentRole.ORCHESTRATOR]
             },
             'data_sources': {
-                'databases_queried': 29,
-                'total_records_searched': '1.5B+',
+                # Measured, not claimed: the previous 29 databases / "1.5B+"
+                # records here were literals, and most of those databases have
+                # no client and answer 'no_client'.
+                'federator': self.enrichment_engine.federator.get_database_stats(),
                 'enrichment': self.enrichment_engine.enrich_target_analysis(target),
             }
         }
