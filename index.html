@@ -6,6 +6,7 @@
 <title>biodao.blockchain — molecular workspace</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🧬</text></svg>">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <style>
   /* XR entry and first-use affordances (kept here: this layer owns index.html, not css/). */
   #btnVR.unavailable, #btnAR.unavailable { opacity: .55; background: #16222f; border-color: var(--line); color: var(--dim); }
@@ -41,6 +42,7 @@
     </div>
     <div class="topactions">
       <span id="serverChip" class="chip" title="Local compute server">server: checking…</span>
+      <button id="btnDash" title="Research dashboard">Dashboard</button>
       <button id="btnPanel" title="Show or hide the side panels">Panels</button>
       <button id="btnVR" class="primary" disabled>Enter VR</button>
       <button id="btnAR" disabled>Enter AR</button>
@@ -55,6 +57,8 @@
       <button data-tab="drugs">Known drugs</button>
       <button data-tab="evidence">Evidence</button>
       <button data-tab="programs">Programs</button>
+      <button data-tab="scene">Scene</button>
+      <button data-tab="assistant">Assistant</button>
       <button data-tab="session">Session</button>
     </nav>
 
@@ -140,6 +144,51 @@
         <p class="hint">Select a compound, then review every patent family that mentions it.</p>
         <div class="row"><button id="btnPatents">Review patents for current compound</button></div>
         <div id="patentList" class="list small"></div>
+      </div>
+    </section>
+
+    <section data-panel="scene" class="panel hidden">
+      <div class="block">
+        <h4>Environment <small>glTF / GLB</small></h4>
+        <div id="sceneList" class="list small"></div>
+        <div class="row wrap"><button id="btnSceneNone">Empty space</button><button id="btnSceneImport" class="primary">Import scene…</button></div>
+        <input id="sceneFile" type="file" accept=".glb,.gltf" hidden>
+        <div id="sceneDrop" class="drop">Drop a .glb here<br><small>Sketchfab downloads, Unreal “Export All”, Unity glTF exports, photogrammetry</small></div>
+        <div id="sceneInfo" class="hint"></div>
+        <div class="row wrap"><span class="hint">scale</span><button id="sceneSmaller">÷2</button><button id="sceneBigger">×2</button><button id="sceneRefit">Re-centre molecule</button></div>
+      </div>
+      <div class="block">
+        <h4>Lighting <small>Poly Haven, CC0</small></h4>
+        <div class="row"><select id="hdriSelect"></select><label><input type="checkbox" id="hdriBg"> as backdrop</label></div>
+      </div>
+      <div class="block">
+        <h4>Comfort &amp; performance</h4>
+        <div class="row"><label>detail <select id="sceneQuality"><option value="full">full</option><option value="medium">medium</option><option value="lite">lite (headset)</option></select></label></div>
+        <div class="row wrap"><label><input type="checkbox" id="walkMode"> walk around (WASD / thumbstick)</label></div>
+        <p class="hint">Heavy game maps can miss headset frame rates. Lite hides everything beyond 60 m, which usually
+        restores 90 Hz while keeping the room you are standing in.</p>
+      </div>
+    </section>
+
+    <section data-panel="assistant" class="panel hidden">
+      <div class="block">
+        <h4>Assistant <small>same tools, in words</small></h4>
+        <div id="agentConsole"></div>
+        <div class="hint" id="agentStatus">agent channel offline</div>
+      </div>
+      <div class="block">
+        <h4>Hands-free</h4>
+        <p class="hint">The microphone drives the same tools by voice, and speaks the answer back. In a headset,
+        hand tracking replaces the controllers: pinch to grab, two pinches to scale, point to steer the ligand,
+        swipe for the next compound, palm up for the menu.</p>
+        <div class="row wrap"><button id="btnGlasses">Glasses companion view</button><button id="btnToolList">Show tool schema</button></div>
+      </div>
+      <div class="block">
+        <h4>Drive it from outside <small>MCP</small></h4>
+        <p class="hint">Register the workspace with Claude Code and it can operate this session directly:</p>
+        <pre class="log" style="max-height:none">claude mcp add biodao -- \
+  ~/Projects/agi-bioxr/.venv/bin/python \
+  ~/Projects/agi-bioxr/server/mcp_server.py</pre>
       </div>
     </section>
 
@@ -254,6 +303,13 @@
     </section>
   </aside>
 
+  <nav class="mobile-bar" id="mobileBar">
+    <button data-sheet="targets">Targets</button>
+    <button data-sheet="library">Compounds</button>
+    <button data-sheet="assistant">Ask</button>
+    <button data-sheet="right">Actions</button>
+    <button id="mobDash">Dashboard</button>
+  </nav>
   <footer id="statusbar"><span id="status">Loading…</span><span id="perf"></span></footer>
 </div>
 <script type="module" src="js/main.js"></script>

@@ -123,6 +123,7 @@ def extract_upload(filename, data):
 # --------------------------------------------------------------------------- molecular dynamics
 
 JOBS = {}
+TOOL_SCHEMA = []
 
 
 def _fetch(url):
@@ -247,6 +248,35 @@ def proxy_get(url):
     req = urllib.request.Request(url, headers={"User-Agent": "biodao-blockchain/1.0", "Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read(), r.headers.get("Content-Type", "application/json")
+
+
+# --------------------------------------------------------------------------- agent command channel
+# An external agent (server/mcp_server.py, or any HTTP client) calls a tool; the call is pushed to every
+# connected browser session over server-sent events, the first one to answer wins, and the result comes
+# back on the original request. This is what makes the running workspace drivable from outside.
+COMMAND_SUBS = []          # queues, one per connected browser
+COMMAND_WAITERS = {}       # command id -> queue waiting for the result
+COMMAND_LOCK = threading.Lock()
+
+
+def dispatch_command(tool, args, timeout=180):
+    cid = uuid.uuid4().hex[:12]
+    inbox = queue.Queue()
+    with COMMAND_LOCK:
+        if not COMMAND_SUBS:
+            raise RuntimeError("no browser session is connected; open the workspace first")
+        COMMAND_WAITERS[cid] = inbox
+        subs = list(COMMAND_SUBS)
+    payload = json.dumps({"id": cid, "tool": tool, "args": args})
+    for q in subs:
+        q.put(payload)
+    try:
+        return inbox.get(timeout=timeout)
+    except queue.Empty:
+        raise TimeoutError(f"the workspace did not answer within {timeout}s")
+    finally:
+        with COMMAND_LOCK:
+            COMMAND_WAITERS.pop(cid, None)
 
 
 # --------------------------------------------------------------------------- collaboration rooms
@@ -390,7 +420,9 @@ def start_websocket_server(host="0.0.0.0", port=WS_PORT):
 
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".mjs": "text/javascript",
-                      ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json"}
+                      ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json",
+                      ".glb": "model/gltf-binary", ".gltf": "model/gltf+json", ".hdr": "image/vnd.radiance",
+                      ".ktx2": "image/ktx2", ".bin": "application/octet-stream"}
 
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
@@ -465,6 +497,18 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         p = self.path.split("?")[0]
+        if p == "/api/scenes":
+            d = os.path.join(ROOT, "assets", "scenes")
+            out = []
+            if os.path.isdir(d):
+                for f in sorted(os.listdir(d)):
+                    if f.lower().endswith((".glb", ".gltf")):
+                        out.append({"file": f, "url": f"assets/scenes/{f}",
+                                    "mb": round(os.path.getsize(os.path.join(d, f)) / 1e6, 1),
+                                    "label": os.path.splitext(f)[0].replace("_", " ").replace("gtasa ", "").strip()})
+            return self._json({"scenes": out})
+        if p == "/api/tools":
+            return self._json({"tools": TOOL_SCHEMA})
         if p == "/api/health":
             return self._json({"ok": True, **HAVE, "rooms": len(ROOMS)})
         if p.startswith("/api/md/"):
@@ -499,6 +543,11 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             return self.wfile.write(body)
+        if p == "/api/command/events":
+            return self._command_sse()
+        if p == "/api/command/status":
+            with COMMAND_LOCK:
+                return self._json({"sessions": len(COMMAND_SUBS), "pending": len(COMMAND_WAITERS)})
         if p.startswith("/api/room/") and p.endswith("/events"):
             return self._sse(p.split("/")[3])
         if p.startswith("/api/"):
@@ -536,6 +585,30 @@ class Handler(SimpleHTTPRequestHandler):
                 if q in r["subs"]:
                     r["subs"].remove(q)
 
+    def _command_sse(self):
+        q = queue.Queue()
+        with COMMAND_LOCK:
+            COMMAND_SUBS.append(q)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.end_headers()
+        try:
+            self.wfile.write(b": connected\n\n")
+            self.wfile.flush()
+            while True:
+                try:
+                    msg = q.get(timeout=15)
+                    self.wfile.write(f"data: {msg}\n\n".encode())
+                except queue.Empty:
+                    self.wfile.write(b": keepalive\n\n")
+                self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
+        finally:
+            with COMMAND_LOCK:
+                if q in COMMAND_SUBS:
+                    COMMAND_SUBS.remove(q)
+
     def do_POST(self):  # noqa: N802
         p = self.path.split("?")[0]
         try:
@@ -563,6 +636,25 @@ class Handler(SimpleHTTPRequestHandler):
                 if job:
                     job["cancel"] = True
                 return self._json({"ok": bool(job)})
+            if p == "/api/command":
+                body = json.loads(self._body())
+                try:
+                    out = dispatch_command(body["tool"], body.get("args") or {}, int(body.get("timeout", 180)))
+                except (RuntimeError, TimeoutError) as e:
+                    return self._json({"ok": False, "error": str(e)}, 503)
+                return self._json(out)
+            if p == "/api/command/result":
+                body = json.loads(self._body())
+                with COMMAND_LOCK:
+                    waiter = COMMAND_WAITERS.get(body.get("id"))
+                if waiter:
+                    waiter.put({k: v for k, v in body.items() if k != "id"})
+                return self._json({"ok": True})
+            if p == "/api/tools":
+                # The browser publishes its tool schema here so the MCP server can advertise it.
+                global TOOL_SCHEMA
+                TOOL_SCHEMA = json.loads(self._body())
+                return self._json({"ok": True, "tools": len(TOOL_SCHEMA)})
             if p == "/api/recording":
                 qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
                 name = os.path.basename((qs.get("name") or ["demo.webm"])[0])

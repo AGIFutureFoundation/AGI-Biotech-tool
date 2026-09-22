@@ -13,6 +13,11 @@ import { af3LocalJob, afServerJob, downloadJson, downloadText, readPrediction } 
 import { Collab } from './collab.js';
 import { XRManager, xrSupport, XR_REASONS, onXRDeviceChange } from './xr.js';
 import { Ledger } from './ledger.js';
+import { buildTools, toolSchemas, AgentRuntime, AgentConsole, connectCommandChannel } from './agent.js';
+import { VoiceControl } from './voice.js';
+import { HandTracking } from './hands.js';
+import { computeStats, renderDashboard, buildReport } from './dashboard.js';
+import { EnvironmentManager, Locomotion, HDRI_PRESETS } from './environment.js';
 import { Recorder } from './recorder.js';
 import { yieldToEventLoop } from './util.js';
 
@@ -26,7 +31,7 @@ const S = {
   grid: null, pockets: [], pocket: null, poses: [], md: null, mdRunning: false, caps: null,
   selection: [], measureMode: false, library: new CompoundLibrary(), compound: null, screening: false, stopFlag: false,
   backendJob: null, trajectory: null, missense: null, lastScore: null, ledger: new Ledger(), demo: null,
-  recorder: null, orbitSpeed: 0,
+  recorder: null, orbitSpeed: 0, agent: null, voice: null, hands: null, dashboardOpen: false, env: null, walk: null,
 };
 
 // ---------------------------------------------------------------- scene
@@ -518,8 +523,17 @@ renderer.setAnimationLoop((t, xrFrame) => {
       tr.i++;
     }
   }
+  const dt = Math.min(0.05, (t - (S.lastT || t)) / 1000); S.lastT = t;
+  S.env?.update(dt);
+  S.walk?.update(dt, xr.active);
+  // Distance culling follows the viewer, refreshed a few times a second rather than every frame.
+  if (S.env?.quality && S.env.quality !== 'full' && frames % 20 === 0) S.env.setQuality(S.env.quality);
   if (S.orbitSpeed) workspace.rotation.y += S.orbitSpeed;
-  if (xr.active) { xr.update(); S.collab?.tick(camera, xr.controllers); }
+  if (xr.active) {
+    xr.update();
+    if (S.hands && xrFrame) S.hands.update(xrFrame, renderer.xr.getReferenceSpace());
+    S.collab?.tick(camera, xr.controllers);
+  }
   else controls.update();
   renderer.render(scene, camera);
   frames++;
@@ -571,8 +585,10 @@ async function openTarget(t) {
   }
   renderDrugs(t);
   renderEvidence(t);
-  if (t.alphafold) loadAlphaFold(t.uniprot, { symbol: t.symbol }).catch((e) => toast(e.message, true));
-  else if (t.bestPdb) loadPdb(t.bestPdb, { uniprot: t.uniprot }).catch((e) => toast(e.message, true));
+  // Return the structure load so callers (the tool layer, the film, the demo) can wait for it.
+  if (t.alphafold) return loadAlphaFold(t.uniprot, { symbol: t.symbol }).catch((e) => toast(e.message, true));
+  if (t.bestPdb) return loadPdb(t.bestPdb, { uniprot: t.uniprot }).catch((e) => toast(e.message, true));
+  return null;
 }
 
 function renderStructureInfo(meta) {
@@ -1558,6 +1574,24 @@ function wire() {
   $('#btnPanel').onclick = () => { $('#right').classList.toggle('collapsed'); $('#left').classList.toggle('collapsed'); setTimeout(resize, 60); };
   $('#btnEvidence').onclick = () => gatherEvidence().catch((e) => toast(e.message, true));
   $('#btnDemo').onclick = runDemo;
+  $('#btnDash').onclick = () => toggleDashboard();
+  $('#mobDash')?.addEventListener('click', () => toggleDashboard());
+  $('#btnGlasses')?.addEventListener('click', () => { location.search = '?mode=glasses'; });
+  $('#btnToolList')?.addEventListener('click', () => {
+    const schema = S.agent ? S.agent.tools.map((t) => `${t.name}(${Object.keys(t.parameters.properties || {}).join(', ')}) — ${t.description}`) : [];
+    S.console?.say('agent', `<b>${schema.length} tools</b><pre>${schema.join('\n')}</pre>`);
+  });
+  // Mobile: the panels become bottom sheets.
+  $$('#mobileBar button[data-sheet]').forEach((b) => {
+    b.onclick = () => {
+      const which = b.dataset.sheet;
+      const left = $('#left'), right = $('#right');
+      if (which === 'right') { right.classList.toggle('sheet-open'); left.classList.remove('sheet-open'); return; }
+      right.classList.remove('sheet-open');
+      $$('.tabs button').find((x) => x.dataset.tab === which)?.click();
+      left.classList.toggle('sheet-open', !left.classList.contains('sheet-open') || $$('.tabs button').find((x) => x.dataset.tab === which)?.classList.contains('active'));
+    };
+  });
   $('#btnPatents').onclick = reviewPatents;
   renderFoundations();
   $('#btnLedgerVerify').onclick = async () => {
@@ -1603,6 +1637,272 @@ async function maybeEmulateXR() {
   } catch (e) { toast(`emulator failed: ${e.message}`, true); return false; }
 }
 
+// ---------------------------------------------------------------- assistant: tools, voice, hands
+// One adapter object is the whole surface the tools (and therefore the console, the voice layer and any
+// external agent) can touch. Keeping it explicit means a tool can never reach into app internals by accident.
+function buildAppAdapter() {
+  const round = (v) => (v == null || Number.isNaN(v) ? null : +(+v).toFixed(2));
+  return {
+    get state() { return S; },
+    round,
+    findTarget: (q) => {
+      const n = String(q || '').trim().toLowerCase().replace(/\s+/g, '');
+      return S.targets.find((t) => t.symbol.toLowerCase() === n)
+        || S.targets.find((t) => t.symbol.toLowerCase().startsWith(n))
+        || S.targets.find((t) => (t.name || '').toLowerCase().includes(n));
+    },
+    findCompound: (id) => {
+      const n = String(id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return S.library.compounds.find((c) => (c.agiId || '').toLowerCase().replace(/[^a-z0-9]/g, '') === n)
+        || S.library.compounds.find((c) => (c.agiId || '').toLowerCase().includes(n));
+    },
+    searchGene: (q) => uniprot.searchGene(q),
+    openTarget, loadPdb, loadAlphaFold, loadCompound, loadDrugByName, extractCocrystal,
+    doPockets, gatherEvidence, findSimilarFolds: () => findSimilarFolds(document.createElement('button')),
+    cycleCompound: (dir) => { cycleCompound(dir); return { ligand: S.compound?.agiId || S.ligand?.name || null }; },
+    loadSmiles: async (smiles) => { const st = await smilesTo3D(smiles, { name: 'query' }); await setLigand(st, { smiles }); },
+    doDock: async ({ runs, steps } = {}) => doDock({ runs, steps }),
+    screenLibrary: (args) => screenLibrary(args),
+    rankedLibrary: () => S.library.compounds.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore),
+    startMD: ({ rigidProtein } = {}) => { if (rigidProtein !== undefined) $('#freezeProtein').checked = !!rigidProtein; if (!S.mdRunning) startMD(); },
+    stopMD,
+    runBackendMD: async ({ steps, temperature } = {}) => {
+      if (steps) $('#mdSteps').value = steps;
+      if (temperature) $('#mdTemp').value = temperature;
+      await runBackendMD();
+      return { started: true, note: 'all-atom OpenMM run; the trajectory plays back when it finishes' };
+    },
+    knownDrugs: () => ({ target: S.target?.symbol || null,
+      drugs: [...document.querySelectorAll('#drugList .item')].slice(0, 15).map((el) => el.textContent.replace(/\s+/g, ' ').trim()) }),
+    setView: ({ representation, colour, reset }) => {
+      if (representation) { $('#repSelect').value = representation; $('#repSelect').dispatchEvent(new Event('change')); }
+      if (colour) { $('#colorSelect').value = colour; $('#colorSelect').dispatchEvent(new Event('change')); }
+      if (reset) fitView();
+      return { representation: S.proteinView?.style.rep, colour: S.proteinView?.style.color };
+    },
+    measure: () => ({ text: $('#selInfo').textContent }),
+    librarySearch: async ({ text, smarts, maxMw, cnsOnly }) => {
+      let list = smarts ? await S.library.substructure(smarts) : S.library.search(text || '');
+      if (maxMw) list = list.filter((c) => (c.profile?.desc.mw ?? 1e9) <= maxMw);
+      if (cnsOnly) list = list.filter((c) => c.profile?.rules?.bbbLikely);
+      return { matches: list.length, compounds: list.slice(0, 20).map((c) => ({ id: c.agiId, smiles: c.canonical, mw: round(c.profile?.desc.mw), score: c.dockScore })) };
+    },
+    ledger: async (action) => {
+      if (action === 'export') { downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`); return { text: 'Ledger exported.' }; }
+      if (action === 'list') return { records: S.ledger.records.slice(-15).map((r) => ({ kind: r.kind, time: r.time, hash: r.hash.slice(0, 12) })) };
+      const v = await S.ledger.verify();
+      return { ...v, records: S.ledger.records.length, text: v.ok ? `Chain verified: ${v.length} records intact.` : `Chain broken at record ${v.brokenAt}: ${v.reason}` };
+    },
+    describe: () => {
+      const p = S.protein, sc = S.lastScore;
+      if (!p) return { text: 'Nothing is loaded yet. Ask me to load a target, such as SOD1.' };
+      const bits = [`${p.name}, ${p.residues.filter((r) => r.polymer).length} residues`];
+      if (S.target) bits.push(`the ${S.target.program} programme target ${S.target.symbol}, ${S.target.disease}`);
+      if (S.ligand) bits.push(`with ${S.ligand.name} in the site`);
+      if (sc) bits.push(`scoring ${round(sc.total)} kilocalories per mole with ${sc.hbonds.length} hydrogen bonds`);
+      if (S.pockets.length) bits.push(`${S.pockets.length} pockets detected`);
+      return { text: bits.join(', ') + '.', target: S.target?.symbol, structure: p.name, score: round(sc?.total) };
+    },
+  };
+}
+
+function setupAssistant() {
+  const adapter = buildAppAdapter();
+  const tools = buildTools(adapter);
+  const rt = new AgentRuntime(tools);
+  S.agent = rt;
+  rt.setVocabulary([...S.targets.map((t) => t.symbol), ...S.library.compounds.map((c) => c.agiId).filter(Boolean)]);
+
+  // Publish the schema so the MCP server can advertise the same tools.
+  fetch('/api/tools', { method: 'POST', body: JSON.stringify(toolSchemas(tools)) }).catch(() => {});
+  connectCommandChannel(rt, { onStatus: (st) => { const c = $('#agentStatus'); if (c) c.textContent = st === 'connected' ? 'agent channel open' : 'agent channel offline'; } });
+
+  // Voice: the same tools, spoken.
+  const voice = new VoiceControl({
+    onCommand: (parsed) => { if (parsed.intent !== 'unknown') S.console?.submit(parsed.transcript, 'voice'); },
+    onState: (st) => {
+      const b = S.console?.micButton;
+      if (b) b.classList.toggle('listening', st === 'listening');
+      const g = $('#glassesMic');
+      if (g) g.classList.toggle('listening', st === 'listening');
+    },
+  });
+  S.voice = voice;
+  rt.setVocabulary && voice.addVocabulary([...S.targets.map((t) => t.symbol), 'biodao']);
+
+  const consoleRoot = $('#agentConsole');
+  if (consoleRoot) {
+    S.console = new AgentConsole(consoleRoot, rt, { onSpeak: (line) => S.speakBack && voice.speak(line) });
+    const mic = S.console.micButton;
+    mic.disabled = !VoiceControl.supported;
+    mic.title = VoiceControl.supported ? 'Voice control' : 'This browser has no speech recognition (Safari and Vision Pro often lack it)';
+    mic.onclick = () => {
+      if (voice.listening) { voice.stop(); mic.classList.remove('on'); S.speakBack = false; }
+      else { voice.start(); mic.classList.add('on'); S.speakBack = true; toast('Listening. Try: load LRRK2, find pockets, dock, explain this'); }
+    };
+  }
+  return rt;
+}
+
+// Hand tracking replaces the controllers when a headset reports hands.
+function setupHands() {
+  if (S.hands) return S.hands;
+  const hands = new HandTracking(renderer, scene, { workspace });
+  S.hands = hands;
+  hands.addEventListener('tap', (e) => {
+    const p = e.detail.position;
+    if (!p) return;
+    raycaster.set(camera.getWorldPosition(new THREE.Vector3()), p.clone().sub(camera.getWorldPosition(new THREE.Vector3())).normalize());
+    const hit = raycaster.intersectObjects(xr.pickTargets, true)[0];
+    if (hit) onPick(hit, hit.point);
+  });
+  hands.addEventListener('point', (e) => {
+    if (!S.mdRunning) return;
+    const { origin, direction } = e.detail;
+    raycaster.set(origin, direction);
+    const hit = raycaster.intersectObject(S.ligandView?.group || new THREE.Group(), true)[0];
+    if (hit) updateSteer(hit.point);
+  });
+  hands.addEventListener('swipe', (e) => cycleCompound(e.detail.direction === 'right' ? 1 : -1));
+  hands.addEventListener('palmup', () => xr.setPanelVisible(true));
+  hands.addEventListener('palmdown', () => xr.setPanelVisible(false));
+  return hands;
+}
+
+// ---------------------------------------------------------------- environments
+async function setupScenes() {
+  const env = new EnvironmentManager(renderer, scene, { workspace, camera });
+  S.env = env;
+  S.walk = new Locomotion(camera, rig, { xr });
+
+  const sel = $('#hdriSelect');
+  HDRI_PRESETS.forEach((h) => sel.appendChild(new Option(h.label, h.id)));
+  sel.appendChild(new Option('none', 'none'));
+  sel.value = 'lab';
+  sel.onchange = async () => {
+    status(`lighting: ${sel.value}…`);
+    try { const r = await env.setLighting(sel.value); env.showBackground($('#hdriBg').checked); toast(`Lighting: ${r.lighting}`); }
+    catch (e) { toast(`Lighting failed: ${e.message}`, true); }
+  };
+  $('#hdriBg').onchange = (e) => env.showBackground(e.target.checked);
+  $('#sceneQuality').onchange = (e) => { const r = env.setQuality(e.target.value); toast(`Detail: ${r.level}`); };
+  $('#walkMode').onchange = (e) => { S.walk.setEnabled(e.target.checked); controls.enabled = !e.target.checked;
+    toast(e.target.checked ? 'Walk mode: W A S D, shift to sprint; thumbstick in a headset' : 'Orbit mode'); };
+  $('#sceneSmaller').onclick = () => showSceneStats(S.env.rescale(0.5));
+  $('#sceneBigger').onclick = () => showSceneStats(S.env.rescale(2));
+  $('#sceneRefit').onclick = () => { S.env.placeWorkspace(S.env.stats); fitView(); };
+  $('#btnSceneNone').onclick = () => { env.clear(); $('#sceneInfo').textContent = 'Empty space.'; fitView(); };
+  $('#btnSceneImport').onclick = () => $('#sceneFile').click();
+  $('#sceneFile').onchange = (e) => e.target.files[0] && loadScene(e.target.files[0]);
+  const drop = $('#sceneDrop');
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => e.dataTransfer.files[0] && loadScene(e.dataTransfer.files[0]));
+
+  try {
+    const { scenes } = await (await fetch('/api/scenes')).json();
+    const list = $('#sceneList');
+    list.innerHTML = scenes.length ? '' : '<div class="hint">No scenes in assets/scenes. Drop a .glb below, or copy files into that folder.</div>';
+    for (const sc of scenes) {
+      const it = el('div', 'item', `<div class="t"><span class="n">${sc.label}</span><span class="s">${sc.mb} MB</span></div>`);
+      it.onclick = () => loadScene(sc.url, sc.label);
+      list.appendChild(it);
+    }
+  } catch { /* the server lists scenes; without it, import still works */ }
+  await env.setLighting('lab').catch(() => {});
+  return env;
+}
+
+function showSceneStats(r) {
+  if (!r) return;
+  const info = $('#sceneInfo');
+  info.innerHTML = `<b>${S.env.current?.name || 'scene'}</b><br>${r.meshes} meshes · ${(r.triangles / 1000).toFixed(0)}k triangles
+    · ${r.textures} textures · ${r.size.x}×${r.size.z} m${r.autoScaled ? ` (auto-scaled ${r.scale}×)` : ''}
+    ${r.heavy ? '<br><span style="color:var(--warn)">Heavy scene: switch detail to lite before entering VR.</span>' : ''}`;
+}
+
+async function loadScene(source, name) {
+  const info = $('#sceneInfo');
+  info.textContent = 'loading scene…';
+  try {
+    const r = await S.env.load(source, { name, onProgress: (f) => { info.textContent = `loading ${Math.round(f * 100)}%`; } });
+    showSceneStats(r);
+    fitView();
+    if (r.heavy) { $('#sceneQuality').value = 'medium'; S.env.setQuality('medium'); }
+    S.ledger.append('scene', { name: r.name, meshes: r.meshes, triangles: r.triangles }).then(renderLedger);
+    toast(`${r.name} loaded`);
+  } catch (e) { info.textContent = e.message; toast(e.message, true); }
+}
+
+// ---------------------------------------------------------------- dashboard
+function toggleDashboard(force) {
+  const open = force ?? !S.dashboardOpen;
+  S.dashboardOpen = open;
+  let root = $('#dashRoot');
+  if (!root) {
+    root = el('div', 'dash');
+    root.id = 'dashRoot';
+    $('#viewport').appendChild(root);
+  }
+  root.style.display = open ? 'block' : 'none';
+  $('#btnDash')?.classList.toggle('on', open);
+  if (open) refreshDashboard();
+}
+
+function refreshDashboard() {
+  const root = $('#dashRoot');
+  if (!root || !S.dashboardOpen) return;
+  const data = computeStats(S);
+  renderDashboard(root, data, {
+    onOpenTarget: (programme) => { S.program = programme; renderPrograms(); renderTargets(); toggleDashboard(false);
+      $$('.tabs button').find((b) => b.dataset.tab === 'targets')?.click(); },
+    onOpenCompound: (id) => { const c = S.library.compounds.find((x) => x.agiId === id); if (c) { toggleDashboard(false); loadCompound(c); } },
+    onRun: (what) => {
+      const map = { find_pockets: () => doPockets(), dock: () => doDock(), screen: () => screenLibrary({ limit: 12, runs: 3, steps: 1200 }),
+        evidence: () => gatherEvidence(), folds: () => findSimilarFolds(document.createElement('button')),
+        ledger_verify: async () => { const v = await S.ledger.verify(); toast(v.ok ? `Chain verified: ${v.length} records` : `Chain broken at ${v.brokenAt}`, !v.ok); refreshDashboard(); },
+        ledger_export: () => downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`),
+        report: () => downloadText(buildReport(S, data), `biodao-report-${new Date().toISOString().slice(0, 10)}.txt`) };
+      const fn = map[what];
+      if (fn) { if (what !== 'report' && what !== 'ledger_export') toggleDashboard(false); fn(); }
+    },
+  });
+}
+
+// ---------------------------------------------------------------- glasses companion
+// Ray-Ban Meta and similar glasses have no WebXR browser, so the useful shape is voice in, speech and
+// large type out, on the phone paired with them. This is that view.
+function setupGlassesMode() {
+  document.body.classList.add('glasses');
+  const panel = el('div', 'glasses-panel');
+  panel.innerHTML = `<div class="said" id="gSaid">Say what you need. For example: what do we know about LRRK2.</div>
+    <div class="answer" id="gAnswer">biodao.blockchain</div><div class="detail" id="gDetail">voice companion</div>`;
+  $('#viewport').appendChild(panel);
+  const mic = el('button', 'glasses-mic primary', '🎙');
+  mic.id = 'glassesMic';
+  $('#viewport').appendChild(mic);
+  S.speakBack = true;
+  const voice = S.voice;
+  mic.onclick = () => (voice.listening ? voice.stop() : voice.start());
+  if (voice) {
+    voice.addEventListener('command', async (e) => {
+      const parsed = e.detail;
+      $('#gSaid').textContent = parsed.transcript;
+      try {
+        const out = await S.agent.run(parsed.transcript, { source: 'glasses' });
+        const line = out.tool ? AgentRuntime.summarise(out.tool, out.result) : out.help;
+        $('#gAnswer').textContent = line;
+        $('#gDetail').textContent = out.tool ? out.tool.replace(/_/g, ' ') : 'not understood';
+        voice.speak(line);
+      } catch (err) {
+        $('#gAnswer').textContent = err.message;
+        voice.speak(`That failed. ${err.message}`);
+      }
+    });
+    voice.start();
+  }
+}
+
 // ---------------------------------------------------------------- boot
 async function boot() {
   wire();
@@ -1640,6 +1940,14 @@ async function boot() {
   renderLibrary();
 
   loadRDKit().then(() => status('ready')).catch(() => toast('RDKit.js failed to load; chemistry features are offline', true));
+
+  setupAssistant();
+  setupHands();
+  setupScenes().catch((e) => console.warn('scenes', e));
+  const params = new URLSearchParams(location.search);
+  if (params.get('mode') === 'glasses') setupGlassesMode();
+  if (params.get('view') === 'dashboard') toggleDashboard(true);
+  S.ledger.addEventListener('append', () => refreshDashboard());
 
   const t = S.targets.find((x) => x.symbol === 'SOD1');
   if (t) openTarget(t);
