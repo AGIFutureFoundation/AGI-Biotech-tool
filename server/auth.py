@@ -10,11 +10,40 @@ import os
 import jwt
 import json
 import hashlib
+import secrets
+import warnings
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
 
-SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
+
+def _secret_key():
+    """Signing key from $JWT_SECRET, or a fresh random one per process.
+
+    The previous default was the literal 'dev-secret-change-in-production'.
+    Shipping a signing key in a public repository means anyone who reads it can
+    forge a token for any user, including an admin one, against any deployment
+    that forgot to set the variable -- and forgetting is silent by nature.
+
+    Falling back to a random key removes that: tokens simply stop validating
+    when the process restarts, which is a visible inconvenience in development
+    and the correct refusal in production.
+    """
+    key = os.getenv('JWT_SECRET')
+    if key:
+        return key
+
+    warnings.warn(
+        "JWT_SECRET is not set, so a random signing key was generated for this "
+        "process. Tokens will not survive a restart and will not validate across "
+        "multiple workers. Set JWT_SECRET before deploying.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
+    return secrets.token_urlsafe(64)
+
+
+SECRET_KEY = _secret_key()
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
 
