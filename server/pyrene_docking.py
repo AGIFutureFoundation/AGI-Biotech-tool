@@ -205,6 +205,10 @@ def ligand_from_mol(mol, name: str = "ligand") -> Ligand:
 @dataclass
 class DockingResult:
     """One scored compound. Every field is computed; none is synthetic."""
+    # The structure the score was computed on. A score whose molecule cannot be
+    # identified is the untraceable number this module exists to replace, and
+    # callers need it to record what was actually docked.
+    smiles: str
     vina_like_score: float
     terms: Dict[str, float]
     raw_terms: Dict[str, float]
@@ -220,6 +224,7 @@ class DockingResult:
     def as_record(self) -> Dict:
         return {
             "score_name": SCORE_NAME,
+            "smiles": self.smiles,
             "score": round(self.vina_like_score, 4),
             "units": SCORE_UNITS,
             "caveat": SCORE_CAVEAT,
@@ -254,6 +259,8 @@ def score_molecule(mol, target: str, receptor: Optional[Receptor] = None,
     they are not enough sampling to call any pose converged, which is one more
     reason the output is a ranking and not an affinity.
     """
+    from rdkit import Chem  # local, so vina_score stays rdkit-free
+
     rec = receptor or receptor_for(target, allow_network=allow_network)
     lig = ligand_from_mol(mol, name=name)
     poses = dock_ligand(rec.grid, lig, rec.center, runs=runs, steps=steps,
@@ -263,6 +270,7 @@ def score_molecule(mol, target: str, receptor: Optional[Receptor] = None,
     best = min(poses, key=lambda p: p.score)
     d = vina_score(rec.grid, lig, best.coords, details=True)
     return DockingResult(
+        smiles=Chem.MolToSmiles(mol),
         vina_like_score=float(d["total"]),
         terms=dict(d["terms"]),
         raw_terms=dict(d["raw"]),
