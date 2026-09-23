@@ -5,18 +5,27 @@ is -- model-organism-only, human-uncontrolled, human-rct, and so on. The obvious
 next question is what the next step costs, and that had no answer here because
 the platform models molecules and not experiments.
 
-The figures below are published prices from pump.science's documentation, which
-routes each stage to a named contract research organisation. They are quoted as
-published, with the stage they buy and who runs it, and nothing is interpolated
-between them or adjusted for a particular compound. A real quote comes from the
-lab, not from here.
+The figures below come from pump.science's documentation, which routes each
+stage to a named contract research organisation. Two quantities there are easy
+to conflate and are kept apart here, because they are not the same thing:
 
-The worm figure is denominated in SOL and is deliberately not converted: a
-dollar equivalent would be wrong within the hour and inventing one would be the
-same failure as the fabricated metrics this codebase has spent its history
-removing.
+  threshold  what that protocol requires to have accumulated in trading fees
+             before a stage unlocks. All four stages are stated "in fees".
+  payment    what is actually paid to the lab. The documentation states only
+             one: "3 SOL is used to pay for the first experiment in worms".
 
-Source: https://pumpscience.gitbook.io/pump.science, read 2026-09-22.
+A threshold is not a price quote. It is what one funding model asks for, and it
+carries that model's overheads, so treating $7,000 as the cost of a mouse study
+would misread it. For scale, a conventional mouse lifespan study runs well past
+$200,000 over two or more years, which is the comparison that makes the ladder
+interesting in the first place.
+
+The SOL payment is deliberately not converted to dollars: the figure would be
+wrong within the hour, and inventing one is the failure this codebase has spent
+its history removing.
+
+Source: https://pumpscience.gitbook.io/pump.science, llms-full.txt, read
+2026-09-22.
 """
 from typing import Dict, List, Optional
 
@@ -30,6 +39,8 @@ STAGES = (
         "stage": "worm",
         "organism": "C. elegans",
         "measures": "lifespan",
+        "threshold": "$500",
+        "lab_payment": "3 SOL",
         "cost": "3 SOL",
         "cost_is_crypto": True,
         "provider": "Ora Biomedical",
@@ -44,9 +55,11 @@ STAGES = (
         "stage": "fly",
         "organism": "Drosophila",
         "measures": "longevity",
+        "threshold": "$1,500",
+        "lab_payment": None,
         "cost": "$1,500",
         "cost_is_crypto": False,
-        "provider": "Juvion Health Sciences",
+        "provider": "Juvion Health Sciences (documentation also names Tracked Biotechnologies; unresolved)",
         "buys": "model-organism-only",
         "note": "A second invertebrate model. Agreement between worm and fly is "
                 "worth more than either alone, since it argues against an artefact "
@@ -56,6 +69,8 @@ STAGES = (
         "stage": "mouse",
         "organism": "Mus musculus",
         "measures": "longevity",
+        "threshold": "$7,000",
+        "lab_payment": None,
         "cost": "$7,000",
         "cost_is_crypto": False,
         "provider": "VivoArchitect",
@@ -68,6 +83,8 @@ STAGES = (
         "stage": "human",
         "organism": "Homo sapiens",
         "measures": "wearable-derived endpoints",
+        "threshold": "$25,000",
+        "lab_payment": None,
         "cost": "$25,000",
         "cost_is_crypto": False,
         "provider": "Reputable Health",
@@ -120,9 +137,10 @@ def plan(evidence_class: str) -> Dict:
         "rationale": rationale,
         "source": SOURCE,
         "read_on": READ_ON,
-        "caveat": "Published list prices for the stage, not a quote for a specific "
-                  "compound. Synthesis, shipping, controls, replication and analysis "
-                  "are not included, and a lab will price the actual work itself.",
+        "caveat": "These are funding thresholds in one protocol's model, not lab "
+                  "quotes. Only the worm stage states what the lab is paid. Synthesis, "
+                  "shipping, controls, replication and analysis are not included, and a "
+                  "real price comes from the lab.",
     }
 
 
