@@ -1144,7 +1144,31 @@ function filmStoryboard(shots) {
       stats: { 'AlphaFold 3': 'job export', OpenMM: '27 ns/day', Foldseek: 'fold search', 'shared rooms': 'multi-user' },
       onFrame: spin(0.002) },
 
-    { seconds: 5.5, fade: 'in', title: { main: 'biodao.blockchain', sub: '60 targets · 14 public databases · VR, AR and desktop', note: 'powered by AGI Corp', alpha: 0 },
+    { seconds: 9, caption: 'Every target carries citations that are re-resolved against live databases. A verifier re-checks each accession, structure, trial and quoted sentence, and fails on bad input.',
+      stats: { panels: 5, targets: 86, 'citation checks': 1264, failures: 0 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 9, caption: 'It caught a single word. A quote read "completion rates of planned assessments" where the paper says "for" — a real citation of a real study, wrong in one preposition.',
+      stats: { 'checked against': 'the abstract itself', 'what a skim catches': 'nothing', 'what the verifier caught': '1 word' },
+      onFrame: spin(0.0016) },
+
+    { seconds: 9, caption: 'Where a number is a placeholder rather than a measurement, it says so. The label follows the value into anything that formats it, including code that was never touched.',
+      stats: { marker: '[SYNTHETIC]', 'survives': 'arithmetic and formatting', 'shown in': 'UI, reports, headset' },
+      onFrame: spin(0.0018) },
+
+    { seconds: 10, caption: 'Repurposing works by joining a compound to its targets, then to other diseases those targets drive. Blinded, it rediscovers thalidomide for myeloma and sildenafil for pulmonary hypertension.',
+      stats: { 'known cases recovered': '5 of 7', 'thalidomide rank': 1, 'sildenafil rank': 3, 'misses explained': 2 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 8, caption: 'Compound sheets write substituents the way a chemist does, as OCH3 and CF3, which no parser accepts. Expanding that shorthand recovered most of a library that was being discarded.',
+      stats: { 'read natively': 692, 'recovered by repair': 3205, 'file formats': 16 },
+      onFrame: spin(0.0018) },
+
+    { seconds: 9, caption: 'A longevity track built around children: progeria, Werner, Cockayne, the telomere disorders. It records what failed to replicate as carefully as what held.',
+      stats: { targets: 18, 'progeroid arm': 9, 'claims that failed': 23 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 5.5, fade: 'in', title: { main: 'biodao.blockchain', sub: '86 targets · 1,264 verified citations · VR, AR and desktop', note: 'powered by AGI Corp', alpha: 0 },
       onFrame: spin(0.0012) },
   ];
 }
