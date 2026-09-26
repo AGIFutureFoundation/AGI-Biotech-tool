@@ -153,6 +153,46 @@ def _root_of(record):
         "expected a content_store manifest with a 'merkle_root', or a 32-byte hex root")
 
 
+def _record_is_synthetic(manifest):
+    """Does this record hold placeholder values? Resolved through the store.
+
+    A content_store manifest's ``entries`` map names to ADDRESSES, not values,
+    so inspecting the manifest itself finds only hex digests and always reports
+    clean. The gate has to fetch what those addresses point at.
+
+    Returns (synthetic, unresolved) where `unresolved` names entries whose
+    objects could not be read. An unreadable entry is reported rather than
+    assumed innocent: the caller is told the check was incomplete.
+    """
+    if manifest is None:
+        return False, []
+
+    entries = manifest.get("entries")
+    if not isinstance(entries, dict):
+        return sp.is_synthetic(manifest), []
+
+    # Anything outside `entries` (labels, notes) is still worth checking.
+    synthetic = sp.is_synthetic({k: v for k, v in manifest.items() if k != "entries"})
+    unresolved = []
+
+    import content_store
+
+    for name, address in entries.items():
+        if not (isinstance(address, str) and len(address) == 64):
+            synthetic = synthetic or sp.is_synthetic(address)
+            continue
+        try:
+            obj = content_store.get_json(address)
+        except (ValueError, OSError):
+            obj = None
+        if obj is None:
+            unresolved.append(name)
+            continue
+        synthetic = synthetic or sp.is_synthetic(obj)
+
+    return synthetic, unresolved
+
+
 def anchor_payload(record, network=DEFAULT_NETWORK, registry_address=None, label="",
                    from_address=None, allow_synthetic=False):
     """Build the unsigned transaction that would anchor `record`'s Merkle root.
@@ -171,7 +211,7 @@ def anchor_payload(record, network=DEFAULT_NETWORK, registry_address=None, label
     root, manifest = _root_of(record)
     root = "0x" + _hex32(root).hex()
 
-    synthetic = sp.is_synthetic(manifest) if manifest is not None else False
+    synthetic, unresolved = _record_is_synthetic(manifest)
     if synthetic and not allow_synthetic:
         return {
             "schema_version": SCHEMA_VERSION,
@@ -230,6 +270,13 @@ def anchor_payload(record, network=DEFAULT_NETWORK, registry_address=None, label
         payload["caveats"].append(
             "ANCHORING SYNTHETIC DATA: this record contains placeholder values and is being "
             "anchored anyway because allow_synthetic=True. " + SYNTHETIC_REFUSAL)
+    if unresolved:
+        payload["unresolved_entries"] = sorted(unresolved)
+        payload["caveats"].append(
+            f"INCOMPLETE CHECK: {len(unresolved)} entr"
+            f"{'y' if len(unresolved) == 1 else 'ies'} could not be read back from the content "
+            f"store ({', '.join(sorted(unresolved))}), so they were NOT screened for synthetic "
+            "values. Absence of a refusal above does not cover them.")
     if network == "monad-mainnet":
         payload["caveats"].append(
             "MAINNET: this costs real MON and is permanent. There is no unanchor.")

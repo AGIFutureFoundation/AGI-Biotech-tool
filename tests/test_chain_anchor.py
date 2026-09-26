@@ -283,6 +283,45 @@ def test_verification_admits_its_parse_is_unexercised(monkeypatch):
 
 # --------------------------------------------------------------------------- end to end
 
+def test_the_gate_fires_on_a_REAL_manifest_not_just_a_hand_built_one(tmp_path, monkeypatch):
+    """Regression: the refusal was inert on the only path that actually matters.
+
+    content_store.manifest() maps entry names to ADDRESSES, not values, so
+    inspecting the manifest dict found nothing but hex digests and always
+    reported clean. The gate passed its own tests -- which built manifests with
+    live values inline -- while doing nothing whatsoever in production.
+
+    This builds the manifest the real way and asserts the refusal fires.
+    """
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    manifest = content_store.manifest(
+        {"result.json": {"target": "BCL2", "best_score": sp.SyntheticValue(-9.4)}},
+        label="synthetic-run")
+
+    assert "SYNTHETIC" not in str(manifest["entries"]), "entries are addresses, as assumed"
+
+    out = ca.anchor_payload(manifest)
+    assert out["refused"] is True
+    assert out["unsigned_transaction"] is None
+
+
+def test_an_entry_that_cannot_be_read_back_is_reported_not_assumed_clean(tmp_path, monkeypatch):
+    """A screening that could not run must say so rather than pass silently."""
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    manifest = content_store.manifest({"result.json": {"score": -9.4}}, label="run")
+    manifest["entries"]["missing.json"] = "0" * 64      # never stored
+
+    out = ca.anchor_payload(manifest)
+
+    assert out["refused"] is False                      # nothing synthetic was found
+    assert out["unresolved_entries"] == ["missing.json"]
+    assert any("INCOMPLETE CHECK" in c for c in out["caveats"])
+
+
 def test_a_content_store_manifest_anchors_end_to_end(tmp_path, monkeypatch):
     """The real seam: content_store.manifest() -> anchor_payload(), no adapter."""
     monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))

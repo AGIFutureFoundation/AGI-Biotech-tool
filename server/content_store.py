@@ -23,6 +23,8 @@ import json
 import os
 from typing import Dict, List, Optional, Tuple
 
+import synthetic_provenance as sp
+
 EMPTY = "0" * 64
 
 
@@ -43,7 +45,19 @@ def hash_json(obj) -> str:
 
 
 def canonical(obj) -> bytes:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":")).encode()
+    """Canonical JSON bytes: stable key order, and provenance preserved.
+
+    json_ready() is not optional here. SyntheticValue subclasses float, so a
+    plain json.dumps writes a placeholder as an ordinary number and the store
+    ends up holding a value indistinguishable from a measurement -- in the one
+    component whose entire job is provenance, and which feeds the Merkle root
+    that chain_anchor would write to a public chain permanently.
+
+    Real data is untouched by json_ready, so addresses of measured values do
+    not move.
+    """
+    return json.dumps(sp.json_ready(obj), sort_keys=True,
+                      separators=(",", ":")).encode()
 
 
 def _path(digest: str) -> str:

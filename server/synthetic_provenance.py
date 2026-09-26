@@ -126,7 +126,47 @@ def stamp(record: dict, note: str, *extra_fields) -> dict:
 
 
 def json_default(obj):
-    """`json.dumps(..., default=json_default)` keeps the marker on bare values."""
-    if isinstance(obj, SyntheticValue):
+    """Fallback encoder for types json cannot serialize.
+
+    WARNING -- this does NOT catch SyntheticValue, and cannot. `default=` is
+    only consulted for objects the encoder does not already understand, and
+    SyntheticValue subclasses float, so json serializes it natively as a bare
+    number and this function is never called for one. It is kept for genuinely
+    unserializable types.
+
+    Use `json_ready()` below before dumping anything that may hold synthetic
+    values. That is the only reliable way to keep the marker through JSON.
+    """
+    if isinstance(obj, SyntheticValue):     # unreachable via default=; see above
         return str(obj)
     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+def json_ready(obj):
+    """Recursively replace synthetic values with their marked string form.
+
+    The reliable counterpart to json_default. json.dumps will happily write a
+    SyntheticValue as `-9.4`, losing the one thing that distinguished it from a
+    measurement, and no `default=` hook can intercept that because the value is
+    already a float as far as the encoder is concerned. So the substitution has
+    to happen before the encoder ever sees it.
+
+    Non-synthetic input is returned structurally unchanged, which matters for
+    content addressing: hashes of real data must not move because this exists.
+    """
+    if isinstance(obj, SyntheticValue):
+        return str(obj)
+    if isinstance(obj, dict):
+        return {k: json_ready(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [json_ready(v) for v in obj]
+    if isinstance(obj, tuple):
+        return tuple(json_ready(v) for v in obj)
+    return obj
+
+
+def dumps(obj, **kw):
+    """json.dumps that keeps the SYNTHETIC marker. Use instead of json.dumps."""
+    import json as _json
+    kw.setdefault("default", json_default)
+    return _json.dumps(json_ready(obj), **kw)

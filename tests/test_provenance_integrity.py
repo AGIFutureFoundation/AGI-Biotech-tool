@@ -160,6 +160,74 @@ def test_the_orchestrator_retaints_its_admet_count():
     assert "sp.derive" in block, "pass_lipinski is counted without re-tainting"
 
 
+# --------------------------------------------------------------------------- JSON is the other leak
+
+def test_plain_json_dumps_destroys_the_marker():
+    """The trap, stated plainly: json writes a placeholder as an ordinary number."""
+    import json
+    assert json.dumps({"score": S(-9.4)}) == '{"score": -9.4}'
+
+
+def test_json_default_cannot_catch_synthetic_values():
+    """Pins that `default=` is the wrong hook, because the docstring once promised it.
+
+    `default=` is consulted only for objects the encoder does not understand.
+    SyntheticValue subclasses float, so the encoder handles it natively and the
+    hook never fires. Anyone reaching for json_default to solve this is about to
+    ship a silent data-provenance hole.
+    """
+    import json
+    assert json.dumps({"score": S(-9.4)}, default=sp.json_default) == '{"score": -9.4}'
+
+
+def test_json_ready_preserves_the_marker_through_dumps():
+    import json
+    out = json.dumps(sp.json_ready({"score": S(-9.4), "nested": [{"x": S(1.0)}]}))
+    assert out.count(sp.MARKER) == 2
+
+
+def test_sp_dumps_is_the_safe_entry_point():
+    assert sp.MARKER in sp.dumps({"score": S(-9.4)})
+
+
+def test_json_ready_leaves_real_data_structurally_identical():
+    """Re-tainting must not perturb measured data, or every hash in the repo moves."""
+    import json
+    real = {"score": -9.4, "ids": [1, 2, 3], "name": "BCL2", "ok": True, "none": None}
+    assert sp.json_ready(real) == real
+    assert json.dumps(sp.json_ready(real)) == json.dumps(real)
+
+
+# --------------------------------------------------------------------------- the store must not launder
+
+def test_content_store_roundtrip_keeps_the_marker(tmp_path, monkeypatch):
+    """The store's whole job is provenance; it must not strip the one marking."""
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    address = content_store.put({"best_score": S(-9.4), "target": "BCL2"})
+    assert sp.is_synthetic(content_store.get_json(address))
+    assert sp.MARKER.encode() in content_store.get(address)
+
+
+def test_measured_values_keep_their_original_address(tmp_path, monkeypatch):
+    """Content addresses of real data must not move because of the fix."""
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    # The address this object had before json_ready was introduced.
+    assert content_store.put({"best_score": -9.4, "target": "BCL2"}) == (
+        "fb89aec0ddef150d004aed63b34ecc526aff280f186974412287571920a27de6")
+
+
+def test_synthetic_and_measured_get_different_addresses(tmp_path, monkeypatch):
+    """They are different claims about the world and must not collide."""
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    assert (content_store.put({"s": S(-9.4)}) != content_store.put({"s": -9.4}))
+
+
 # --------------------------------------------------------------------------- the anchoring tie-in
 
 def test_a_report_built_from_synthetic_scores_cannot_be_anchored_silently():
