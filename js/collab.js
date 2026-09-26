@@ -37,6 +37,29 @@ export class Collab extends EventTarget {
     this.leave();
     this.room = room; this.name = name || 'researcher';
     this.es = new EventSource(`/api/room/${encodeURIComponent(room)}/events`);
+
+    // An SSE stream is a connection held open for as long as the room lasts,
+    // and a browser allows only about six per origin over HTTP/1.1. A leaked
+    // EventSource therefore does not just waste a socket: once a few have
+    // accumulated, every other request to this origin -- structure fetches,
+    // API calls, the catalogue -- queues behind them and never runs. The page
+    // looks frozen with no error anywhere, which is why this is worth a
+    // listener rather than trusting the tab to be closed tidily.
+    if (!this._unload) {
+      this._unload = () => {
+        // sendBeacon survives teardown where fetch does not, so the room hears
+        // about the release now rather than waiting out a five-second lease.
+        for (const objectId of this.held) {
+          navigator.sendBeacon?.(
+            `/api/room/${encodeURIComponent(this.room)}/grab`,
+            new Blob([JSON.stringify({ client: this.client, object: objectId,
+                                       action: 'release' })],
+                     { type: 'application/json' }));
+        }
+        this.es?.close();
+      };
+      addEventListener('pagehide', this._unload);
+    }
     this.es.onmessage = (e) => {
       const p = JSON.parse(e.data);
       if (p.kind === 'grab') { this.onGrab(p); return; }   // including our own
@@ -52,6 +75,7 @@ export class Collab extends EventTarget {
     // room does not have to wait out the lease on an object nobody is touching.
     for (const objectId of [...this.held]) this.release(objectId);
     if (this.es) { this.es.close(); this.es = null; }
+    if (this._unload) { removeEventListener('pagehide', this._unload); this._unload = null; }
     for (const [, p] of this.peers) this.group.remove(p.obj);
     this.peers.clear(); this.holders.clear(); this.held.clear(); this.room = null;
   }

@@ -505,19 +505,64 @@ function renderSelection() {
   if (xr.active && S.selection.length) xr.panel.setStatus(info.split('  ·  ').pop());
 }
 
+// The id the room locks on. A constant rather than a literal because the server
+// arbitrates per object name, and a typo at one call site would hand out a lock
+// nobody else is asking for -- which looks exactly like the lock working.
+const LIGAND_OBJECT = 'ligand';
+
 let steer = null;
-function startSteer(worldPoint) {
-  if (!S.md || !S.ligand) return;
+
+// Claim before moving, rather than moving and reconciling. Optimistic grabbing
+// is what produces the tug-of-war: both hands pull, both broadcast, and the
+// molecule stutters between them. One round trip (~1ms local, ~50ms remote)
+// before the ligand starts following your hand is not noticeable; a fight is.
+async function startSteer(worldPoint) {
+  if (!S.md || !S.ligand) return false;
+  if (S.collab?.connected && !(await S.collab.claim(LIGAND_OBJECT))) return false;
+
   const local = model.worldToLocal(worldPoint.clone());
   steer = { offset: local.clone().sub(new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n))) };
-  S.md.setSteer({ x: local.x - steer.offset.x, y: local.y - steer.offset.y, z: local.z - steer.offset.z }, 25);
+  applySteer(local, { share: true });
+  return true;
 }
+
+// Can we plausibly start a drag right now, decided synchronously?
+//
+// preventDefault() cannot wait for a round trip -- by the time a claim
+// resolves, the browser has already acted on the event. So the press is
+// committed on the cached lock state, which is right except in the moment
+// between someone else grabbing and our hearing about it, and startSteer's
+// real claim rolls the UI back on the rare occasion it is wrong.
+const mayGrabLigand = () => !S.collab?.connected || S.collab.canMove(LIGAND_OBJECT);
+
 function updateSteer(worldPoint) {
   if (!steer || !S.md) return;
-  const local = model.worldToLocal(worldPoint.clone());
-  S.md.setSteer({ x: local.x - steer.offset.x, y: local.y - steer.offset.y, z: local.z - steer.offset.z }, 25);
+  // Refresh the lease while the drag continues; collab throttles this to 1 Hz
+  // against a 5s lease, so a held molecule never lapses mid-drag.
+  S.collab?.claim(LIGAND_OBJECT, { refresh: true });
+  applySteer(model.worldToLocal(worldPoint.clone()), { share: true });
 }
-function endSteer() { steer = null; S.md?.setSteer(null); }
+
+function applySteer(local, { share = false } = {}) {
+  const target = { x: local.x - (steer?.offset.x || 0),
+                   y: local.y - (steer?.offset.y || 0),
+                   z: local.z - (steer?.offset.z || 0) };
+  S.md.setSteer(target, 25);
+  if (share && S.collab?.connected) {
+    S.collab.share({ kind: 'steer', object: LIGAND_OBJECT, p: [target.x, target.y, target.z] });
+  }
+  return target;
+}
+
+function endSteer() {
+  const wasSteering = !!steer;
+  steer = null;
+  S.md?.setSteer(null);
+  if (wasSteering && S.collab?.connected) {
+    S.collab.share({ kind: 'steer', object: LIGAND_OBJECT, p: null });
+    S.collab.release(LIGAND_OBJECT);
+  }
+}
 
 // ---------------------------------------------------------------- render loop
 let frames = 0, last = performance.now(), fps = 0;
@@ -1480,7 +1525,7 @@ function cycleCompound(dir) {
 const isLigandHit = (hit) => S.mdRunning && S.ligand && pickAtom(hit)?.view === S.ligandView;
 xr.addEventListener('pressstart', (e) => {
   const { hit } = e.detail;
-  if (hit && isLigandHit(hit)) { startSteer(hit.point); if (steer) e.preventDefault(); }
+  if (hit && isLigandHit(hit) && mayGrabLigand()) { e.preventDefault(); startSteer(hit.point); }
 });
 xr.addEventListener('pick', (e) => onPick(e.detail.hit));
 xr.addEventListener('drag', (e) => {
@@ -1509,7 +1554,12 @@ vp.addEventListener('pointerdown', (e) => {
   if (xr.active || e.button !== 0 || e.target !== renderer.domElement) return;
   pressAt = { x: e.clientX, y: e.clientY };
   const hit = rayFromEvent(e);
-  if (hit && isLigandHit(hit)) { startSteer(hit.point); if (steer) { controls.enabled = false; pressAt = null; } }
+  if (hit && isLigandHit(hit) && mayGrabLigand()) {
+    controls.enabled = false; pressAt = null;
+    // If the claim is refused after all, give the camera back rather than
+    // leaving the user with a dead pointer and no explanation.
+    startSteer(hit.point).then((started) => { if (!started) controls.enabled = true; });
+  }
 });
 vp.addEventListener('pointermove', (e) => {
   if (xr.active) return;
@@ -2153,11 +2203,33 @@ async function boot() {
   resize();
   S.collab = new Collab(scene, workspace);
   S.collab.addEventListener('peer', (e) => { $('#peerList').textContent = `${e.detail.count} other participant(s) in the room.`; });
+  S.collab.addEventListener('left', (e) => { $('#peerList').textContent = e.detail.count
+    ? `${e.detail.count} other participant(s) in the room.` : 'Nobody else in the room.'; });
+
+  // Refused a grab: say who has it. "Nothing happened" is the worst possible
+  // feedback here, because the natural response is to pull harder.
+  S.collab.addEventListener('refused', (e) => {
+    toast(`${e.detail.holder} is holding that right now.`, true);
+  });
+
+  S.collab.addEventListener('grab', (e) => {
+    if (e.detail.mine) return;
+    toast(e.detail.holder
+      ? `${e.detail.name || 'Someone'} picked up the ligand.`
+      : 'The ligand is free again.');
+  });
+
   S.collab.addEventListener('state', (e) => {
     const st = e.detail;
     if (st.kind === 'protein' && st.pdb) loadPdb(st.pdb).catch(() => {});
     else if (st.kind === 'protein' && st.uniprot) loadAlphaFold(st.uniprot).catch(() => {});
     if (st.kind === 'ligand' && st.smiles) smilesTo3D(st.smiles, { name: st.name }).then((s) => setLigand(s, { smiles: st.smiles }));
+
+    // Someone else is moving the ligand: follow it. Guarded on not holding it
+    // ourselves, so a message that crosses our own grab cannot yank it back.
+    if (st.kind === 'steer' && S.md && !S.collab.held.has(st.object)) {
+      S.md.setSteer(st.p ? { x: st.p[0], y: st.p[1], z: st.p[2] } : null, 25);
+    }
   });
 
   S.caps = await server.health();
