@@ -290,13 +290,63 @@ def dispatch_command(tool, args, timeout=180):
 
 # --------------------------------------------------------------------------- collaboration rooms
 
-ROOMS = {}  # room -> {"subs": [queue], "state": {client: payload}}
+ROOMS = {}  # room -> {"subs": [queue], "state": {client: payload}, "grabs": {object: hold}}
 ROOM_LOCK = threading.Lock()
+
+# How long a hold survives without being refreshed. Two people reaching for the
+# same molecule cannot settle it between themselves -- both see themselves as
+# first, because neither has heard from the other yet. Only the server can
+# decide, so it does, and the loser is told rather than left fighting.
+#
+# The lease matters as much as the lock: a browser tab that crashes mid-grab
+# would otherwise hold a molecule forever, and the only fix would be restarting
+# the server. A holder refreshes while it keeps dragging; silence releases it.
+GRAB_TTL_SECONDS = 5.0
 
 
 def room(name):
     with ROOM_LOCK:
-        return ROOMS.setdefault(name, {"subs": [], "state": {}})
+        r = ROOMS.setdefault(name, {"subs": [], "state": {}, "grabs": {}})
+        r.setdefault("grabs", {})          # rooms created before grabs existed
+        return r
+
+
+def _expire_grabs(r, now=None):
+    """Drop holds nobody has refreshed. Caller must hold ROOM_LOCK."""
+    now = now if now is not None else time.time()
+    for obj, hold in list(r["grabs"].items()):
+        if hold["expires"] <= now:
+            del r["grabs"][obj]
+    return r["grabs"]
+
+
+def arbitrate_grab(r, client, obj, action, name=None, now=None):
+    """Grant, refresh or release a hold. Caller must hold ROOM_LOCK.
+
+    Returns (response, changed). `changed` says whether the room needs telling,
+    so a refresh at 12 Hz does not spam every peer with identical messages.
+    """
+    now = now if now is not None else time.time()
+    grabs = _expire_grabs(r, now)
+    held = grabs.get(obj)
+
+    if action == "release":
+        if held and held["client"] == client:
+            del grabs[obj]
+            return {"ok": True, "granted": False, "object": obj, "holder": None}, True
+        # Releasing something you do not hold is not an error; it is the normal
+        # result of a race you lost, and the client should not have to care.
+        return {"ok": True, "granted": False, "object": obj,
+                "holder": held["client"] if held else None}, False
+
+    if held and held["client"] != client:
+        return {"ok": True, "granted": False, "object": obj,
+                "holder": held["client"], "holder_name": held.get("name"),
+                "reason": "held by someone else"}, False
+
+    first = held is None
+    grabs[obj] = {"client": client, "name": name, "expires": now + GRAB_TTL_SECONDS}
+    return {"ok": True, "granted": True, "object": obj, "holder": client}, first
 
 
 # --------------------------------------------------------------------------- BigQuery
@@ -718,6 +768,30 @@ class Handler(SimpleHTTPRequestHandler):
                     json.dump(lib, f, indent=1)
                 os.replace(tmp, path)
                 return self._json({"ok": True, "saved": len(lib.get("compounds", []))})
+            if p.startswith("/api/room/") and p.endswith("/grab"):
+                # Who is allowed to move this object right now. Decided here
+                # because the clients cannot decide it among themselves.
+                name = p.split("/")[3]
+                body = json.loads(self._body())
+                obj = str(body.get("object") or "").strip()
+                if not obj:
+                    return self._json({"ok": False, "error": "no object named"}, 400)
+
+                r = room(name)
+                with ROOM_LOCK:
+                    reply, changed = arbitrate_grab(
+                        r, body.get("client", "?"), obj,
+                        body.get("action", "claim"), body.get("name"))
+                    subs = list(r["subs"]) if changed else []
+
+                if subs:
+                    msg = json.dumps({"kind": "grab", "object": obj,
+                                      "holder": reply.get("holder"),
+                                      "holder_name": body.get("name"),
+                                      "client": body.get("client", "?")})
+                    for q in subs:
+                        q.put(msg)
+                return self._json(reply)
             if p.startswith("/api/room/"):
                 name = p.split("/")[3]
                 payload = json.loads(self._body())
