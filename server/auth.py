@@ -60,6 +60,9 @@ class User:
         # 'salt$hash'. None means the account cannot log in, which is the
         # correct state for one that has not had a password set.
         self.password_hash: Optional[str] = None
+        # Set for accounts that sign in with a wallet. Such an account has no
+        # password, so control of the key is the only way into it.
+        self.wallet_address: Optional[str] = None
 
     def to_dict(self):
         return {
@@ -69,6 +72,7 @@ class User:
             'role': self.role,
             'institution': self.institution,
             'created_at': self.created_at,
+            'wallet_address': self.wallet_address,
         }
 
 class AuthToken:
@@ -197,6 +201,50 @@ def authenticate_user(email: str, password: str) -> Optional[str]:
     # take comparable time and cannot be told apart by timing.
     verify_password(password, hash_password("no-such-user"))
     return None
+
+def get_user_by_wallet(address: str) -> Optional[User]:
+    """Find the account bound to a wallet address, case-insensitively.
+
+    Addresses are compared lowercased. EIP-55 checksumming is presentational,
+    and treating two spellings of one address as two accounts would silently
+    fork a researcher's identity -- and with it the authorship of their runs.
+    """
+    if not address:
+        return None
+    wanted = str(address).lower()
+    for user in USERS_DB.values():
+        if (getattr(user, 'wallet_address', None) or '').lower() == wanted:
+            return user
+    return None
+
+
+def authenticate_wallet(address: str, name: str = '', institution: str = '') -> Optional[str]:
+    """Issue a token for a verified wallet address, registering it if new.
+
+    CALLER'S OBLIGATION: the signature must already have been verified by
+    siwe.verify(). This function takes an address on trust because by the time
+    it is reached the proof has been checked -- so it must never be reachable
+    from a request path that skipped that step. server.py calls it in exactly
+    one place, immediately after a successful verify.
+
+    First sign-in registers the account. That is the intended behaviour for a
+    wallet login: control of the key IS the credential, so there is no separate
+    sign-up to gate. New accounts get the lowest role, never an inherited one.
+    """
+    if not address:
+        return None
+
+    user = get_user_by_wallet(address)
+    if user is None:
+        user = create_user(
+            email=f"{address.lower()}@wallet.local",
+            name=name or f"{address[:6]}...{address[-4:]}",
+            role='researcher', institution=institution)
+        user.wallet_address = address
+        # No password is set, so this account cannot be logged into by any
+        # other route. The key is the only credential.
+    return AuthToken.create(user)
+
 
 # The Flask @require_auth and @require_role decorators that used to live here
 # imported flask, which is not a dependency and is not installed, so calling

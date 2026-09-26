@@ -46,13 +46,21 @@ sys.path.insert(0, HERE)
 # `python server/server.py`, `import server` and an import from the repo root all working.
 from agent_orchestrator import AgentOrchestrator  # noqa: E402
 from agents import AnalysisAgent, OptimizationAgent, WorkflowOrchestrator  # noqa: E402
-from auth import AuthToken, authenticate_user, create_user  # noqa: E402
+from auth import AuthToken, authenticate_user, authenticate_wallet, create_user  # noqa: E402
 from disease_panels import get_panel, get_top_targets_by_prevalence, list_panels  # noqa: E402
 from master_agent import MasterAgentWithOrchestration  # noqa: E402
 from paper_generator import generate_paper_from_session  # noqa: E402
 from projects import create_project, get_project, list_user_projects  # noqa: E402
 from reporting import generate_screening_report  # noqa: E402
+import siwe  # noqa: E402
 import synthetic_provenance as sp  # noqa: E402
+
+# Which domain and chain a sign-in must have been made for. A signature for
+# another site is genuine but is not a login here, so these are checked rather
+# than read from the message. Overridable for local development.
+SIWE_DOMAIN = os.environ.get("SIWE_DOMAIN", "biodao.blockchain")
+SIWE_CHAIN_ID = int(os.environ.get("SIWE_CHAIN_ID", "10143"))   # Monad testnet
+ADDRESS_PLACEHOLDER = "0x0000000000000000000000000000000000000000"
 
 
 def _try(mod):
@@ -502,6 +510,20 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         p = self.path.split("?")[0]
+        if p == "/api/auth/nonce":
+            # The nonce is what makes a captured signature usable once rather
+            # than forever, so it is minted here and never taken from the client.
+            nonce = siwe.issue_nonce()
+            return self._json({
+                "nonce": nonce, "domain": SIWE_DOMAIN, "chain_id": SIWE_CHAIN_ID,
+                "statement": siwe.DEFAULT_STATEMENT,
+                "message": siwe.build_message(
+                    domain=SIWE_DOMAIN, address=ADDRESS_PLACEHOLDER,
+                    uri=f"https://{SIWE_DOMAIN}/login", chain_id=SIWE_CHAIN_ID,
+                    nonce=nonce),
+                "note": "Replace the address line with the connected account, then "
+                        "sign the whole message with personal_sign.",
+            })
         if p == "/api/scenes":
             d = os.path.join(ROOT, "assets", "scenes")
             out = []
@@ -617,6 +639,24 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):  # noqa: N802
         p = self.path.split("?")[0]
         try:
+            if p == "/api/auth/siwe":
+                # Wallet sign-in. The signature is verified first and the token
+                # is issued only on the success path, so there is no branch
+                # where authenticate_wallet is reached without a proof.
+                body = json.loads(self._body())
+                result = siwe.verify(
+                    body.get("message", ""), body.get("signature", ""),
+                    expected_domain=SIWE_DOMAIN, expected_chain_id=SIWE_CHAIN_ID)
+                if not result["ok"]:
+                    # 401 with the reason: "wrong domain" and "bad signature"
+                    # are different problems for whoever is debugging, and
+                    # neither leaks anything the caller did not already send.
+                    return self._json({"ok": False, "error": result["reason"]}, 401)
+
+                token = authenticate_wallet(result["signer"])
+                return self._json({"ok": True, "token": token,
+                                   "address": result["signer"],
+                                   "interop_verified": result["interop_verified"]})
             if p == "/api/embed":
                 if not HAVE["rdkit"]:
                     return self._json({"error": "RDKit not installed on the server"}, 501)
