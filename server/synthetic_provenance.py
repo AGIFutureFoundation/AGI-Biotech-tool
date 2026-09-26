@@ -17,6 +17,17 @@ class SyntheticResultWarning(UserWarning):
     """Raised once per process the first time a synthetic value is created."""
 
 
+def saw_synthetic() -> bool:
+    """Has this process produced a placeholder value?
+
+    Exposed so /api/health can report posture. Whether an instance is emitting
+    placeholders changes how everything it returns should be read, and that is
+    invisible from outside otherwise -- an operator would have to inspect a
+    response and notice the marker.
+    """
+    return _warned
+
+
 def _warn_once():
     global _warned
     if _warned:

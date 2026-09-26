@@ -35,7 +35,7 @@ Each row is a command you can run. The figures are from a run on 2026-09-22.
 
 | Check | Command | Result |
 |---|---|---|
-| Test suite | `make test` | 1098 passed, 1 xfailed |
+| Test suite | `make test` | 1116 passed, 1 xfailed |
 | Module imports | `make imports` | passes |
 | JS module reachability | `make reachable` | 24 of 24 modules reachable from `main.js` |
 | Panel citations — ALS | `scripts/verify_panel_citations.py ALS` | 250/250 checks passed |

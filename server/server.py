@@ -47,6 +47,7 @@ sys.path.insert(0, HERE)
 from agent_orchestrator import AgentOrchestrator  # noqa: E402
 from agents import AnalysisAgent, OptimizationAgent, WorkflowOrchestrator  # noqa: E402
 from auth import AuthToken, authenticate_user, authenticate_wallet, create_user  # noqa: E402
+import health  # noqa: E402
 from disease_panels import get_panel, get_top_targets_by_prevalence, list_panels  # noqa: E402
 from master_agent import MasterAgentWithOrchestration  # noqa: E402
 from paper_generator import generate_paper_from_session  # noqa: E402
@@ -587,7 +588,12 @@ class Handler(SimpleHTTPRequestHandler):
         if p == "/api/tools":
             return self._json({"tools": TOOL_SCHEMA})
         if p == "/api/health":
-            return self._json({"ok": True, **HAVE, "rooms": len(ROOMS)})
+            payload = health.report(HAVE, rooms=len(ROOMS), jobs=len(JOBS),
+                                    synthetic_active=sp.saw_synthetic())
+            # Flags stay at the top level for callers written against the old
+            # shape; `status` is what a probe should read.
+            payload.update({k: bool(v) for k, v in HAVE.items()})
+            return self._json(payload, health.status_code(payload))
         if p.startswith("/api/md/"):
             job = JOBS.get(p.rsplit("/", 1)[1])
             if not job:
