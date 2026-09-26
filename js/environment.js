@@ -13,11 +13,33 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { resolve as resolveAsset } from './assets.js';
 
 const DRACO = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/draco/';
 const BASIS = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/basis/';
 
 // Free, no-account sources. Poly Haven is CC0 and serves CORS headers, so lighting can be fetched live.
+const HDRI_BASE = 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr';
+
+/**
+ * The download URL for an HDRI slug at a given resolution.
+ *
+ * Tries the naming convention first, because it holds for essentially every
+ * asset and costs no request. Falls back to the catalogue API, which returns
+ * the authoritative URL, so a file that breaks the convention still resolves.
+ */
+export async function resolveHdri(slug, resolution = '1k') {
+  const direct = `${HDRI_BASE}/${resolution}/${slug}_${resolution}.hdr`;
+  try {
+    const head = await fetch(direct, { method: 'HEAD' });
+    if (head.ok) return direct;
+  } catch { /* fall through to the catalogue */ }
+
+  const got = await resolveAsset(slug, { map: 'hdri', resolution, format: 'hdr' });
+  if (got.ok) return got.url;
+  throw new Error(got.reason || `no HDRI found for "${slug}"`);
+}
+
 export const HDRI_PRESETS = [
   { id: 'studio_small_09', label: 'Studio' },
   { id: 'lab', label: 'Lab (procedural)', procedural: true },
@@ -144,7 +166,15 @@ export class EnvironmentManager extends EventTarget {
       this.scene.environment = env.texture;
       return { lighting: 'lab (procedural)' };
     }
-    const url = `https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/${preset}.hdr`;
+    // Poly Haven names its files <slug>_<resolution>.hdr. This used to omit the
+    // suffix, so EVERY non-procedural preset -- Sunset, Studio, Daylight, Night
+    // -- 404'd. It failed as a toast rather than an exception, which is why it
+    // survived: the scene simply kept its previous lighting and looked fine.
+    //
+    // resolveHdri() confirms the URL against the catalogue API when the direct
+    // guess fails, so an asset that does not follow the convention still loads
+    // instead of reintroducing exactly this bug for a different file.
+    const url = await resolveHdri(preset);
     const tex = await new RGBELoader().loadAsync(url);
     tex.mapping = THREE.EquirectangularReflectionMapping;
     const env = this.pmrem.fromEquirectangular(tex);

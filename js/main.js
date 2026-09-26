@@ -19,6 +19,7 @@ import { VoiceControl } from './voice.js';
 import { HandTracking } from './hands.js';
 import { computeStats, renderDashboard, buildReport } from './dashboard.js';
 import { EnvironmentManager, Locomotion, HDRI_PRESETS } from './environment.js';
+import { catalogue, search as searchAssets, debounce } from './assets.js';
 import { interactionFingerprint, pocketVariantOverlap, clusterSeries } from './analysis.js';
 import { tanimoto } from './chem.js';
 import { Recorder } from './recorder.js';
@@ -1959,6 +1960,50 @@ async function setupScenes() {
     catch (e) { toast(`Lighting failed: ${e.message}`, true); }
   };
   $('#hdriBg').onchange = (e) => env.showBackground(e.target.checked);
+
+  // The full Poly Haven catalogue is ~997 environments, all of which already
+  // work with setLighting() because it builds its URL from the slug. It is
+  // fetched lazily on first search rather than at boot: nobody should wait on a
+  // third-party API to open the workspace, and most sessions never touch this.
+  const hdriSearch = $('#hdriSearch'); const hdriStatus = $('#hdriStatus');
+  let hdriCatalogue = null; let hdriLoading = null;
+
+  const fillHdri = (entries, note) => {
+    const chosen = sel.value;
+    sel.innerHTML = '';
+    HDRI_PRESETS.forEach((h) => sel.appendChild(new Option(h.label, h.id)));
+    sel.appendChild(new Option('none', 'none'));
+    for (const a of entries) sel.appendChild(new Option(a.name, a.slug));
+    // Keep the user's selection if it survived the filter.
+    if ([...sel.options].some((o) => o.value === chosen)) sel.value = chosen;
+    hdriStatus.textContent = note;
+  };
+
+  const loadHdriCatalogue = async () => {
+    if (hdriCatalogue) return hdriCatalogue;
+    if (!hdriLoading) {
+      hdriStatus.textContent = 'Loading catalogue…';
+      hdriLoading = catalogue('hdris').then((got) => {
+        hdriCatalogue = got;
+        return got;
+      });
+    }
+    return hdriLoading;
+  };
+
+  hdriSearch.oninput = debounce(async () => {
+    const text = hdriSearch.value.trim();
+    const got = await loadHdriCatalogue();
+    if (!got.ok) { hdriStatus.textContent = got.error; return; }
+    if (!text) {
+      fillHdri([], `${got.assets.length} environments available. Type to search.`);
+      return;
+    }
+    const hits = searchAssets(got.assets, { text, limit: 200 });
+    fillHdri(hits, hits.length
+      ? `${hits.length} of ${got.assets.length} match "${text}" · CC0, Poly Haven`
+      : `Nothing matches "${text}". Built-in presets still listed above.`);
+  }, 250);
   $('#sceneQuality').onchange = (e) => { const r = env.setQuality(e.target.value); toast(`Detail: ${r.level}`); };
   $('#walkMode').onchange = (e) => { S.walk.setEnabled(e.target.checked); controls.enabled = !e.target.checked;
     toast(e.target.checked ? 'Walk mode: W A S D, shift to sprint; thumbstick in a headset' : 'Orbit mode'); };
