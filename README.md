@@ -8,8 +8,19 @@ runs, and score the fit as you go. It is wired to live public databases and to y
 collection, and it focuses on neurogenetic disease targets: ALS, Parkinson's, and the skeletal,
 neuromuscular and burn-injury conditions Shriners Children's treats.
 
-Everything runs locally. No accounts, no API keys, no data leaves the machine except public database
-lookups you trigger.
+Everything runs locally. Nothing is uploaded, and no account or API key is needed to use it.
+
+The precise version, because a claim like that is worth being able to check: **exactly one host is
+contacted when the page loads** — `cdn.jsdelivr.net`, for the 3D engine. Everything else happens only
+when you ask for it: a structure lookup, an environment, a literature search. Sign-in, payments and
+on-chain anchoring are optional features that contact nothing unless you turn them on.
+
+Every endpoint is declared, with what it is for and what is sent to it, and the build fails if one
+appears that is not:
+
+```bash
+make egress          # or: .venv/bin/python scripts/check_egress.py --markdown
+```
 
 ---
 

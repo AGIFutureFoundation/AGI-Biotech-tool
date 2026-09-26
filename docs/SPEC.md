@@ -20,7 +20,7 @@ so the result can be trusted later.
 | 5 | Hand control | Pinch, two-hand scale, point, swipe, palm menu, no controllers | done, untested on hardware |
 | 6 | Dashboard | One page answers: what is loaded, what was screened, what the evidence says | done |
 | 7 | Mobile | Usable one-handed at 390 px: bottom sheets, touch targets, no horizontal scroll | done |
-| 8 | Shared space | Several people see the same molecule, each other, and each other's changes | partial: avatars and state sync exist; no voice chat, no ownership rules |
+| 8 | Shared space | Several people see the same molecule, each other, and each other's changes | partial: avatars, state sync and server-arbitrated ownership exist; no voice chat |
 | 9 | Environments | Load a real glTF scene, stand the molecule in it, keep frame rate | done |
 | 10 | Databases | Public sources, no keys, failure of one never blocks the rest | done, 14 sources |
 | 11 | Evals | Accuracy is measured and published, not asserted | done, see below |
@@ -54,6 +54,8 @@ tampering detectable and gives a head hash you can anchor elsewhere.
 ## Still open
 
 - Hardware testing for hand tracking and voice on Quest 3 and Vision Pro.
-- Shared space: object ownership so two people cannot drag one ligand, and voice chat.
+- Shared space: voice chat. Object ownership is done — the server arbitrates a lease
+  per object, so two people cannot drag one ligand and the loser is told who holds it.
 - Eval coverage: more re-docking cases, and a scoring function that passes more of them.
-- A Sketchfab account token would allow in-app environment search; without it, scenes are imported by file.
+- Environment search is done, against the Poly Haven catalogue (997 environments, CC0,
+  no account or token needed). Sketchfab would add models on top of that, not instead.

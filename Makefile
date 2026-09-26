@@ -4,7 +4,7 @@
 # wrong interpreter produces a passing run that proves nothing.
 PY := .venv/bin/python
 
-.PHONY: help test imports reachable citations verify inventory serve
+.PHONY: help test imports reachable citations verify inventory serve egress
 .DEFAULT_GOAL := help
 
 help:
@@ -12,9 +12,10 @@ help:
 	@echo "make imports    every module under server/ and scripts/ imports"
 	@echo "make reachable  no orphaned JS modules"
 	@echo "make citations  every identifier in all 5 panels resolves (hits the network)"
-	@echo "make verify     test + imports + reachable"
+	@echo "make verify     test + imports + reachable + egress"
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
 	@echo "make anchor     build an unsigned Monad anchor for RESULTS=..."
+	@echo "make egress     every host the app can contact, declared and checked"
 	@echo "make serve      run the app on http://localhost:8000"
 
 test:
@@ -34,7 +35,12 @@ citations:
 		|| { echo "scripts/verify_panel_citations.py not present yet"; exit 1; }
 	$(PY) scripts/verify_panel_citations.py
 
-verify: test imports reachable
+# Data egress is part of verify because an undeclared endpoint is the kind of
+# change that is easy to make without noticing and hard to find afterwards.
+egress:
+	$(PY) scripts/check_egress.py
+
+verify: test imports reachable egress
 
 inventory:
 	@test -n "$(FILES)" || { echo 'usage: make inventory FILES="a.pdf b.pdf"'; exit 1; }

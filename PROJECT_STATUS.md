@@ -1,6 +1,6 @@
 # biodao.blockchain: Project Status
 
-**Last verified:** 2026-09-22
+**Last verified:** 2026-09-26
 **Scope:** an AR/VR molecular workspace for drug discovery, built to serve the same
 research goals as organisations working on ALS, Parkinson's and childhood disease.
 
@@ -35,9 +35,9 @@ Each row is a command you can run. The figures are from a run on 2026-09-22.
 
 | Check | Command | Result |
 |---|---|---|
-| Test suite | `make test` | 708 passed, 1 xfailed |
+| Test suite | `make test` | 1098 passed, 1 xfailed |
 | Module imports | `make imports` | passes |
-| JS module reachability | `make reachable` | 22 of 22 modules reachable from `main.js` |
+| JS module reachability | `make reachable` | 24 of 24 modules reachable from `main.js` |
 | Panel citations — ALS | `scripts/verify_panel_citations.py ALS` | 250/250 checks passed |
 | Panel citations — Parkinson's | `scripts/verify_panel_citations.py Parkinsons` | 207/207 checks passed |
 | Panel citations — Shriners | `scripts/verify_panel_citations.py Shriners` | 190/190 checks passed |
