@@ -13,6 +13,7 @@ import { af3LocalJob, afServerJob, downloadJson, downloadText, readPrediction } 
 import { Collab } from './collab.js';
 import { XRManager, xrSupport, XR_REASONS, onXRDeviceChange } from './xr.js';
 import { Ledger } from './ledger.js';
+import { signIn, ensureMonad, watchWallet, shortAddress, hasWallet, NO_WALLET } from './wallet.js';
 import { buildTools, toolSchemas, AgentRuntime, AgentConsole, connectCommandChannel } from './agent.js';
 import { VoiceControl } from './voice.js';
 import { HandTracking } from './hands.js';
@@ -34,6 +35,7 @@ const S = {
   grid: null, pockets: [], pocket: null, poses: [], md: null, mdRunning: false, caps: null,
   selection: [], measureMode: false, library: new CompoundLibrary(), compound: null, screening: false, stopFlag: false,
   backendJob: null, trajectory: null, missense: null, lastScore: null, ledger: new Ledger(), demo: null,
+  wallet: null, walletWatch: null,
   recorder: null, orbitSpeed: 0, agent: null, voice: null, hands: null, dashboardOpen: false, env: null, walk: null,
 };
 
@@ -946,6 +948,51 @@ async function reviewPatents() {
 }
 
 // ---------------------------------------------------------------- provenance ledger
+// --- wallet sign-in -------------------------------------------------------
+// The token lives in memory only. Putting it in localStorage would outlive the
+// tab and survive an account switch in the wallet, which is exactly the state
+// we go out of our way to end below.
+function renderWallet() {
+  const box = $('#walletStatus');
+  if (!box) return;
+  if (!S.wallet) {
+    box.textContent = hasWallet() ? 'Not signed in.' : NO_WALLET;
+    return;
+  }
+  box.innerHTML = `Signed in as <code>${shortAddress(S.wallet.address)}</code>`
+    + (S.wallet.interopVerified ? ''
+       : ' <span class="hint">· signature path not yet confirmed against a live wallet</span>');
+}
+
+async function walletSignIn() {
+  try {
+    await ensureMonad();
+    S.wallet = await signIn({});
+    renderWallet();
+    toast(`Signed in as ${shortAddress(S.wallet.address)}`);
+
+    S.walletWatch?.();
+    // A session token is bound to the address that signed for it, so an account
+    // or chain switch has to end the session rather than quietly leave the user
+    // acting as someone else.
+    S.walletWatch = watchWallet(({ reason }) => {
+      if (!S.wallet) return;
+      walletSignOut();
+      toast(reason === 'chainChanged' ? 'Chain changed; signed out.'
+                                      : 'Account changed; signed out.', true);
+    });
+  } catch (err) {
+    toast(err.message || String(err), true);
+  }
+}
+
+function walletSignOut() {
+  S.walletWatch?.();
+  S.walletWatch = null;
+  S.wallet = null;
+  renderWallet();
+}
+
 function renderLedger() {
   const head = $('#ledgerHead'), list = $('#ledgerList');
   if (!head) return;
@@ -1637,6 +1684,8 @@ function wire() {
   };
   $('#btnLedgerExport').onclick = () => downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`);
   $('#btnLedgerClear').onclick = () => { if (confirm('Clear the provenance ledger? This cannot be undone.')) { S.ledger.clear(); renderLedger(); } };
+  $('#btnWalletSignIn').onclick = walletSignIn;
+  $('#btnWalletOut').onclick = walletSignOut;
   $('#btnVR').onclick = () => enterXR('immersive-vr');
   $('#btnAR').onclick = () => enterXR('immersive-ar');
   $('#xrHelpClose').onclick = () => $('#xrHelp').classList.add('hidden');
@@ -2084,6 +2133,7 @@ async function boot() {
 
   S.ledger.actor = localStorage.getItem('biodao-actor') || 'researcher';
   renderLedger();
+  renderWallet();
   S.library.addEventListener('change', renderLibrary);
   await S.library.load();
   renderLibrary();
