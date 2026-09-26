@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGI BioXR — molecular research you can check</title>
+<meta name="description" content="A molecular research workspace in the browser and in VR, built so every number can be traced back to where it came from.">
+<style>
+/* Same tokens as css/app.css, inlined so the landing page has no dependency on
+   the workspace bundle and renders instantly on a cold visit. */
+:root {
+  --bg: #070b12; --panel: #0d141f; --panel2: #111a27; --line: #1e2b3c;
+  --ink: #e8f1ff; --dim: #93a7bd; --accent: #39d98a; --accent2: #4cc9f0;
+  --warn: #ffbe0b; --radius: 10px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent2); }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+code { font-family: var(--mono); font-size: .88em; color: var(--accent2); }
+
+header { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; margin-bottom: 20px;
+}
+h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.15; margin: 0 0 18px; letter-spacing: -.02em; }
+.lede { font-size: clamp(17px, 2.2vw, 19px); color: var(--dim); max-width: 60ch; margin: 0 0 30px; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: var(--radius);
+  text-decoration: none; font-weight: 600; font-size: 14.5px; border: 1px solid var(--line);
+  color: var(--ink); background: var(--panel2); transition: border-color .15s, transform .15s;
+}
+.btn:hover { border-color: var(--accent2); transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: #05210f; border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.note { font-size: 13px; color: var(--dim); }
+
+section { padding: 52px 0; border-bottom: 1px solid var(--line); }
+h2 { font-size: 22px; margin: 0 0 8px; letter-spacing: -.01em; }
+.sub { color: var(--dim); margin: 0 0 28px; max-width: 62ch; }
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+.card h3 { margin: 0 0 8px; font-size: 15.5px; }
+.card p { margin: 0; color: var(--dim); font-size: 14px; }
+.card .who {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+}
+
+.honest { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: var(--radius); padding: 24px; }
+.honest h2 { margin-top: 0; }
+.honest ul { margin: 14px 0 0; padding-left: 20px; color: var(--dim); }
+.honest li { margin-bottom: 9px; }
+.honest b { color: var(--ink); font-weight: 600; }
+.marker { font-family: var(--mono); font-size: 12px; color: var(--warn); }
+
+dl { margin: 0; display: grid; gap: 14px; }
+dt { font-weight: 600; font-size: 14.5px; }
+dd { margin: 4px 0 0; color: var(--dim); font-size: 14px; }
+
+footer { padding: 36px 0 60px; color: var(--dim); font-size: 13px; }
+footer a { margin-right: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="tag">Open source · Runs in your browser</div>
+    <h1>Molecular research you can check.</h1>
+    <p class="lede">
+      Fetch a real protein structure, look at it in 3D or in VR with your team, dock a
+      compound against it, and export a record whose every number can be traced back to
+      where it came from — or marked plainly as a placeholder if it has not been measured.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="index.html">Open the workspace</a>
+      <a class="btn" href="index.html?demo=1">Watch the 2-minute tour</a>
+    </div>
+    <p class="note" style="margin-top:18px">
+      No account needed. Nothing is uploaded — structures load straight from the PDB,
+      AlphaFold and UniProt into your browser.
+    </p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>What you can actually do today</h2>
+    <p class="sub">
+      Every item here works now. Things that do not work yet are in the section below,
+      not hidden in a roadmap.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Load any known structure</h3>
+        <p>By gene, PDB id, UniProt accession or disease. Experimental structures from the
+        RCSB PDB, predicted ones from AlphaFold, with per-residue confidence shown rather
+        than flattened away.</p>
+      </div>
+      <div class="card">
+        <h3>Find pockets and dock</h3>
+        <p>Pocket detection and a Vina-style scoring function that runs in the browser, with
+        a matching Python implementation checked term-by-term against it so the two cannot
+        silently disagree.</p>
+      </div>
+      <div class="card">
+        <h3>Work in the same room</h3>
+        <p>Join a room and see where other people are looking and what they are holding, on
+        a laptop or in a headset. WebXR, no install.</p>
+      </div>
+      <div class="card">
+        <h3>Keep a record that holds up</h3>
+        <p>Every run is chained by hash, so the history cannot be edited afterwards without
+        breaking it. Export it, or anchor its root on-chain if you need a timestamp someone
+        else can verify.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="honest">
+      <h2>What this is not</h2>
+      <p class="sub" style="margin-bottom:0">
+        Most of the harm a tool like this can do is by sounding more certain than it is.
+        So, plainly:
+      </p>
+      <ul>
+        <li><b>Docking scores are estimates, not measurements.</b> The in-browser score is
+          useful for ranking and for teaching. It is not kcal/mol and it has not been
+          validated against experiment.</li>
+        <li><b>Some numbers are placeholders, and they say so.</b> Where no model has run,
+          values print with a <span class="marker">[SYNTHETIC]</span> marker and carry a
+          provenance field. They are not results and the software will not let them be
+          anchored on-chain as if they were.</li>
+        <li><b>Nothing here is a clinical or regulatory product.</b> It is not a medical
+          device, it gives no medical advice, and a compound being listed by a supplier is
+          not a clearance to obtain or handle it.</li>
+        <li><b>A signature is not a peer review.</b> Signing a record proves who made a
+          claim about it. It does not establish that the claim is true.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Who it is for</h2>
+    <p class="sub">The same workspace, used four fairly different ways.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="who">Research labs</div>
+        <h3>Look at the thing you are arguing about</h3>
+        <p>Pull a structure mid-discussion, inspect the pocket together, and leave with a
+        hash-chained record of what was actually looked at.</p>
+      </div>
+      <div class="card">
+        <div class="who">Teaching &amp; simulators</div>
+        <h3>Structural biology you can walk around</h3>
+        <p>Runs on a laptop and in a headset with no install and no licence. Scores are
+        labelled as estimates, so students learn the caveat with the technique.</p>
+      </div>
+      <div class="card">
+        <div class="who">Nonprofits</div>
+        <h3>Open data, no seat fees</h3>
+        <p>Built on public sources — PDB, AlphaFold, UniProt, ChEMBL, Open Targets. Disease
+        panels ship with citations that a script re-checks against the live sources.</p>
+      </div>
+      <div class="card">
+        <div class="who">Industry R&amp;D</div>
+        <h3>Provenance you can hand to someone else</h3>
+        <p>Content-addressed storage, Merkle roots, optional on-chain anchoring, and
+        sourcing documents that separate what a vendor lists from what has been verified.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Common questions</h2>
+    <dl>
+      <dt>Do I need a headset?</dt>
+      <dd>No. Everything works with a mouse. A headset adds room-scale and hand tracking.</dd>
+
+      <dt>Does my data leave the machine?</dt>
+      <dd>Structures are fetched from public databases directly by your browser. Your
+      session stays local unless you explicitly export or anchor it.</dd>
+
+      <dt>Do I need a crypto wallet?</dt>
+      <dd>No. Wallet sign-in is optional and only attaches an author to a record. Nothing
+      is charged, and nothing is anchored unless you choose to sign it yourself.</dd>
+
+      <dt>Can I self-host it?</dt>
+      <dd>Yes — it is a static page plus a small Python server. <code>make serve</code>.</dd>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="index.html">Workspace</a>
+    <a href="README.md">Documentation</a>
+    <a href="SECURITY.md">Security</a>
+    <a href="CONTRIBUTING.md">Contributing</a>
+    <p style="margin-top:18px">
+      Structures from the RCSB PDB, AlphaFold DB (EMBL-EBI / Google DeepMind), UniProt,
+      ChEMBL and Open Targets. Environments from Poly Haven (CC0).
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
