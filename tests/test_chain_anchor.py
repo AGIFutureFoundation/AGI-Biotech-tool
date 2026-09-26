@@ -236,6 +236,25 @@ def test_an_unreachable_node_is_unknown_not_absent(monkeypatch):
     assert "NOT evidence the anchor is absent" in out["note"]
 
 
+@pytest.mark.parametrize("rpc_result,rpc_error", [
+    (None, "URLError: offline"),      # unreachable
+    (None, None),                     # not found
+])
+def test_every_verify_result_explains_what_an_anchor_proves(monkeypatch, rpc_result, rpc_error):
+    """Every branch, not just the happy one -- a caller reads the same keys each time.
+
+    Regression: the unreachable and not_found branches omitted anchor_meaning,
+    and scripts/anchor_run.py crashed with a KeyError on the exact path a user
+    hits first, which is an offline check.
+    """
+    monkeypatch.setattr(ca, "_rpc", lambda *a, **k: (rpc_result, rpc_error))
+    out = ca.verify_anchor("0x" + "cd" * 32, ROOT)
+
+    for key in ("anchor_meaning", "expected_root", "status", "verified",
+                "tx_hash", "network", "parse_verified"):
+        assert key in out, f"{out['status']} branch is missing {key!r}"
+
+
 def test_a_mined_transaction_carrying_the_root_verifies(monkeypatch):
     def fake_rpc(network, method, params, timeout=15):
         if method == "eth_getTransactionByHash":

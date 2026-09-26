@@ -14,6 +14,7 @@ help:
 	@echo "make citations  every identifier in all 5 panels resolves (hits the network)"
 	@echo "make verify     test + imports + reachable"
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
+	@echo "make anchor     build an unsigned Monad anchor for RESULTS=..."
 	@echo "make serve      run the app on http://localhost:8000"
 
 test:
@@ -38,6 +39,12 @@ verify: test imports reachable
 inventory:
 	@test -n "$(FILES)" || { echo 'usage: make inventory FILES="a.pdf b.pdf"'; exit 1; }
 	$(PY) scripts/build_compound_inventory.py $(FILES)
+
+# Builds an UNSIGNED transaction and stops. No key is read and nothing is sent.
+# Exits 1 when the run holds synthetic values, which is a refusal, not an error.
+anchor:
+	@test -n "$(RESULTS)" || { echo 'usage: make anchor RESULTS=run.json [LABEL=name]'; exit 1; }
+	$(PY) scripts/anchor_run.py $(RESULTS) $(if $(LABEL),--label $(LABEL),)
 
 serve:
 	$(PY) server/server.py

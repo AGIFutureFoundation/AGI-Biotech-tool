@@ -316,11 +316,13 @@ def verify_anchor(tx_hash, expected_root, network=DEFAULT_NETWORK):
     if err:
         return {"verified": None, "status": "unreachable", "error": err,
                 "note": "Could not reach the node. This is NOT evidence the anchor is absent.",
-                "expected_root": want, "network": network}
+                "expected_root": want, "network": network, "tx_hash": tx_hash,
+                "anchor_meaning": ANCHOR_MEANING, "parse_verified": False}
     if tx is None:
         return {"verified": False, "status": "not_found", "expected_root": want,
-                "network": network,
-                "note": "No such transaction on this network. Check you are on the right chain."}
+                "network": network, "tx_hash": tx_hash,
+                "note": "No such transaction on this network. Check you are on the right chain.",
+                "anchor_meaning": ANCHOR_MEANING, "parse_verified": False}
 
     data = (tx.get("input") or "").lower()
     found = want.removeprefix("0x") in data
