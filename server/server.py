@@ -52,6 +52,7 @@ from master_agent import MasterAgentWithOrchestration  # noqa: E402
 from paper_generator import generate_paper_from_session  # noqa: E402
 from projects import create_project, get_project, list_user_projects  # noqa: E402
 from reporting import generate_screening_report  # noqa: E402
+import synthetic_provenance as sp  # noqa: E402
 
 
 def _try(mod):
@@ -439,7 +440,11 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def _json(self, obj, code=200):
-        body = json.dumps(obj).encode()
+        # sp.dumps, not json.dumps: this is the boundary every number crosses on
+        # its way to the VR frontend, and a plain encode writes a SyntheticValue
+        # as an ordinary float. The browser would then render a placeholder
+        # identically to a measurement.
+        body = sp.dumps(obj).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))

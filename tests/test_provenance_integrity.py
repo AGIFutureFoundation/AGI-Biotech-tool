@@ -198,6 +198,41 @@ def test_json_ready_leaves_real_data_structurally_identical():
     assert json.dumps(sp.json_ready(real)) == json.dumps(real)
 
 
+# --------------------------------------------------------------------------- every exit carries it
+
+def test_a_streamed_vr_frame_keeps_the_marker():
+    """Frames carry live result values straight to the headset."""
+    from websocket_streaming import VRDataFrame
+
+    frame = VRDataFrame("docking_progress")
+    frame.data = {"best_score": S(-9.4)}
+    assert sp.MARKER in frame.to_json()
+
+
+def test_an_archived_paper_keeps_the_marker():
+    """An archived paper is the last place a placeholder may shed its marking."""
+    import paper_generator
+
+    paper = paper_generator.ResearchPaper(
+        title="Virtual screening against BCL2", authors=["A. Researcher"],
+        institution="AGI Corp", disease="ALS", target="BCL2")
+    paper.add_abstract(background="b", objective="o", methods="m",
+                       results=f"best score {S(-9.4)}", conclusion="c")
+
+    assert sp.MARKER in paper.to_json()
+
+
+def test_persisted_results_keep_the_marker():
+    """Durable storage must not be where provenance quietly goes missing."""
+    import workflow_persistence
+
+    assert sp.MARKER in sp.dumps({"best_score": S(-9.4)})
+    # The call site uses sp.dumps rather than json.dumps.
+    import inspect
+    src = inspect.getsource(workflow_persistence.WorkflowPersistence.save_checkpoint)
+    assert "sp.dumps" in src and "json.dumps" not in src
+
+
 # --------------------------------------------------------------------------- the store must not launder
 
 def test_content_store_roundtrip_keeps_the_marker(tmp_path, monkeypatch):
