@@ -70,9 +70,13 @@ pocket detection and flexible Monte Carlo pose search.
 
 The module's own header states the limit plainly, and so does this document: it is a
 re-implementation for interactive use, **not a validated replacement for Vina or Glide**.
-Scores are useful as relative rankings within a session. They have not been benchmarked
-against a redocking set, so there is no accuracy figure to quote — any claim of an RMSD
-success rate for this code would be invented.
+Scores are useful as relative rankings within a session. It HAS now been benchmarked:
+`node evals/redock.mjs` re-docks four crystal ligands and measures RMSD against the
+experimental pose. Four consecutive runs on 2026-09-27 gave 3/4, 3/4, 3/4 and 2/4 within
+2 Å (per-run medians 1.25, 1.69, 1.47, 2.12 Å). The search is Monte Carlo, so that spread
+is the result — a single run quoted as "the" accuracy would be a lucky sample dressed as a
+measurement. Four cases is also a small set; it is a sanity check, not a validation study,
+and it remains not a replacement for Vina or Glide.
 
 **Molecular dynamics (`/api/md`).** Real all-atom OpenMM in implicit solvent, via
 `server/server.py`. Requires `openmm` and `pdbfixer`; the endpoint returns HTTP 501 when

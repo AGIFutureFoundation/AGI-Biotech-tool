@@ -33,9 +33,14 @@ a small heads-up panel and no third-party WebXR browser. Nothing renders a molec
 and what is built, is a voice companion: you speak, the answer is spoken back and shown in large type on the
 paired phone. Glasses that do have real browsers — Quest 3, Vision Pro, Android XR — run the full workspace.
 
-**Docking accuracy is mixed.** The re-docking benchmark is 2 of 4 within 2 Å (median 2.54 Å). It reproduces
-the MAO-B and oestrogen receptor poses closely and misses on BCL-XL and thrombin. Treat scores as a ranking
-to triage, not as a binding prediction, and re-run the benchmark whenever the scoring function changes.
+**Docking accuracy is mixed, and it is stochastic.** The pose search is Monte Carlo, so a single run is a
+sample, not a figure. Over four consecutive runs on 2026-09-27 (`node evals/redock.mjs`) the benchmark scored
+**3/4, 3/4, 3/4 and 2/4 within 2 Å**, with per-run medians of 1.25, 1.69, 1.47 and 2.12 Å. MAO-B (0.73 Å),
+thrombin (0.70 Å) and the oestrogen receptor (1.23–1.77 Å) reproduce closely; BCL-XL with ABT-737 is the
+consistent failure at ~3.7 Å, which is unsurprising for a large flexible ligand in a shallow groove.
+
+Quote the range, not a run. Treat scores as a ranking to triage, not as a binding prediction, and re-run the
+benchmark whenever the scoring function changes.
 
 **Interactive physics is coarse by design.** Harmonic terms, an elastic network backbone, no explicit water,
 no electrostatics. It is for feel and triage. The OpenMM backend is the one to quote.
