@@ -76,7 +76,10 @@ the experimental pose. As of 2026-09-28 it scores **5/11 within 2 A, median
 2.09 A**. The earlier four-case set gave 3/4 across three runs, which was a
 flattering sample rather than a better scoring function -- the four targets
 suited it. The search is Monte Carlo, so any single run is a draw,
-and it remains not a replacement for Vina or Glide.
+and it remains not a replacement for Vina or Glide. The eval also classifies each
+failure: 9 of 11 cases are *reachable* (a pose within 2 A is generated), so four
+of the six failures are the scoring function mis-ranking a pose the search
+already found, not the search missing it.
 
 **Molecular dynamics (`/api/md`).** Real all-atom OpenMM in implicit solvent, via
 `server/server.py`. Requires `openmm` and `pdbfixer`; the endpoint returns HTTP 501 when

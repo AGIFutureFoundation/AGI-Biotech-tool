@@ -41,10 +41,27 @@ eleven-case set it scores **5/11 within 2 A, median 2.09 A**.
 That drop is the point of widening it. With four cases each result was worth 25 points, so a good run
 looked like a validation study; the four happened to suit a shape-and-hydrophobicity score.
 
-One failure is diagnostic rather than merely bad. On 1Q41 (GSK-3 beta) the top-ranked pose is 6.81 A out
-while the best pose found is 0.32 A: the search located the crystallographic pose and the scoring function
-ranked it below a wrong one. That is a scoring problem, not a sampling problem, and it is where the next
-improvement should go.
+The benchmark now separates the two ways a case fails, because they call for opposite work and one
+success rate hides which you have. A **sampling** failure means no near-native pose was ever generated:
+the fix is more runs, more steps, a better move set. A **scoring** failure means a near-native pose WAS
+generated and the function ranked something wrong above it: more sampling cannot help.
+
+The split is lopsided. Of six failures, **four are scoring and two are sampling**, and 9/11 cases are
+*reachable* — a pose within 2 A was generated, ranked or not. Perfect ranking over the poses already
+being produced would take the benchmark from 5/11 to 9/11.
+
+| case | top (ranked) | best (found) | mode |
+| --- | --- | --- | --- |
+| 1UNL CDK5 | 6.00 A | 1.29 A | scoring |
+| 1Q41 GSK-3 beta | 6.82 A | 0.54 A | scoring |
+| 1OQ5 carbonic anhydrase | 7.50 A | 1.63 A | scoring |
+| 2BM2 tryptase | 5.22 A | 1.60 A | scoring |
+| 2YXJ BCL-XL | 4.59 A | 3.86 A | sampling |
+| 1R58 MetAP2 | 3.25 A | 3.02 A | sampling |
+
+So the next improvement belongs in the energy terms, not the search. Note also that 1OQ5 passed at
+1.44 A on one run and failed at 7.50 A on the next: single runs are draws, and the per-case verdict is
+as stochastic as the total.
 
 Quote the range, not a run. Treat scores as a ranking to triage, not as a binding prediction, and re-run the
 benchmark whenever the scoring function changes.
