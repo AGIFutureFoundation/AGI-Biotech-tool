@@ -36,7 +36,8 @@ def _secret_key():
     warnings.warn(
         "JWT_SECRET is not set, so a random signing key was generated for this "
         "process. Tokens will not survive a restart and will not validate across "
-        "multiple workers. Set JWT_SECRET before deploying.",
+        "multiple workers. Fine locally; set it before exposing this server:\n"
+        "    export JWT_SECRET=\"$(python3 -c 'import secrets;print(secrets.token_urlsafe(64))')\"",
         RuntimeWarning,
         stacklevel=2,
     )

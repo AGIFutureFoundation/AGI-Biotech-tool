@@ -20,10 +20,12 @@ google-cloud-bigquery each switch on their feature when importable.
   python server/server.py --https         # self-signed HTTPS so a Quest on Wi-Fi can enter VR
 """
 import argparse
+import errno
 import io
 import json
 import os
 import queue
+import signal
 import socket
 import ssl
 import subprocess
@@ -1017,6 +1019,40 @@ def self_signed(certdir):
     return crt, key
 
 
+def _holder_of(port):
+    """Which process is listening on `port`, as "pid 52073 (Python)".
+
+    Best effort: lsof is present on macOS and most Linux images but is not
+    guaranteed, and a process owned by another user may be invisible. Returns
+    None rather than guessing, so the caller can still give useful advice.
+    """
+    try:
+        out = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-F", "pc"],
+                             capture_output=True, text=True, timeout=5)
+    except (FileNotFoundError, subprocess.SubprocessError, OSError):
+        return None
+    pid = name = None
+    for line in out.stdout.splitlines():
+        if line.startswith("p"):
+            pid = line[1:]
+        elif line.startswith("c"):
+            name = line[1:]
+    return f"pid {pid} ({name})" if pid else None
+
+
+def _port_in_use_message(host, port):
+    holder = _holder_of(port)
+    who = f"  It is held by {holder}." if holder else ""
+    return (
+        f"\nPort {port} is already in use on {host}.{who}\n"
+        f"\nIf that is this server already running, you do not need to start it again:"
+        f"\n    open http://localhost:{port}/\n"
+        f"\nOtherwise, either stop it:"
+        f"\n    pkill -f 'server/server.py --port {port}'\n"
+        f"\nor use a different port:"
+        f"\n    {sys.executable} server/server.py --port {port + 1}\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8000)
@@ -1026,7 +1062,19 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--https", action="store_true", help="self-signed TLS so headsets on Wi-Fi can use WebXR")
     a = ap.parse_args()
-    srv = ThreadingHTTPServer((a.host, a.port), Handler)
+
+    try:
+        srv = ThreadingHTTPServer((a.host, a.port), Handler)
+    except OSError as exc:
+        if exc.errno != errno.EADDRINUSE:
+            raise
+        # A 12-line traceback ending in OSError 48 tells you nothing you can
+        # act on. Note that SO_REUSEADDR is already set (HTTPServer sets
+        # allow_reuse_address = 1), so this is never a lingering TIME_WAIT
+        # socket -- something is genuinely listening, and the useful answer is
+        # what, and what to do about it.
+        sys.exit(_port_in_use_message(a.host, a.port))
+
     scheme = "http"
     if a.https:
         crt, key = self_signed(os.path.join(ROOT, ".certs"))
@@ -1038,7 +1086,27 @@ def main():
     print("engines:", ", ".join(f"{k}={'yes' if v else 'no'}" for k, v in HAVE.items()))
     if start_websocket_server():
         print(f"VR streaming     ->  ws://localhost:{WS_PORT}")
-    srv.serve_forever()
+
+    # Close the listening socket on the way out. Without this, Ctrl+C prints a
+    # KeyboardInterrupt traceback that looks like a crash, and the socket is
+    # released only because the process died -- which is fine here but is the
+    # habit that leaves a port held when the server is run under a supervisor.
+    # SIGTERM is handled too: that is what `pkill`, systemd and Docker send,
+    # and the default action is an abrupt exit with no cleanup at all.
+    def _stop(signum, _frame):
+        print(f"\nstopping ({signal.Signals(signum).name})")
+        # shutdown() blocks until serve_forever returns, so it cannot be called
+        # from the signal handler, which runs in that same thread.
+        threading.Thread(target=srv.shutdown, daemon=True).start()
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, _stop)
+
+    try:
+        srv.serve_forever()
+    finally:
+        srv.server_close()
+        print("stopped")
 
 
 if __name__ == "__main__":
