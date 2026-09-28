@@ -125,10 +125,18 @@ def set_password(user_id: str, password: str) -> None:
     PASSWORD_HASHES[user_id] = _hash_password(password)
 
 def create_user(email: str, name: str, password: str, role: str = 'researcher', institution: str = '') -> User:
-    """Create a new user account. `password` is required and is hashed, never stored in plaintext."""
+    """Create a new user account. `password` is required and is hashed, never stored in plaintext.
+
+    Raises ValueError if required fields are missing or the email is already registered
+    (re-registering an existing email must never overwrite its password).
+    """
+    if not email or not name:
+        raise ValueError('email and name are required')
     if not password:
         raise ValueError('password is required')
-    user_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:8]}"
+    if any(u.email == email for u in USERS_DB.values()):
+        raise ValueError('email already registered')
+    user_id = f"user_{secrets.token_hex(4)}"
     user = User(user_id, email, name, role, institution)
     USERS_DB[user_id] = user
     set_password(user_id, password)
