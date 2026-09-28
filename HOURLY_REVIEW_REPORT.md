@@ -7,16 +7,20 @@
 - **Phase 0-3 (auth, projects, orchestration, Flask server):** ❌ BROKEN, not complete as docs claim.
   `server/server.py` is two unrelated programs concatenated in one file. Lines ~1-500 are a working stdlib
   `http.server` app (RDKit embedding, OpenMM/PDBFixer MD, PDF extraction, SSE collaboration, allowlisted
-  proxy — this part is real). Starting at line ~501, a second "Phase 1 Enhancements" section uses
-  `@app.route(...)`, `request`, `jsonify`, `g` — **none of which are ever imported or an `app = Flask(...)`
-  instance created.** Running this file raises `NameError: name 'app' is not defined` at the first
-  `@app.route` decorator. Everything after that point (WebSocket server wiring, master agent, workflow
-  orchestrator, "Phase 2/3" routes) is unreachable dead code. `requirements.txt` doesn't even list Flask,
-  PyJWT, or websockets, so `pip install -r requirements.txt` wouldn't satisfy this code's imports anyway.
+  proxy, and a working `GET /api/health` endpoint at line 323 — this part is real). Starting at line ~501,
+  a second "Phase 1 Enhancements" section uses `@app.route(...)`, `request`, `jsonify`, `g` — **none of
+  which are ever imported or an `app = Flask(...)` instance created.** Running this file raises
+  `NameError: name 'app' is not defined` at the first `@app.route` decorator. Everything after that point
+  (WebSocket server wiring, master agent, workflow orchestrator, "Phase 2/3" routes) is unreachable dead
+  code. `requirements.txt` doesn't even list Flask, PyJWT, or websockets, so `pip install -r requirements.txt`
+  wouldn't satisfy this code's imports anyway.
 - **Phase 4 (hardening: error_recovery, workflow_persistence, monitoring):** ✅ Real implementations
   (exponential backoff + circuit breaker state machine; SQLite-backed checkpoint/resume; real stats
-  aggregation) but **not wired to any live endpoint** — no `/health` or `/metrics` route exists because the
-  Flask layer they'd attach to doesn't run (see above).
+  aggregation), but the `monitoring.py` metrics aggregation specifically is **not exposed via any HTTP
+  endpoint** — the enterprise Flask layer it would attach to doesn't run (see above). Note: a basic
+  `GET /api/health` route does already exist and work, in the unrelated stdlib server section
+  (`server/server.py:323`), returning engine-availability flags and the active collaboration-room count;
+  it is not connected to `monitoring.py`'s metrics.
 - **Phase 5 (load testing, database migration, ML):** ⚠️ Partial. `load_testing.py` has a genuine asyncio
   concurrency harness, but `simulate_workflow()` just does `asyncio.sleep()` with random durations — it
   never calls real application code, so it measures nothing about the actual system.
@@ -42,9 +46,10 @@ task was asked to verify.
 
 ## Enterprise Hardening
 **Partial PASS on isolated modules, FAIL on integration.** `error_recovery.py` and `workflow_persistence.py`
-are solid, real implementations. `monitoring.py` does real aggregation but is never exposed via an endpoint.
-None of this is reachable at runtime because the Flask app it should protect/monitor never instantiates
-(see Phase Status above).
+are solid, real implementations. `monitoring.py` does real aggregation but is never exposed via an endpoint
+(the stdlib server's own `/api/health` route is unrelated to it — see Phase Status). None of the Phase 4/5
+hardening is reachable through the "enterprise" Flask app because it never instantiates (see Phase Status
+above).
 
 ## Top Issues (Priority Order)
 1. **CRITICAL** — `server/auth.py:111-121` `authenticate_user()` never checks the password; anyone who
