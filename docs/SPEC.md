@@ -59,7 +59,19 @@ being produced would take the benchmark from 5/11 to 9/11.
 | 2YXJ BCL-XL | 4.59 A | 3.86 A | sampling |
 | 1R58 MetAP2 | 3.25 A | 3.02 A | sampling |
 
-So the next improvement belongs in the energy terms, not the search. Note also that 1OQ5 passed at
+So the next improvement belongs in the energy terms, not the search.
+
+**The benchmark cannot yet detect a small change, and that is its most important limit.** Ranking was
+found to be inconsistent with the search -- each run picked its pose under `vinaScore + intraClash +
+boxPenalty` and then ranked it by `vinaScore` alone -- and fixing that was measured over three runs per
+arm: baseline 3/11, 5/11, 6/11 (mean 4.67); fixed 6/11, 5/11, 4/11 (mean 5.00). The difference is 0.33
+cases and the spread inside each arm is 3 cases, so the result is **inconclusive**: the fix is kept
+because ranking by a different objective than you optimised is wrong on its own terms, not because this
+measured an improvement.
+
+Eleven cases at three runs resolves nothing below roughly a three-case swing. Detecting a real scoring
+change needs seeded runs so before and after see identical random draws, more cases, or both. Until then,
+treat this benchmark as a floor check, not an A/B instrument. Note also that 1OQ5 passed at
 1.44 A on one run and failed at 7.50 A on the next: single runs are draws, and the per-case verdict is
 as stochastic as the total.
 

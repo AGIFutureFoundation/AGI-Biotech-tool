@@ -235,8 +235,25 @@ export async function dockLigand(grid, lig, center, { runs = 8, steps = 1500, bo
         await yieldToEventLoop();
       }
     }
-    poses.push({ coords: best, score: vinaScore(grid, lig, best, { nrot: rot.length }) });
-    poses.sort((a, b) => a.score - b.score);
+    // Rank by the energy the search actually minimised, report the affinity.
+    //
+    // These were the same number before, and that was the bug. Each run picks
+    // its best pose under vinaScore + intraClash + boxPenalty, then the pose
+    // was stored and ranked by vinaScore alone -- so across runs a pose
+    // carrying internal strain, or hanging outside the box, could outrank a
+    // clean one because the terms that made the search avoid it were thrown
+    // away at comparison time. A ligand folded through itself has no business
+    // ranking first, whatever its intermolecular score says.
+    //
+    // `score` stays vinaScore because that is the affinity estimate callers
+    // read and display. `rank` is the full search energy, and is what the sort
+    // uses, so the pose the search preferred is the pose that comes out first.
+    poses.push({
+      coords: best,
+      score: vinaScore(grid, lig, best, { nrot: rot.length }),
+      rank: bestE,
+    });
+    poses.sort((a, b) => a.rank - b.rank);
     if (shouldStop && shouldStop()) break;
   }
   // Keep distinct poses (RMSD >= 1.5 Å apart) and drop ones that never resolved their clashes.
