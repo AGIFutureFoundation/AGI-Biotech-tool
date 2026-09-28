@@ -49,7 +49,7 @@ export const SUCCESS_A = 2.0;
 const UA = { 'User-Agent': 'biodao-evals/1.0' };
 const text = async (url) => { const r = await fetch(url, { headers: UA }); if (!r.ok) throw new Error(`${url} -> ${r.status}`); return r.text(); };
 
-export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000 } = {}) {
+export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000, seed = null } = {}) {
   const t0 = Date.now();
   const protein = parsePDB(await text(`https://files.rcsb.org/download/${pdb}.pdb`), { name: pdb });
   const sdf = await text(`https://models.rcsb.org/v1/${pdb.toLowerCase()}/ligand?label_comp_id=${lig}&encoding=sdf`);
@@ -63,7 +63,10 @@ export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000 } = 
   const centre = centroid(crystal, ligand.n);
   const crystalScore = vinaScore(grid, ligand, crystal, { details: true });
 
-  const poses = await dockLigand(grid, ligand, centre, { runs, steps, box: 8 });
+    // A per-case seed derived from the run seed, so cases stay independent
+  // while the whole benchmark remains reproducible from one number.
+  const caseSeed = seed == null ? null : seed + [...pdb].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const poses = await dockLigand(grid, ligand, centre, { runs, steps, box: 8, seed: caseSeed });
   const rmsds = poses.map((p) => +rmsd(p.coords, crystal, ligand.n).toFixed(2));
   const top = rmsds[0] ?? null;
   const best = rmsds.length ? Math.min(...rmsds) : null;
@@ -79,7 +82,7 @@ export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000 } = 
   };
 }
 
-export async function runAll(cases = CASES, opts) {
+export async function runAll(cases = CASES, opts = {}) {
   const results = [];
   for (const c of cases) {
     try { results.push(await runCase(c, opts)); }
@@ -134,9 +137,16 @@ function median(xs) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const arg = process.argv[2];
+  const argv = process.argv.slice(2);
+  const seedAt = argv.indexOf('--seed');
+  // Seeded runs exist so two scoring functions can be compared on identical
+  // random draws. Unseeded, the run-to-run spread is about three cases out of
+  // eleven, which hides any change smaller than that.
+  const seed = seedAt >= 0 ? Number(argv[seedAt + 1]) : null;
+  const arg = argv.find((a) => a.includes(':') && !a.startsWith('--'));
   const cases = arg ? [{ pdb: arg.split(':')[0], lig: arg.split(':')[1], note: 'ad hoc' }] : CASES;
-  const out = await runAll(cases);
+  if (seed != null) console.log(`seed ${seed} — this run is reproducible\n`);
+  const out = await runAll(cases, { seed });
   for (const r of out.results) {
     if (r.error) { console.log(`${r.pdb}  ERROR  ${r.error}`); continue; }
     console.log(`${r.pdb}/${r.lig}  top ${String(r.topRmsd).padStart(5)} Å  best ${String(r.bestRmsd).padStart(5)} Å  `

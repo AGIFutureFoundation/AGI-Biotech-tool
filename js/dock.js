@@ -190,7 +190,22 @@ function rotateAbout(L, atoms, ax, ay, az, ux, uy, uz, ang) {
 
 export function centroid(L, n) { let x = 0, y = 0, z = 0; for (let i = 0; i < n; i++) { x += L[i * 3]; y += L[i * 3 + 1]; z += L[i * 3 + 2]; } return [x / n, y / n, z / n]; }
 
-function randomUnit() { const z = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, r = Math.sqrt(1 - z * z); return [r * Math.cos(t), r * Math.sin(t), z]; }
+// mulberry32: a small deterministic generator, so a docking run can be
+// repeated exactly. Without this, comparing two scoring functions means
+// comparing two different random walks, and the benchmark's run-to-run spread
+// (three cases out of eleven) swamps any change worth making.
+export function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomUnit(rand = Math.random) { const z = rand() * 2 - 1, t = rand() * Math.PI * 2, r = Math.sqrt(1 - z * z); return [r * Math.cos(t), r * Math.sin(t), z]; }
 
 function intraClash(lig, L, pairs) {
   let e = 0;
@@ -202,7 +217,11 @@ function intraClash(lig, L, pairs) {
   return e * 0.5;
 }
 
-export async function dockLigand(grid, lig, center, { runs = 8, steps = 1500, box = 8, onProgress, pairs = null, shouldStop } = {}) {
+export async function dockLigand(grid, lig, center, { runs = 8, steps = 1500, box = 8, onProgress, pairs = null, shouldStop, seed = null } = {}) {
+  // Unseeded by default, so ordinary use is unchanged. Pass a seed to make a
+  // run reproducible -- the only way to compare a scoring change against a
+  // baseline without the comparison drowning in sampling noise.
+  const rand = seed == null ? Math.random : mulberry32(seed);
   const rot = rotatableBonds(lig); lig._nrot = rot.length;
   const n = lig.n, all = [...Array(n).keys()];
   const base = Float32Array.from(lig.pos);
@@ -214,21 +233,21 @@ export async function dockLigand(grid, lig, center, { runs = 8, steps = 1500, bo
   for (let run = 0; run < runs; run++) {
     const L = Float32Array.from(base);
     // random orientation + position in box
-    const u = randomUnit(); rotateAbout(L, all, 0, 0, 0, u[0], u[1], u[2], Math.random() * Math.PI * 2);
-    for (const b of rot) { const [ux, uy, uz] = axis(L, b); rotateAbout(L, b.moving, L[b.a * 3], L[b.a * 3 + 1], L[b.a * 3 + 2], ux, uy, uz, Math.random() * Math.PI * 2); }
-    const off = randomUnit().map((v) => v * Math.random() * box * 0.4);
+    const u = randomUnit(rand); rotateAbout(L, all, 0, 0, 0, u[0], u[1], u[2], rand() * Math.PI * 2);
+    for (const b of rot) { const [ux, uy, uz] = axis(L, b); rotateAbout(L, b.moving, L[b.a * 3], L[b.a * 3 + 1], L[b.a * 3 + 2], ux, uy, uz, rand() * Math.PI * 2); }
+    const off = randomUnit(rand).map((v) => v * rand() * box * 0.4);
     for (let i = 0; i < n; i++) { L[i * 3] += center[0] + off[0]; L[i * 3 + 1] += center[1] + off[1]; L[i * 3 + 2] += center[2] + off[2]; }
     let e = energy(L), best = Float32Array.from(L), bestE = e;
     const trial = new Float32Array(L.length);
     for (let s = 0; s < steps; s++) {
       const temp = 1.2 * (1 - s / steps) + 0.05;
       trial.set(L);
-      const mv = Math.random();
-      if (mv < 0.4) { const d = randomUnit(), m = Math.random() * 1.0; for (let i = 0; i < n; i++) { trial[i * 3] += d[0] * m; trial[i * 3 + 1] += d[1] * m; trial[i * 3 + 2] += d[2] * m; } }
-      else if (mv < 0.75 || !rot.length) { const c = centroid(trial, n), a = randomUnit(); rotateAbout(trial, all, c[0], c[1], c[2], a[0], a[1], a[2], (Math.random() - 0.5) * 0.6); }
-      else { const b = rot[Math.floor(Math.random() * rot.length)]; const [ux, uy, uz] = axis(trial, b); rotateAbout(trial, b.moving, trial[b.a * 3], trial[b.a * 3 + 1], trial[b.a * 3 + 2], ux, uy, uz, (Math.random() - 0.5) * 2.0); }
+      const mv = rand();
+      if (mv < 0.4) { const d = randomUnit(rand), m = rand() * 1.0; for (let i = 0; i < n; i++) { trial[i * 3] += d[0] * m; trial[i * 3 + 1] += d[1] * m; trial[i * 3 + 2] += d[2] * m; } }
+      else if (mv < 0.75 || !rot.length) { const c = centroid(trial, n), a = randomUnit(rand); rotateAbout(trial, all, c[0], c[1], c[2], a[0], a[1], a[2], (rand() - 0.5) * 0.6); }
+      else { const b = rot[Math.floor(rand() * rot.length)]; const [ux, uy, uz] = axis(trial, b); rotateAbout(trial, b.moving, trial[b.a * 3], trial[b.a * 3 + 1], trial[b.a * 3 + 2], ux, uy, uz, (rand() - 0.5) * 2.0); }
       const et = energy(trial);
-      if (et < e || Math.random() < Math.exp(-(et - e) / temp)) { L.set(trial); e = et; if (e < bestE) { bestE = e; best.set(L); } }
+      if (et < e || rand() < Math.exp(-(et - e) / temp)) { L.set(trial); e = et; if (e < bestE) { bestE = e; best.set(L); } }
       if (s % 250 === 0) {
         if (shouldStop && shouldStop()) break;
         onProgress && onProgress({ run, step: s, best: poses.length ? Math.min(bestE, poses[0].score) : bestE, coords: best });

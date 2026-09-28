@@ -69,9 +69,11 @@ cases and the spread inside each arm is 3 cases, so the result is **inconclusive
 because ranking by a different objective than you optimised is wrong on its own terms, not because this
 measured an improvement.
 
-Eleven cases at three runs resolves nothing below roughly a three-case swing. Detecting a real scoring
-change needs seeded runs so before and after see identical random draws, more cases, or both. Until then,
-treat this benchmark as a floor check, not an A/B instrument. Note also that 1OQ5 passed at
+Eleven cases at three runs resolves nothing below roughly a three-case swing, so `node evals/redock.mjs
+--seed N` now makes a run reproducible: both arms of a comparison see identical random draws and the
+difference that remains is the change rather than the weather. Unseeded runs stay random, which is what
+ordinary docking should do. Even seeded, eleven cases is a narrow set -- treat an improvement on it as
+evidence, not proof. Note also that 1OQ5 passed at
 1.44 A on one run and failed at 7.50 A on the next: single runs are draws, and the per-case verdict is
 as stochastic as the total.
 
