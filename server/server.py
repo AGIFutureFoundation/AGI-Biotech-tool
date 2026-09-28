@@ -523,16 +523,30 @@ def login():
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    """Register a new user account."""
+    """Register a new user account.
+
+    This endpoint is unauthenticated, so the caller-supplied role is never
+    honored here — every self-registration is a 'researcher'. Granting a
+    privileged role (admin, pi) is an administrative action, not something
+    an anonymous registration request can request for itself.
+    """
     data = request.json
     email = data.get('email')
     name = data.get('name')
-    role = data.get('role', 'researcher')
+    password = data.get('password', '')
     institution = data.get('institution', '')
-    
-    user = create_user(email, name, role, institution)
-    token = authenticate_user(email, data.get('password', ''))
-    
+
+    if not email or not name:
+        return jsonify({'error': 'email and name are required'}), 400
+    if not password:
+        return jsonify({'error': 'password is required'}), 400
+
+    try:
+        user = create_user(email, name, password, 'researcher', institution)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    token = authenticate_user(email, password)
+
     return jsonify({
         'user_id': user.user_id,
         'token': token,
