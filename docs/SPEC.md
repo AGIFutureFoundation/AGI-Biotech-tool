@@ -33,11 +33,18 @@ a small heads-up panel and no third-party WebXR browser. Nothing renders a molec
 and what is built, is a voice companion: you speak, the answer is spoken back and shown in large type on the
 paired phone. Glasses that do have real browsers — Quest 3, Vision Pro, Android XR — run the full workspace.
 
-**Docking accuracy is mixed, and it is stochastic.** The pose search is Monte Carlo, so a single run is a
-sample, not a figure. Over four consecutive runs on 2026-09-27 (`node evals/redock.mjs`) the benchmark scored
-**3/4, 3/4, 3/4 and 2/4 within 2 Å**, with per-run medians of 1.25, 1.69, 1.47 and 2.12 Å. MAO-B (0.73 Å),
-thrombin (0.70 Å) and the oestrogen receptor (1.23–1.77 Å) reproduce closely; BCL-XL with ABT-737 is the
-consistent failure at ~3.7 Å, which is unsurprising for a large flexible ligand in a shallow groove.
+**Docking accuracy is mixed, and the honest number is worse than it was.** The benchmark ran four cases
+until 2026-09-28; it now runs eleven, spanning kinase, protease, nuclear-receptor, metalloenzyme and
+protein-protein-interface sites. On the four-case set it scored 3/4, 3/4, 3/4 and 2/4 within 2 A. On the
+eleven-case set it scores **5/11 within 2 A, median 2.09 A**.
+
+That drop is the point of widening it. With four cases each result was worth 25 points, so a good run
+looked like a validation study; the four happened to suit a shape-and-hydrophobicity score.
+
+One failure is diagnostic rather than merely bad. On 1Q41 (GSK-3 beta) the top-ranked pose is 6.81 A out
+while the best pose found is 0.32 A: the search located the crystallographic pose and the scoring function
+ranked it below a wrong one. That is a scoring problem, not a sampling problem, and it is where the next
+improvement should go.
 
 Quote the range, not a run. Treat scores as a ranking to triage, not as a binding prediction, and re-run the
 benchmark whenever the scoring function changes.

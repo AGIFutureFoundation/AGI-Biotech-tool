@@ -10,11 +10,35 @@ import { parsePDB, parseMolblock } from '../js/structure.js';
 import { ProteinGrid, vinaScore, dockLigand, rmsd, centroid } from '../js/dock.js';
 
 // Each case is a complex where the bound ligand is drug-like and the site is well defined.
+//
+// Four cases was a smoke test: with one success or failure worth 25 points, a
+// single lucky run looked like a validation study. These eleven still are not
+// one -- the Astex Diverse Set is 85 -- but they span kinase, protease,
+// nuclear-receptor, metalloenzyme and protein-protein-interface sites rather
+// than four targets that happen to suit a shape-and-hydrophobicity score.
+//
+// Ligand codes were resolved from the RCSB entry API rather than typed from
+// memory, and every SDF was confirmed to download before the case was added.
+// 1P62 was considered and dropped: its largest ligand is ADP, a cofactor, so
+// re-docking it would measure nucleotide placement and be reported as drug
+// docking.
 export const CASES = [
+  // --- original four -------------------------------------------------------
   { pdb: '2V5Z', lig: 'SAG', note: 'MAO-B with safinamide (Parkinson\'s)' },
   { pdb: '2YXJ', lig: 'N3C', note: 'BCL-XL with ABT-737' },
   { pdb: '1OYT', lig: 'FSN', note: 'thrombin with an inhibitor' },
   { pdb: '3ERT', lig: 'OHT', note: 'oestrogen receptor with 4-hydroxytamoxifen' },
+
+  // --- kinases: the ATP pocket is the most-docked site in the field ---------
+  { pdb: '1YWR', lig: 'LI9', note: 'p38 MAP kinase, inactive conformation' },
+  { pdb: '1UNL', lig: 'RRC', note: 'CDK5/p25 with roscovitine analogue' },
+  { pdb: '1Q41', lig: 'IXM', note: 'GSK-3 beta with indirubin-3-monoxime' },
+
+  // --- other site chemistries ---------------------------------------------
+  { pdb: '1S19', lig: 'MC9', note: 'vitamin D receptor, a buried lipophilic pocket' },
+  { pdb: '1OQ5', lig: 'CEL', note: 'carbonic anhydrase II with celecoxib (zinc site)' },
+  { pdb: '2BM2', lig: 'PM2', note: 'beta-II tryptase, a serine protease' },
+  { pdb: '1R58', lig: 'AO5', note: 'MetAP2 with A-357300, a dinuclear metalloenzyme' },
 ];
 
 const UA = { 'User-Agent': 'biodao-evals/1.0' };
