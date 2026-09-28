@@ -26,8 +26,9 @@ make egress          # or: .venv/bin/python scripts/check_egress.py --markdown
 
 ## Watch it first
 
-`docs/biodao-walkthrough.mp4` is a two-minute walkthrough the app renders of itself, with every number on
-screen coming from a real run. `docs/DEMO.md` has the demo running order and the talking points.
+The app renders a two-minute walkthrough of itself, with every number on screen coming from a real run.
+It is build output rather than source, so it is not in the repository: open the app with `?record` to
+produce `docs/walkthrough.mp4` (see `docs/DEMO.md`). `docs/DEMO.md` has the demo running order and the talking points.
 
 ## Quick start
 
