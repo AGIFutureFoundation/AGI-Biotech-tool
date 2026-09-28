@@ -10,6 +10,8 @@ import os
 import jwt
 import json
 import hashlib
+import hmac
+import secrets
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
@@ -17,6 +19,7 @@ from typing import Dict, List, Optional
 SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
+PBKDF2_ITERATIONS = 390_000
 
 class User:
     """Represents a researcher or lab member."""
@@ -97,11 +100,38 @@ USERS_DB = {
     'user_002': User('user_002', 'scientist@mjff.org', 'Bob Chen', 'researcher', 'MJFF'),
 }
 
-def create_user(email: str, name: str, role: str = 'researcher', institution: str = '') -> User:
-    """Create a new user account."""
+# Password hashes, keyed by user_id. The seed accounts above have none set,
+# so (correctly) they cannot log in until a real password is set via create_user.
+PASSWORD_HASHES: Dict[str, str] = {}
+
+def _hash_password(password: str, salt: Optional[bytes] = None) -> str:
+    """PBKDF2-HMAC-SHA256 hash, stored as 'salt_hex$hash_hex'. Stdlib only, no bcrypt dependency."""
+    salt = salt or secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, PBKDF2_ITERATIONS)
+    return f"{salt.hex()}${digest.hex()}"
+
+def _verify_password(password: str, stored: str) -> bool:
+    """Constant-time comparison against a stored 'salt_hex$hash_hex' value."""
+    try:
+        salt_hex, hash_hex = stored.split('$')
+        salt = bytes.fromhex(salt_hex)
+    except (ValueError, AttributeError):
+        return False
+    candidate = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, PBKDF2_ITERATIONS)
+    return hmac.compare_digest(candidate.hex(), hash_hex)
+
+def set_password(user_id: str, password: str) -> None:
+    """Hash and store a user's password. Never stored in plaintext."""
+    PASSWORD_HASHES[user_id] = _hash_password(password)
+
+def create_user(email: str, name: str, password: str, role: str = 'researcher', institution: str = '') -> User:
+    """Create a new user account. `password` is required and is hashed, never stored in plaintext."""
+    if not password:
+        raise ValueError('password is required')
     user_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:8]}"
     user = User(user_id, email, name, role, institution)
     USERS_DB[user_id] = user
+    set_password(user_id, password)
     return user
 
 def get_user(user_id: str) -> Optional[User]:
@@ -109,15 +139,15 @@ def get_user(user_id: str) -> Optional[User]:
     return USERS_DB.get(user_id)
 
 def authenticate_user(email: str, password: str) -> Optional[str]:
-    """Authenticate a user and return a token.
-    
-    In production, use bcrypt to hash/verify passwords.
-    For now, this is a stub for demo purposes.
-    """
+    """Authenticate a user by email + password and return a JWT, or None on any mismatch."""
+    if not password:
+        return None
     for user in USERS_DB.values():
         if user.email == email:
-            token = AuthToken.create(user)
-            return token
+            stored = PASSWORD_HASHES.get(user.user_id)
+            if stored and _verify_password(password, stored):
+                return AuthToken.create(user)
+            return None
     return None
 
 def require_auth(f):
