@@ -4,7 +4,7 @@
 # wrong interpreter produces a passing run that proves nothing.
 PY := .venv/bin/python
 
-.PHONY: help test imports reachable citations verify inventory serve egress
+.PHONY: help test imports reachable citations trials verify inventory serve egress
 .DEFAULT_GOAL := help
 
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "make imports    every module under server/ and scripts/ imports"
 	@echo "make reachable  no orphaned JS modules"
 	@echo "make citations  every identifier in all 5 panels resolves (hits the network)"
+	@echo "make trials     every cited trial still says what the panel claims (network)"
 	@echo "make verify     test + imports + reachable + egress"
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
 	@echo "make anchor     build an unsigned Monad anchor for RESULTS=..."
@@ -34,6 +35,11 @@ citations:
 	@test -f scripts/verify_panel_citations.py \
 		|| { echo "scripts/verify_panel_citations.py not present yet"; exit 1; }
 	$(PY) scripts/verify_panel_citations.py
+
+# Not in `verify`: it hits ClinicalTrials.gov, and a registry outage must not
+# fail an offline build. Run it before merging anything that touches a panel.
+trials:
+	$(PY) scripts/verify_trial_claims.py
 
 # Data egress is part of verify because an undeclared endpoint is the kind of
 # change that is easy to make without noticing and hard to find afterwards.
