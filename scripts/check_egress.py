@@ -106,6 +106,15 @@ DECLARED = {
     "api.chem-space.com": (NEVER_AUTO, "documented as a price source that was not used",
                            "Nothing; recorded as evidence, never called."),
 
+    # --- LLM providers: only reachable if you point LLM_BASE_URL at one -------
+    "api.z.ai": (NEVER_AUTO, "GLM models, if you set LLM_BASE_URL to it",
+                 "Whatever prompt an agent module sends, which may include target names, "
+                 "compound identifiers and run context. Nothing is sent unless LLM_API_KEY "
+                 "and LLM_BASE_URL are both set; these hosts appear in server/llm_provider.py "
+                 "as documented examples, not as defaults."),
+    "api.openai.com": (NEVER_AUTO, "OpenAI models, if you set LLM_BASE_URL to it",
+                       "As above. Listed as a known OpenAI-compatible base; never a default."),
+
     # --- additional endpoints that are genuinely called ----------------------
     "eutils.ncbi.nlm.nih.gov": (TRIGGERED, "PubMed search and record fetch (E-utilities)",
                                 "Your search terms or a PMID."),
