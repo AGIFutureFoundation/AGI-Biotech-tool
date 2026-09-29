@@ -431,15 +431,19 @@ class MCP_ServerManager:
         if db.mcp_endpoint not in self.active_connections:
             return {'error': f'{database_name} not connected'}
         
-        # Simulate query execution
+        # NOTE: no real MCP/HTTP call is made here yet; this is placeholder
+        # data so callers can be wired up before the live connectors exist.
+        # It must never be mistaken for a real query result.
         result = {
             'database': db.name,
             'query_type': query_type,
             'status': 'success',
+            'synthetic': True,
+            'data_source': 'SIMULATED - no real database query was made',
             'results_count': 42,  # Simulated
             'query_time_ms': 127,
             'sample_results': [
-                {f'result_{i}': f'Data from {db.name}'} 
+                {f'result_{i}': f'[SYNTHETIC] Data from {db.name}'}
                 for i in range(3)
             ]
         }
