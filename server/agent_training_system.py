@@ -403,8 +403,16 @@ class MultiAgentTrainer:
         ]
         
         if not agent_history:
-            return {}
-        
+            # Same shape as a trained agent so callers never have to branch.
+            return {
+                'agent_id': agent_id,
+                'episodes_trained': 0,
+                'avg_reward': 0.0,
+                'total_reward': 0.0,
+                'best_reward': 0.0,
+                'improvement_rate': 0.0,
+            }
+
         rewards = [r['total_reward'] for r in agent_history]
         
         return {

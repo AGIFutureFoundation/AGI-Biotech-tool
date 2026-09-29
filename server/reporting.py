@@ -10,6 +10,8 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 
+import synthetic_provenance as sp
+
 class Report:
     """Publication-ready research report."""
     def __init__(self, project_id: str, campaign_id: str, title: str):
@@ -133,8 +135,22 @@ def generate_screening_report(project_id: str, campaign_id: str, target: str,
     
     # Summary
     top_5 = sorted(results, key=lambda x: x.get('score', 0))[:5]
+
+    # A *count* of compounds passing a threshold is the one aggregate that
+    # silently launders provenance: every score may be a SyntheticValue, but
+    # `len([...])` hands back a clean int, and "identified 47 compounds with
+    # favorable binding scores" then reads as a finding in a document this
+    # module calls publication-ready. derive() re-taints it from the scores it
+    # was counted from, so the sentence carries the marker or nothing does.
+    #
+    # Rendered with :.0f because derive() returns a float subclass: a bare
+    # {n_favorable} prints "2.0 compounds", and there is no such thing as 2.0
+    # compounds. The format spec keeps both the integer reading and the marker.
+    scores = [r.get('score', 0) for r in results]
+    n_favorable = sp.derive(len([s for s in scores if s < -7]), *scores)
+
     summary = f"""
-    Screening of {len(results)} compounds against {target} identified {len([r for r in results if r.get('score', 0) < -7])} 
+    Screening of {len(results)} compounds against {target} identified {n_favorable:.0f}
     compounds with favorable binding scores (< -7 kcal/mol). The top 5 predicted binders are:
     {', '.join([f"{r.get('compound_id', 'N/A')} ({r.get('score', 0):.1f})" for r in top_5])}
     """

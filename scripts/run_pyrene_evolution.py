@@ -193,12 +193,7 @@ async def main():
 
         # Show top compound
         if compounds:
-            top = max(compounds, key=lambda c: (
-                (c.predicted_potency + 12) / 6 * 0.4 +
-                c.pediatric_safety_score * 0.3 +
-                c.selectivity_score * 0.2 +
-                (len(c.combination_partners) / 5) * 0.1
-            ))
+            top = max(compounds, key=evolution._calculate_composite_score)
             print(f"   Top candidate: {top.compound_id}")
             print(f"     - Affinity: {top.predicted_potency:.2f} kcal/mol")
             print(f"     - Safety: {top.pediatric_safety_score:.1%}")

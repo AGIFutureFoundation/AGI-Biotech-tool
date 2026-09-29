@@ -9,6 +9,7 @@ Generates publication-ready papers in:
 Includes: Abstract, Introduction, Methods, Results, Discussion, References
 """
 import json
+import synthetic_provenance as sp
 from datetime import datetime
 from typing import Dict, List
 
@@ -244,8 +245,12 @@ class ResearchPaper:
         return md
 
     def to_json(self) -> str:
-        """Export as JSON for archiving."""
-        return json.dumps({
+        """Export as JSON for archiving.
+
+        An archived paper is the last place a placeholder should be able to
+        shed its marking, so this encodes through sp.dumps rather than json.
+        """
+        return sp.dumps({
             'title': self.title,
             'authors': self.authors,
             'institution': self.institution,

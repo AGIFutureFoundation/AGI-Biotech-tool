@@ -10,6 +10,8 @@ Provides:
 
 import json
 import sqlite3
+
+import synthetic_provenance as sp
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from enum import Enum
@@ -173,7 +175,7 @@ class WorkflowPersistence:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (workflow_id, step_index, step_name, agent_name, 
                   WorkflowStatus.COMPLETED.value, now, duration_seconds,
-                  json.dumps(result)))
+                  sp.dumps(result)))
             
             conn.commit()
             conn.close()
@@ -193,8 +195,8 @@ class WorkflowPersistence:
                 (workflow_id, checkpoint_index, step_name, state, created_at, results_so_far)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (checkpoint.workflow_id, checkpoint.step_index, 
-                  checkpoint.step_name, json.dumps(checkpoint.state),
-                  checkpoint.timestamp, json.dumps(checkpoint.results_so_far)))
+                  checkpoint.step_name, sp.dumps(checkpoint.state),
+                  checkpoint.timestamp, sp.dumps(checkpoint.results_so_far)))
             
             conn.commit()
             conn.close()

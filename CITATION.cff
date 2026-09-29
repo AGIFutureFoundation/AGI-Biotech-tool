@@ -1,0 +1,93 @@
+# Citation metadata in Citation File Format (https://citation-file-format.github.io).
+# Everything below is taken from the repository itself: the authorship recorded in
+# `git log`, the attribution line in README.md, and the remote configured for `origin`.
+# No DOI, ORCID or additional author is claimed, because the repository substantiates none.
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "biodao.blockchain"
+abstract: >-
+  A local molecular workspace for drug discovery that runs in a WebXR headset or an
+  ordinary browser. It loads experimental structures from the RCSB PDB and predicted
+  structures from the AlphaFold database, detects and ranks binding pockets, performs
+  flexible Monte Carlo docking scored by a Vina-style empirical function, runs
+  interactive coarse-grained dynamics in the browser and all-atom implicit-solvent
+  dynamics with OpenMM on the local machine, and gathers target evidence from public
+  biomedical databases. It curates sixty targets across amyotrophic lateral sclerosis,
+  Parkinson's disease, other neurogenetic disorders, conditions treated by Shriners
+  Children's, and apoptosis. Docking scores are intended for triage and ranking, not as
+  predicted binding affinities; placeholder values that no engine computed are marked
+  as synthetic in both their textual form and their provenance field.
+type: software
+authors:
+  - name: "AGI Corp"
+    email: "x@agifuturefoundation.org"
+    website: "https://github.com/AGIFutureFoundation"
+contact:
+  - name: "AGI Corp"
+    email: "x@agifuturefoundation.org"
+repository-code: "https://github.com/AGIFutureFoundation/AGI-Biotech-tool"
+keywords:
+  - drug discovery
+  - molecular docking
+  - molecular dynamics
+  - structural biology
+  - cheminformatics
+  - virtual reality
+  - WebXR
+  - AlphaFold
+  - amyotrophic lateral sclerosis
+  - Parkinson's disease
+references:
+  - type: article
+    title: >-
+      AutoDock Vina: improving the speed and accuracy of docking with a new scoring
+      function, efficient optimization, and multithreading
+    authors:
+      - family-names: Trott
+        given-names: Oleg
+      - family-names: Olson
+        given-names: "Arthur J."
+    journal: "Journal of Computational Chemistry"
+    volume: 31
+    issue: 2
+    start: 455
+    end: 461
+    year: 2010
+    doi: "10.1002/jcc.21334"
+    notes: >-
+      The docking score implemented here is a re-implementation of this scoring
+      function for interactive use, not a validated replacement for AutoDock Vina.
+  - type: article
+    title: "Highly accurate protein structure prediction with AlphaFold"
+    authors:
+      - family-names: Jumper
+        given-names: John
+      - family-names: Evans
+        given-names: Richard
+      - family-names: Pritzel
+        given-names: Alexander
+    journal: "Nature"
+    volume: 596
+    issue: 7873
+    start: 583
+    end: 589
+    year: 2021
+    doi: "10.1038/s41586-021-03819-2"
+    notes: >-
+      Predicted structures and AlphaMissense scores are read live from the AlphaFold
+      Protein Structure Database.
+  - type: article
+    title: "OpenMM 7: Rapid development of high performance algorithms for molecular dynamics"
+    authors:
+      - family-names: Eastman
+        given-names: Peter
+      - family-names: Swails
+        given-names: Jason
+      - family-names: Chodera
+        given-names: "John D."
+    journal: "PLOS Computational Biology"
+    volume: 13
+    issue: 7
+    year: 2017
+    doi: "10.1371/journal.pcbi.1005659"
+    notes: "The all-atom molecular dynamics backend."

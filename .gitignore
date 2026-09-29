@@ -3,3 +3,14 @@
 __pycache__/
 *.pyc
 .DS_Store
+assets/scenes/
+
+# Never commit a real environment file; the repo is public.
+.env
+.env.*
+!.env.example
+
+# Rendered walkthroughs. The app renders these itself (see docs/DEMO.md);
+# a 210 MB master in git made the repo unpushable to GitHub, which caps a
+# single file at 100 MB. They are build output, not source.
+docs/*.mp4

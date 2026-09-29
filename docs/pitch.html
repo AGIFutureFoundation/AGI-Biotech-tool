@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGI BioXR — project preview</title>
+<meta name="description" content="A molecular research workspace built so every number can be traced to where it came from.">
+<style>
+:root{
+  --bg:#070b12; --panel:#0d141f; --panel2:#111a27; --line:#1e2b3c;
+  --ink:#e8f1ff; --dim:#93a7bd; --accent:#39d98a; --accent2:#4cc9f0; --warn:#ffbe0b;
+  --radius:12px; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent2)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+code{font-family:var(--mono);font-size:.88em;color:var(--accent2)}
+
+header{padding:72px 0 44px;border-bottom:1px solid var(--line)}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent);border:1px solid var(--line);
+  border-radius:999px;padding:5px 12px;margin-bottom:22px}
+h1{font-size:clamp(32px,5.2vw,50px);line-height:1.12;margin:0 0 18px;letter-spacing:-.02em}
+.lede{font-size:clamp(17px,2.1vw,19px);color:var(--dim);max-width:62ch;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 20px;border-radius:var(--radius);text-decoration:none;
+  font-weight:600;font-size:14.5px;border:1px solid var(--line);color:var(--ink);
+  background:var(--panel2);transition:border-color .15s,transform .15s}
+.btn:hover{border-color:var(--accent2);transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:#05210f;border-color:var(--accent)}
+
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+h2{font-size:23px;margin:0 0 10px;letter-spacing:-.01em}
+.sub{color:var(--dim);margin:0 0 26px;max-width:64ch}
+
+figure{margin:0}
+video{width:100%;height:auto;display:block;border:1px solid var(--line);
+  border-radius:var(--radius);background:#000}
+figcaption{margin-top:12px;font-size:13.5px;color:var(--dim)}
+.missing{border:1px dashed var(--line);border-radius:var(--radius);padding:36px;
+  text-align:center;color:var(--dim);font-size:14.5px;background:var(--panel)}
+
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{margin:0 0 7px;font-size:15.5px}
+.card p{margin:0;color:var(--dim);font-size:14px}
+.n{font-size:40px;font-weight:700;line-height:1;letter-spacing:-.02em;margin:0 0 6px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-weight:600;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}
+td.num{font-family:var(--mono)}
+.good{color:var(--accent)} .bad{color:var(--warn)}
+
+.honest{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:var(--radius);padding:24px}
+.honest h2{margin-top:0}
+.honest ul{margin:12px 0 0;padding-left:20px;color:var(--dim)}
+.honest li{margin-bottom:9px}
+.honest b{color:var(--ink);font-weight:600}
+.marker{font-family:var(--mono);font-size:12.5px;color:var(--warn)}
+
+footer{padding:36px 0 60px;color:var(--dim);font-size:13px}
+footer a{margin-right:16px}
+@media (max-width:560px){ th:nth-child(4),td:nth-child(4){display:none} }
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="tag">Open source · Runs locally</div>
+  <h1>Molecular research you can check.</h1>
+  <p class="lede">Load a real protein, dock a compound against it, and export a record whose every number
+  traces back to where it came from — or is marked, in the output itself, as a placeholder.</p>
+  <div class="cta">
+    <a class="btn primary" href="../index.html">Open the workspace</a>
+    <a class="btn" href="https://github.com/AGIFutureFoundation/AGI-Biotech-tool">Source</a>
+  </div>
+</div></header>
+
+<section><div class="wrap">
+  <h2>Two minutes of the real thing</h2>
+  <p class="sub">The app renders this walkthrough of itself. Every number on screen comes from a live run —
+  nothing is mocked up for the film.</p>
+  <figure>
+    <video controls preload="metadata" playsinline poster="">
+      <source src="biodao-walkthrough.mp4" type="video/mp4">
+      Your browser cannot play this video. The file is <code>docs/biodao-walkthrough.mp4</code>.
+    </video>
+    <figcaption>1920&times;1080, 2:08, no audio, captions burned in. Not committed to git — it is build
+    output. Render it with <code>?record</code>; see <code>docs/DEMO.md</code>.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Where it stands</h2>
+  <p class="sub">Every figure below is reproducible with a command in the repository.</p>
+  <div class="grid">
+    <div class="card"><p class="n">1,265</p><p>tests passing, one command</p></div>
+    <div class="card"><p class="n">14</p><p>public data sources, no API keys</p></div>
+    <div class="card"><p class="n">126</p><p>trial claims re-checked live</p></div>
+    <div class="card"><p class="n">1</p><p>host contacted on page load</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>The docking benchmark, reported honestly</h2>
+  <p class="sub">Eleven crystal ligands pulled from their structures and docked back blind. The benchmark
+  separates the two ways a case fails, because they call for opposite work.</p>
+  <table>
+    <tr><th>Case</th><th>Ranked</th><th>Best found</th><th>Why it failed</th></tr>
+    <tr><td>1UNL &middot; CDK5</td><td class="num bad">6.00 Å</td><td class="num good">1.29 Å</td><td>scoring</td></tr>
+    <tr><td>1Q41 &middot; GSK-3β</td><td class="num bad">6.82 Å</td><td class="num good">0.54 Å</td><td>scoring</td></tr>
+    <tr><td>1OQ5 &middot; carbonic anhydrase</td><td class="num bad">7.50 Å</td><td class="num good">1.63 Å</td><td>scoring</td></tr>
+    <tr><td>2BM2 &middot; tryptase</td><td class="num bad">5.22 Å</td><td class="num good">1.60 Å</td><td>scoring</td></tr>
+    <tr><td>2YXJ &middot; BCL-XL</td><td class="num bad">4.59 Å</td><td class="num bad">3.86 Å</td><td>sampling</td></tr>
+    <tr><td>1R58 &middot; MetAP2</td><td class="num bad">3.25 Å</td><td class="num bad">3.02 Å</td><td>sampling</td></tr>
+  </table>
+  <p class="sub" style="margin-top:22px"><b>5 of 11 succeed; 9 of 11 are reachable.</b> In four failures the
+  search found the crystal pose and the scoring function ranked something wrong above it. Perfect ranking over
+  poses already being produced would take this from 45% to 82% — so the next work belongs in the energy terms,
+  not the search. That is a measurement, not an intuition.</p>
+</div></section>
+
+<section><div class="wrap"><div class="honest">
+  <h2>What this is not</h2>
+  <p class="sub" style="margin-bottom:0">Most of the harm a tool like this can do is by sounding more certain
+  than it is. So, plainly:</p>
+  <ul>
+    <li><b>Docking scores are estimates, not measurements.</b> Not kcal/mol, not validated against experiment,
+      and not a replacement for Vina or Glide.</li>
+    <li><b>Single runs are draws.</b> The same case scored 1.44 Å and 7.50 Å on consecutive runs. Eleven cases
+      at three runs cannot resolve anything below a three-case swing — which is why runs are now seedable.</li>
+    <li><b>Some numbers are placeholders, and they say so.</b> Where no model has run, values print with a
+      <span class="marker">[SYNTHETIC]</span> marker and carry a provenance field. The on-chain anchor refuses
+      to anchor them.</li>
+    <li><b>Not a clinical or regulatory product</b>, not a medical device, and no partnership or endorsement
+      exists with any organisation in the disease areas it targets.</li>
+  </ul>
+</div></div></section>
+
+<footer><div class="wrap">
+  <a href="../index.html">Workspace</a>
+  <a href="../README.md">Docs</a>
+  <a href="SPEC.md">Spec</a>
+  <a href="https://github.com/AGIFutureFoundation/AGI-Biotech-tool/pull/1">PR #1</a>
+  <p style="margin-top:16px">Structures from the RCSB PDB, AlphaFold DB, UniProt, ChEMBL and Open Targets.
+  Trial data from ClinicalTrials.gov. Environments from Poly Haven (CC0).</p>
+</div></footer>
+
+</body>
+</html>

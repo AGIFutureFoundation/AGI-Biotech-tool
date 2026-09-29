@@ -5,6 +5,8 @@ Three ways to show biodao.blockchain, depending on how much time you have.
 ## 1. The video (2 minutes 8 seconds)
 
 `docs/biodao-walkthrough.mp4` — 1920x1080, H.264, no audio, captions burned in.
+Not committed: the renders are gitignored build output, and a 210 MB master cannot be pushed to
+GitHub at all (100 MB per-file cap). Render it before a demo rather than expecting it in a clone.
 
 It is not a screen recording. The app renders the film itself: the scene is drawn to an offscreen
 1080p buffer, captions and live readouts are composited on top, and frames are encoded with WebCodecs

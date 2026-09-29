@@ -16,6 +16,8 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
 
+import synthetic_provenance as sp
+
 from molecular_research_pipeline import (
     MolecularDockingEngine,
     MolecularDynamicsEngine,
@@ -252,9 +254,15 @@ class TeamAgentOrchestrator:
             admet_results.append(admet)
 
         if vr_interface:
+            # The count has to be re-tainted: absorption_score is a
+            # SyntheticValue, but counting over it yields a clean int, so the VR
+            # panel would otherwise display "18 pass Lipinski" with none of the
+            # marking every other number on the screen carries.
+            absorption = [a.absorption_score for a in admet_results]
             vr_interface('admet_complete', {
                 'compounds': len(admet_results),
-                'pass_lipinski': sum(1 for a in admet_results if a.absorption_score == 1.0),
+                'pass_lipinski': sp.derive(
+                    sum(1 for s in absorption if s == 1.0), *absorption),
             })
 
         # Step 6: Scoring and ranking
@@ -357,8 +365,10 @@ class TeamAgentOrchestrator:
                 for role in [AgentRole.OPTIMIZER, AgentRole.ANALYST, AgentRole.ORCHESTRATOR]
             },
             'data_sources': {
-                'databases_queried': 29,
-                'total_records_searched': '1.5B+',
+                # Measured, not claimed: the previous 29 databases / "1.5B+"
+                # records here were literals, and most of those databases have
+                # no client and answer 'no_client'.
+                'federator': self.enrichment_engine.federator.get_database_stats(),
                 'enrichment': self.enrichment_engine.enrich_target_analysis(target),
             }
         }

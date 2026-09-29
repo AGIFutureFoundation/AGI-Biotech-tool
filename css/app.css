@@ -121,3 +121,25 @@ label { font-size: 12px; color: var(--dim); display: inline-flex; gap: 5px; alig
   #left { position: absolute; left: 0; top: 52px; bottom: 26px; width: 320px; z-index: 30; box-shadow: 10px 0 40px #000a; }
   #left.collapsed { display: none; }
 }
+
+/* Provenance marks (js/provenance.js). Real data carries no mark. Each tier is text + shape, not hue alone:
+   an estimate has a dashed outline tag and dashed underline; a placeholder a filled tag and double underline. */
+.pv { white-space: nowrap; }
+.pv-v { text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.pv-est .pv-v { text-decoration-line: underline; text-decoration-style: dashed; text-decoration-color: var(--warn); }
+.pv-syn .pv-v { text-decoration-line: underline; text-decoration-style: double; text-decoration-color: var(--bad); }
+.pv-tag { display: inline-block; margin-left: 5px; padding: 1px 4px; border-radius: 3px; vertical-align: 1px;
+  font: 700 9px/1.2 var(--mono); letter-spacing: .06em; font-style: normal; text-decoration: none; }
+.pv-est .pv-tag, .pv-tag.pv-est { color: var(--warn); border: 1px dashed var(--warn); }
+.pv-syn .pv-tag, .pv-tag.pv-syn { color: var(--bg); background: var(--bad); border: 1px solid var(--bad); }
+.pv-tag-solo { margin-left: 8px; font-size: 10px; letter-spacing: .08em; }
+.pv-note { margin: 10px 0 0; padding: 6px 9px; font-size: 11.5px; line-height: 1.45; color: var(--ink);
+  background: var(--panel); border-radius: 6px; }
+.pv-note b { font: 700 10px var(--mono); letter-spacing: .08em; margin-right: 4px; }
+.pv-note.pv-est { border-left: 3px dashed var(--warn); }
+.pv-note.pv-est b { color: var(--warn); }
+.pv-note.pv-syn { border-left: 5px solid var(--bad); }
+.pv-note.pv-syn b { color: var(--bad); }
+/* Bars: hatching reads as "not a measurement" in greyscale; synthetic hatches the other way and is outlined. */
+.pv-bar-estimate { background: repeating-linear-gradient(135deg, var(--warn) 0 3px, rgba(255,190,11,.28) 3px 6px); }
+.pv-bar-synthetic { background: repeating-linear-gradient(45deg, var(--bad) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--bad); }

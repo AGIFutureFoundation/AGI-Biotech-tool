@@ -7,7 +7,6 @@ Agents can:
 - Collaborate with human researchers
 - Execute custom computational workflows
 """
-import subprocess
 import json
 from datetime import datetime
 from typing import Dict, List, Callable, Optional
@@ -169,32 +168,20 @@ class WorkflowOrchestrator:
             'automated': True,
         }
 
-def execute_bash_job(command: str, job_id: str) -> Dict:
-    """Execute a bash command in a sandboxed environment."""
-    try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=3600,  # 1 hour timeout
-        )
-        return {
-            'job_id': job_id,
-            'status': 'complete',
-            'stdout': result.stdout[:10000],  # Limit output
-            'stderr': result.stderr[:1000],
-            'returncode': result.returncode,
-        }
-    except subprocess.TimeoutExpired:
-        return {
-            'job_id': job_id,
-            'status': 'timeout',
-            'error': 'Job exceeded 1 hour time limit',
-        }
-    except Exception as e:
-        return {
-            'job_id': job_id,
-            'status': 'error',
-            'error': str(e),
-        }
+# execute_bash_job() was removed here.
+#
+# Its docstring said "Execute a bash command in a sandboxed environment". There
+# was no sandbox: subprocess.run(command, shell=True) with a one-hour timeout,
+# running as whoever started the server. Any string reaching it was arbitrary
+# code execution with the server's full privileges.
+#
+# Nothing called it, in any commit since it was added, so removing it changes
+# no behaviour. It is recorded here rather than deleted silently because the
+# dangerous part was not the code, it was the docstring: the next person to
+# want "let an agent run a job" would have found a helper that says it is
+# sandboxed and wired it up.
+#
+# If agent-dispatched execution is wanted, it needs an allowlist of commands
+# with no shell (a list argv, shell=False), a real sandbox, and an explicit
+# decision about who may trigger it. None of that is a small change, which is
+# the point.

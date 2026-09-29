@@ -1,0 +1,75 @@
+name: Data or citation problem
+description: A target, identifier, structure, count or citation that does not match its source.
+labels: ["data", "citations"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For anything where the repository's data disagrees with the upstream database: a UniProt
+        accession that does not match its gene symbol, a PDB count larger than what RCSB returns,
+        a ChEMBL target or drug that no longer resolves, an NCT number that does not exist, a PMID
+        whose abstract no longer contains the phrase a panel quotes, or a compound record whose
+        structure is not the compound it is named after.
+
+        You can check a whole panel yourself in one command:
+
+        ```
+        make citations
+        ```
+
+        It re-resolves every cited identifier against the live services and exits non-zero on the
+        first thing that does not check out. Paste its output here.
+
+  - type: input
+    id: identifier
+    attributes:
+      label: The identifier or record
+      placeholder: "e.g. UniProt P06400, PDB count for SOD1, CHEMBL5288, NCT01234567, PMID 32139107, AGI-0142"
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Where it lives in the repo
+      description: File and line if you have it.
+      placeholder: "server/disease_panels.py:214, or data/targets.json"
+
+  - type: textarea
+    id: mismatch
+    attributes:
+      label: What the repo claims, and what the source says
+      description: >-
+        Both sides, side by side. Link the upstream record.
+      placeholder: |
+        Repo claims: pdb_count 19
+        RCSB returns: 12  (https://www.rcsb.org/search?...)
+    validations:
+      required: true
+
+  - type: textarea
+    id: checker-output
+    attributes:
+      label: "`make citations` output"
+      description: The relevant lines, or the whole tail. Say if the run was cached or `--no-cache`.
+      render: shell
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Is this drift or an error?
+      description: >-
+        Upstream databases change. A count that grew since the panel was built is drift; a count
+        that was never right is an error. Both are worth filing — the distinction changes the fix.
+      options:
+        - "Drift — the source changed since the record was written"
+        - "Error — it was never right"
+        - "I do not know"
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: "`git rev-parse --short HEAD`, and the branch."
