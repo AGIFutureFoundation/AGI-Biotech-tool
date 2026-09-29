@@ -4,7 +4,7 @@
 # wrong interpreter produces a passing run that proves nothing.
 PY := .venv/bin/python
 
-.PHONY: help test imports reachable citations trials verify inventory serve egress
+.PHONY: help test imports reachable citations trials verify inventory serve egress llm
 .DEFAULT_GOAL := help
 
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
 	@echo "make anchor     build an unsigned Monad anchor for RESULTS=..."
 	@echo "make egress     every host the app can contact, declared and checked"
+	@echo "make llm        is an LLM provider configured and reachable?"
 	@echo "make serve      run the app on http://localhost:8000"
 
 test:
@@ -40,6 +41,11 @@ citations:
 # fail an offline build. Run it before merging anything that touches a panel.
 trials:
 	$(PY) scripts/verify_trial_claims.py
+
+# Reads LLM_API_KEY from your environment and never anywhere else, and prints
+# the endpoint but never the key. Not in `verify`: an LLM is optional.
+llm:
+	$(PY) scripts/check_llm.py
 
 # Data egress is part of verify because an undeclared endpoint is the kind of
 # change that is easy to make without noticing and hard to find afterwards.
