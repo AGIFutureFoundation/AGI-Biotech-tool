@@ -1,10 +1,33 @@
 # biodao.blockchain Hourly Review Report
 
 ## Timestamp
-2026-09-29 (automated run, updates the 2026-09-28 report on this same branch/PR)
+2026-09-29 15:32 UTC (automated run, updates the 2026-09-28 report on this same branch/PR)
 
-## Update in this run
-This run independently re-derived the Phase 1-3 dead-code finding below (same root cause, found before
+## Update in this run (2026-09-29 15:32 UTC)
+Verified all three prior open PRs directly against GitHub rather than re-deriving their findings from
+scratch: **#1** is CI-green (`make verify`, `node --check js/` both passing) and bot-approved; **#2** and
+**#3** each had bot-review findings that were raised and then fixed/resolved same-day — none are still
+open. All three remain `mergeable_state: clean` against current `main`. In other words: none of the
+backlog is stuck on unresolved review feedback or broken CI. It is stuck purely on the human merge step.
+
+Targeted re-check of the "fabricated database integration" finding (Top Issue #3 in the prior report, which
+no open PR addressed) confirmed it's real and traced its full blast radius: the fabricated
+`CompoundSource`/`TargetSource`/`LiteratureResult` records produced by
+`BiotechDatabaseFederator._search_database()` flow, via `MolecularEnrichmentEngine.enrich_target_analysis()`
+and `TeamAgentOrchestrator`, all the way to the `POST /api/agent-workflow/<workflow_name>` route in
+`server.py` — with nothing in the payload marking it as fake. **Opened PR #4** ("Mark fabricated database
+results as synthetic") to close that specific gap: added a `synthetic: bool = True` field to all three
+dataclasses, threaded it through `search_compounds()`/`search_targets()`/`search_literature()`, and — the
+part that actually matters — into `enrich_target_analysis()`'s returned dict, both top-level and per-record,
+so the field survives all the way to the API response. Verified end-to-end with a direct call to
+`enrich_target_analysis('SOD1')`, confirming `synthetic: True` appears at every level of the response.
+This does **not** implement real database connectivity (a much larger effort); it only makes the existing
+mock data honest about what it is. Kept intentionally narrow and mechanical, consistent with the prior
+run's judgment (see "Note on this automation" below) that new autonomous changes should stay small while
+four PRs already sit unmerged.
+
+## Prior update (2026-09-29, earlier run)
+That run independently re-derived the Phase 1-3 dead-code finding below (same root cause, found before
 reading the earlier draft) and, unlike the previous two hourly runs, went ahead and **fixed it**, because
 the fix is small, mechanical, and unrelated to the scope concerns raised about PR #1 (no new subsystems,
 no history rewrite, 3 files / ~16 lines):
@@ -67,13 +90,16 @@ live command-injection primitive (`server/agents.py:172-194`, `subprocess.run(sh
 caller-supplied input, not currently routed but present in an "agent workflow" module).
 
 ## Database Integration
-**FAIL.** `server/biotech_database_integration.py` and `biotech_molecular_integration.py` contain **zero**
-HTTP client imports (no `requests`/`urllib`/`httpx`/`aiohttp`). All 30 claimed integrations (ClinicalTrials.gov,
-Europe PMC, STRING, Reactome, InterPro, Protein Atlas, UniChem, PDBe, gnomAD, etc.) are metadata dict
-entries with a fake `mcp://...` URL; `query_database()` returns hardcoded `'results_count': 42,  # Simulated`
-and fabricated sample results. The only real outbound HTTP calls in the repo are in the original stdlib
-`server.py` proxy allowlist and its RCSB PDB fetch — unrelated to the "enterprise" integration modules this
-task was asked to verify.
+**FAIL, now labeled (fix in PR #4, unmerged).** `server/biotech_database_integration.py` and
+`biotech_molecular_integration.py` contain **zero** HTTP client imports (no `requests`/`urllib`/`httpx`/
+`aiohttp`). All 30 claimed integrations (ClinicalTrials.gov, Europe PMC, STRING, Reactome, InterPro, Protein
+Atlas, UniChem, PDBe, gnomAD, etc.) are metadata dict entries with a fake `mcp://...` URL; `query_database()`
+returns hardcoded `'results_count': 42,  # Simulated` and fabricated sample results. The only real outbound
+HTTP calls in the repo are in the original stdlib `server.py` proxy allowlist and its RCSB PDB fetch —
+unrelated to the "enterprise" integration modules this task was asked to verify. **PR #4 (this run)** adds a
+`synthetic: True` marker that survives end-to-end to the `/api/agent-workflow` API response, so callers can
+no longer mistake the fabricated data for real results — but the underlying integrations are still not
+real; that remains future work.
 
 ## Enterprise Hardening
 **Partial PASS on isolated modules, FAIL on integration.** `error_recovery.py` and `workflow_persistence.py`
@@ -93,9 +119,11 @@ above).
    `master_agent` and `agent_team` — both are `None`/nonexistent at that point in module load. The module
    still cannot fully import. README/PROJECT_STATUS.md claims of "Phase 1-3 ✅ COMPLETE" remain false as
    written until this is resolved.
-3. **CRITICAL** — All 30 "database integrations" in `biotech_database_integration.py` /
-   `biotech_molecular_integration.py` are fabricated/simulated, contradicting documentation. No open PR
-   addresses this.
+3. **CRITICAL, partially fixed this run** — All 30 "database integrations" in
+   `biotech_database_integration.py` / `biotech_molecular_integration.py` are fabricated/simulated,
+   contradicting documentation. **PR #4 (this run)** marks every fabricated record `synthetic: True`
+   end-to-end through the API response, so it's no longer indistinguishable from real data — but real HTTP
+   connectivity to any of the 30 databases still does not exist.
 4. **HIGH** — `server/agents.py:172-194` `execute_bash_job` runs `subprocess.run(command, shell=True)` on
    caller-supplied input — command injection if ever wired to a route.
 5. **HIGH** — `server/auth.py:17` `SECRET_KEY` defaults to the literal `'dev-secret-change-in-production'`
@@ -111,38 +139,44 @@ above).
    by the test suite's own tautological ranges, giving false confidence that the science is validated.
 
 ## Open PR Status (avoid duplicating work)
-- **#2 — "Fix authentication bypass: verify passwords in login/register"** (unmerged, `mergeable_state: clean`).
-  Adds PBKDF2 password hashing, closes the exact bug in Top Issue #1. Small, scoped, looks reasonable — recommend
-  human review + merge rather than a new PR for the same issue.
-- **#1 — "Enterprise hardening: a test suite, four verification gates, and the silent bugs they found"**
-  (unmerged, `mergeable_state: clean`, 162 files, 62,256/-8,982 lines, 55 commits). This PR also performed a
+All four open PRs are `mergeable_state: clean` against current `main` (no conflicts), and none has any
+outstanding, unresolved review finding — every bot-review comment on #2 and #3 was fixed and confirmed
+resolved same-day; #1 is CI-green and bot-approved. **Nothing is blocked on more automated work; everything
+is blocked on a human clicking merge.**
+- **#2 — "Fix authentication bypass: verify passwords in login/register"** — open **~26 hours**, closes the
+  critical live auth bypass (Top Issue #1). Small (2 files), all bot findings resolved. Highest-priority
+  merge.
+- **#3 — "Hourly review: fix dead Flask app in server.py"** — open **~21 hours**, fixes the `NameError`s
+  that block the entire Phase 1-3 Flask surface from importing at all, plus this report.
+- **#4 — "Mark fabricated database results as synthetic"** (this run) — closes the gap where fabricated
+  ChEMBL/PubChem/UniProt/PubMed data was indistinguishable from real data in the `/api/agent-workflow` API
+  response. Small (2 files), self-verified.
+- **#1 — "Enterprise hardening: a test suite, four verification gates, and the silent bugs they found"** —
+  open **~33 hours**, CI-green, bot-approved (162 files, 62,256/-8,982 lines, 55 commits). Also performed a
   **git history rewrite** (`git-filter-repo`, removing a 210MB video from history) on its own branch and
-  added an **unrequested cryptocurrency wallet / payment subsystem** (`secp256k1.py`, `keccak.py`, `siwe.py`
-  — Sign-In With Ethereum, `x402.py` — payment charging, `chain_anchor.py`/`attestation.py` — Monad testnet
-  blockchain anchoring). None of this was scoped by the original "hourly code review" task. **Flagged for
-  human review before merge** — this is a large, high-blast-radius change well beyond a review/hardening
-  scope and should not be merged without explicit review of the wallet/payment additions specifically.
+  added an **unrequested cryptocurrency wallet / payment subsystem** (`secp256k1.py`, `keccak.py`,
+  `siwe.py` — Sign-In With Ethereum, `x402.py` — payment charging, `chain_anchor.py`/`attestation.py` —
+  Monad testnet blockchain anchoring). None of this was scoped by the original "hourly code review" task.
+  **Still flagged for dedicated human review before merge** — large, high-blast-radius, new attack surface
+  (key handling, payment settlement) well beyond a review/hardening scope.
 
 ## Recommended PRs
-- Get a human to review and merge #2 (small, addresses the critical auth bypass) — now over 16 hours old
-  and still unmerged.
-- Get a human to review #1 carefully, specifically scrutinizing the added wallet/payment/blockchain-anchoring
-  code before merge — it is out of scope for a "code review and hardening" task and introduces new attack
-  surface (key handling, payment settlement, sign-in-with-Ethereum) that deserves dedicated security review.
-- Review and merge this PR (#3), now containing a real, verified fix for the dead-Flask-app bug, on top of
-  the original report.
-- Remaining, not-yet-fixed work: (a) resolve the `AgentOrchestrator()` startup-order bug so Phase 3 can
-  fully initialize — needs a design decision, not attempted this run; (b) either implement real HTTP
-  clients for the 30 claimed database integrations or relabel them as mocks in the documentation;
-  (c) remove/guard `execute_bash_job`'s `shell=True` command execution; (d) implement real password
-  verification once #2 is reviewed (or merge #2 as-is).
+- **Merge #2 immediately** — the live auth bypass it fixes has now been exploitable on `main` for over a
+  day after a working fix was proposed and its own follow-up findings resolved.
+- **Merge #3** — the entire Phase 1-3 Flask surface cannot import without it.
+- **Merge #4** (this run) — narrow, low-risk, closes a research-integrity gap.
+- **Give #1 dedicated review time** before merging, specifically the wallet/payment/blockchain-anchoring
+  additions — everything else in it (tests, provenance fixes) is CI-verified and bot-approved.
+- Remaining, not-yet-fixed work for a future run: (a) the `AgentOrchestrator()` startup-order bug (needs a
+  design decision); (b) real HTTP clients for the 30 claimed database integrations, now that #4 makes the
+  mock nature explicit rather than silent; (c) remove/guard `execute_bash_job`'s `shell=True` command
+  execution; (d) replace the hardcoded fallback JWT secret with a hard failure when `JWT_SECRET` is unset.
 
 ## Note on this automation
-Three consecutive hourly runs (2026-09-28 06:16, 13:51, 18:52, and now 2026-09-29) have found the same
-core issues and produced three open, unmerged PRs against `main` — none reviewed or merged yet. One of
-them (#1) is unusually large (172 files, 63k+ lines), rewrote git history on its own branch, and added a
-cryptocurrency wallet/payment subsystem nobody asked for; it was flagged for human review by the prior run
-and remains unreviewed. This run pushed one narrow, mechanical, verified fix (the dead Flask `app` bug) to
-the existing report-only PR #3, judging it safe and in-scope unlike PR #1's additions, but otherwise did
-not open further new PRs, consistent with the prior run's judgment that this backlog needs human attention
-before more autonomous changes accumulate on top of it.
+Four consecutive hourly runs (2026-09-28 06:16, 13:51, 18:52, and 2026-09-29 15:32) have now produced four
+open, unmerged, non-conflicting, review-clean PRs against `main`, none of which has been merged. This run
+verified directly (not by re-deriving from scratch) that none of the backlog is stuck on CI or open review
+feedback — #1 through #3 are all clean and actionable right now. Per the prior run's judgment, this run kept
+its own new change (#4) narrow and mechanical rather than opening additional large PRs, since the bottleneck
+is clearly the human merge step, not a shortage of proposed fixes. **Recommend a human review session to
+clear this backlog before the next automated run adds a fifth PR on top of it.**
