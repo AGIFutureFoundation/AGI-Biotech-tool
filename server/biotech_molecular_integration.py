@@ -22,6 +22,7 @@ class CompoundSource:
     logp: Optional[float]
     source_url: str
     retrieved_date: str
+    synthetic: bool = True
 
 @dataclass
 class TargetSource:
@@ -34,6 +35,7 @@ class TargetSource:
     gene_name: str
     source_url: str
     retrieved_date: str
+    synthetic: bool = True
 
 @dataclass
 class LiteratureResult:
@@ -46,6 +48,7 @@ class LiteratureResult:
     publication_date: str
     url: str
     relevance_score: float
+    synthetic: bool = True
 
 class BiotechDatabaseFederator:
     """Queries and federates results from 29 biotech databases."""
@@ -315,6 +318,7 @@ class BiotechDatabaseFederator:
                     logp=comp.get('logp'),
                     source_url=f"{db_info['url']}/{comp.get('id', '')}",
                     retrieved_date=datetime.utcnow().isoformat(),
+                    synthetic=comp.get('synthetic', True),
                 )
                 results.append(source)
 
@@ -369,6 +373,7 @@ class BiotechDatabaseFederator:
                     gene_name=target.get('gene_name', query),
                     source_url=f"{db_info['url']}/{target.get('id', '')}",
                     retrieved_date=datetime.utcnow().isoformat(),
+                    synthetic=target.get('synthetic', True),
                 )
                 results.append(source)
 
@@ -422,6 +427,7 @@ class BiotechDatabaseFederator:
                     publication_date=paper.get('date', ''),
                     url=paper.get('url', ''),
                     relevance_score=self._calculate_relevance(query, paper),
+                    synthetic=paper.get('synthetic', True),
                 )
                 results.append(result)
 
@@ -440,7 +446,14 @@ class BiotechDatabaseFederator:
         return results
 
     def _search_database(self, db_name: str, query: str, result_type: str) -> List[Dict]:
-        """Mock search implementation (in production, calls MCP endpoint)."""
+        """Placeholder search implementation (in production, calls MCP endpoint).
+
+        No real network call is made yet. Every record returned here is
+        fabricated and carries an explicit `synthetic` marker so it can
+        never be mistaken for a genuine database hit downstream (this feeds
+        agent-workflow output served over the API).
+        """
+        MOCK_NOTICE = f'SIMULATED - no real query was made against {db_name}'
 
         # Simulate database results
         if result_type == 'compound':
@@ -452,6 +465,8 @@ class BiotechDatabaseFederator:
                         'smiles': 'CC(=O)OC1=CC=CC=C1C(=O)O',
                         'mw': 180.16,
                         'logp': 1.19,
+                        'synthetic': True,
+                        'data_source': MOCK_NOTICE,
                     }
                 ]
             elif db_name == 'pubchem':
@@ -461,6 +476,8 @@ class BiotechDatabaseFederator:
                         'name': f'PubChem entry for {query}',
                         'smiles': 'CC(=O)OC1=CC=CC=C1C(=O)O',
                         'mw': 180.16,
+                        'synthetic': True,
+                        'data_source': MOCK_NOTICE,
                     }
                 ]
 
@@ -472,6 +489,8 @@ class BiotechDatabaseFederator:
                         'protein_name': f'Protein {query}',
                         'gene_name': query,
                         'uniprot_id': 'P12345',
+                        'synthetic': True,
+                        'data_source': MOCK_NOTICE,
                     }
                 ]
             elif db_name == 'pdb':
@@ -481,6 +500,8 @@ class BiotechDatabaseFederator:
                         'protein_name': f'SOD1 complex',
                         'pdb_id': '4O1J',
                         'gene_name': 'SOD1',
+                        'synthetic': True,
+                        'data_source': MOCK_NOTICE,
                     }
                 ]
 
@@ -493,6 +514,8 @@ class BiotechDatabaseFederator:
                     'abstract': f'Study about {query} for drug discovery.',
                     'date': '2024-01-15',
                     'url': 'https://pubmed.ncbi.nlm.nih.gov/12345678',
+                    'synthetic': True,
+                    'data_source': MOCK_NOTICE,
                 }
             ]
 
@@ -577,6 +600,12 @@ class MolecularEnrichmentEngine:
         return {
             'compound_name': compound_name,
             'smiles': compound_smiles,
+            # `any()` over empty lists would read as "not synthetic" when no
+            # data came back at all; treat that case as synthetic too, since
+            # nothing here has been verified against a real database.
+            'synthetic': not (sources or literature)
+                or any(s.synthetic for s in sources)
+                or any(lit.synthetic for lit in literature),
             'database_sources': [
                 {
                     'database': s.database,
@@ -584,6 +613,7 @@ class MolecularEnrichmentEngine:
                     'mw': s.mw,
                     'logp': s.logp,
                     'url': s.source_url,
+                    'synthetic': s.synthetic,
                 }
                 for s in sources[:3]
             ],
@@ -593,6 +623,7 @@ class MolecularEnrichmentEngine:
                     'database': lit.database,
                     'relevance': lit.relevance_score,
                     'url': lit.url,
+                    'synthetic': lit.synthetic,
                 }
                 for lit in literature[:5]
             ],
@@ -618,6 +649,12 @@ class MolecularEnrichmentEngine:
 
         return {
             'target': target_gene,
+            # `any()` over empty lists would read as "not synthetic" when no
+            # data came back at all; treat that case as synthetic too, since
+            # nothing here has been verified against a real database.
+            'synthetic': not (targets or pathway_lit)
+                or any(t.synthetic for t in targets)
+                or any(lit.synthetic for lit in pathway_lit),
             'protein_sources': [
                 {
                     'database': t.database,
@@ -625,6 +662,7 @@ class MolecularEnrichmentEngine:
                     'pdb_id': t.pdb_id,
                     'uniprot_id': t.uniprot_id,
                     'url': t.source_url,
+                    'synthetic': t.synthetic,
                 }
                 for t in targets[:3]
             ],
@@ -634,6 +672,7 @@ class MolecularEnrichmentEngine:
                     'database': lit.database,
                     'relevance': lit.relevance_score,
                     'url': lit.url,
+                    'synthetic': lit.synthetic,
                 }
                 for lit in pathway_lit[:5]
             ],
