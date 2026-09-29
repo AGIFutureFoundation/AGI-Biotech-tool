@@ -600,6 +600,12 @@ class MolecularEnrichmentEngine:
         return {
             'compound_name': compound_name,
             'smiles': compound_smiles,
+            # `any()` over empty lists would read as "not synthetic" when no
+            # data came back at all; treat that case as synthetic too, since
+            # nothing here has been verified against a real database.
+            'synthetic': not (sources or literature)
+                or any(s.synthetic for s in sources)
+                or any(lit.synthetic for lit in literature),
             'database_sources': [
                 {
                     'database': s.database,
@@ -607,6 +613,7 @@ class MolecularEnrichmentEngine:
                     'mw': s.mw,
                     'logp': s.logp,
                     'url': s.source_url,
+                    'synthetic': s.synthetic,
                 }
                 for s in sources[:3]
             ],
@@ -616,6 +623,7 @@ class MolecularEnrichmentEngine:
                     'database': lit.database,
                     'relevance': lit.relevance_score,
                     'url': lit.url,
+                    'synthetic': lit.synthetic,
                 }
                 for lit in literature[:5]
             ],
@@ -641,7 +649,12 @@ class MolecularEnrichmentEngine:
 
         return {
             'target': target_gene,
-            'synthetic': any(t.synthetic for t in targets) or any(lit.synthetic for lit in pathway_lit),
+            # `any()` over empty lists would read as "not synthetic" when no
+            # data came back at all; treat that case as synthetic too, since
+            # nothing here has been verified against a real database.
+            'synthetic': not (targets or pathway_lit)
+                or any(t.synthetic for t in targets)
+                or any(lit.synthetic for lit in pathway_lit),
             'protein_sources': [
                 {
                     'database': t.database,
