@@ -7,6 +7,7 @@ Supports:
 - Role-based access control (RBAC): admin, pi, researcher, viewer
 """
 import os
+import secrets
 import jwt
 import json
 import hashlib
@@ -14,7 +15,18 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
 
-SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
+_env_secret = os.getenv('JWT_SECRET')
+if _env_secret:
+    SECRET_KEY = _env_secret
+else:
+    # No hardcoded fallback: that value is public (it's in this repo's source),
+    # so anyone could forge a valid token, including an admin-role one. A random
+    # per-process secret invalidates tokens on restart, but that's strictly
+    # better than a signing key an attacker can read on GitHub.
+    SECRET_KEY = secrets.token_hex(32)
+    print('WARNING: JWT_SECRET is not set. Using a random per-process secret; '
+          'all issued tokens will be invalidated on restart. Set the JWT_SECRET '
+          'environment variable for a stable, production-safe deployment.')
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
 
