@@ -5,3 +5,9 @@ pypdf>=4.0             # reading compound PDFs server-side
 openmm>=8.1            # all-atom molecular dynamics
 pdbfixer>=1.9          # repairs structures before simulation
 # google-cloud-bigquery>=3.0   # optional: AlphaFold metadata queries on Google public datasets
+
+# Required by the Flask API layer in server/server.py (auth, projects, workflows,
+# master agent, websocket streaming) — this process will not start without them.
+flask>=3.0
+pyjwt>=2.8
+websockets>=12.0
