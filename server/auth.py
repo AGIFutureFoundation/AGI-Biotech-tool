@@ -7,6 +7,7 @@ Supports:
 - Role-based access control (RBAC): admin, pi, researcher, viewer
 """
 import os
+import secrets
 import jwt
 import json
 import hashlib
@@ -14,7 +15,30 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
 
-SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
+_env_secret = os.getenv('JWT_SECRET')
+_is_production = os.getenv('FLASK_ENV') == 'production' or os.getenv('APP_ENV') == 'production'
+if _env_secret:
+    SECRET_KEY = _env_secret
+elif _is_production:
+    raise RuntimeError(
+        'JWT_SECRET must be set when FLASK_ENV/APP_ENV=production. A random '
+        'per-process secret is unsafe here: it would differ across worker '
+        'processes and replicas, so tokens signed by one would be rejected by '
+        'another.'
+    )
+else:
+    # No hardcoded fallback: that value is public (it's in this repo's source),
+    # so anyone could forge a valid token, including an admin-role one. A random
+    # per-process secret invalidates tokens on restart and, under multiple
+    # worker processes or replicas, means tokens signed by one are rejected by
+    # another — but that's strictly better than a signing key an attacker can
+    # read on GitHub. Set JWT_SECRET for a stable, multi-process deployment.
+    SECRET_KEY = secrets.token_hex(32)
+    print('WARNING: JWT_SECRET is not set. Using a random per-process secret; '
+          'tokens will be invalidated on restart and rejected by any other '
+          'worker process or replica that does not share this secret. Set the '
+          'JWT_SECRET environment variable for a stable, production-safe '
+          'deployment.')
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
 
