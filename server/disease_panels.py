@@ -6,6 +6,8 @@ Pre-curated lists of validated targets for:
 - Shriners Children's (Osteogenesis Imperfecta, Skeletal Dysplasia)
 """
 
+from typing import Dict, List
+
 DISEASE_PANELS = {
     'ALS': {
         'name': 'Amyotrophic Lateral Sclerosis',

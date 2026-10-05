@@ -498,12 +498,16 @@ if __name__ == "__main__":
 # Phase 1 Enhancements: Auth, Projects, Reporting, Agents
 # ================================================================
 
+from flask import Flask, request, jsonify
+
 from auth import require_auth, require_role, authenticate_user, create_user
 from projects import create_project, get_project, list_user_projects, create_campaign
 from disease_panels import get_panel, list_panels, get_targets_by_program
 from reporting import Report, generate_screening_report
 from paper_generator import generate_paper_from_session
 from agents import OptimizationAgent, AnalysisAgent, WorkflowOrchestrator
+
+app = Flask(__name__)
 
 # ================================================================
 # User Authentication Endpoints
@@ -716,9 +720,6 @@ def create_validation_workflow():
     )
     return jsonify(workflow), 201
 
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-
 # ================================================================
 # Phase 2: Immersive AR/VR with Master Agent Voice Control
 # ================================================================
@@ -844,13 +845,10 @@ def start_agent_workflow(workflow_name):
         'progress': 0,
     }), 201
 
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-
 # ========================================================================== Phase 3: Async Workflows
 
-from server.agent_orchestrator import AgentOrchestrator, WorkflowExecutor
-from server.websocket_streaming import StreamingServer, VRDataFrame
+from agent_orchestrator import AgentOrchestrator, WorkflowExecutor
+from websocket_streaming import StreamingServer, VRDataFrame
 import asyncio
 import websockets
 from datetime import datetime
@@ -1017,7 +1015,7 @@ def start_websocket_server():
 
 # ========================================================================== Master Agent Integration
 
-from server.master_agent import MasterAgent
+from master_agent import MasterAgent
 
 master_agent = None
 
@@ -1083,4 +1081,4 @@ if __name__ == '__main__':
     print('🚀 biodao.blockchain server running on http://localhost:8000')
     print('📡 WebSocket streaming on ws://localhost:8001')
     
-    app.run(debug=True, port=8000, threaded=True)
+    app.run(debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true', port=8000, threaded=True)
