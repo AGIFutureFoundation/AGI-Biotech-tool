@@ -266,17 +266,17 @@ def run_bigquery(body):
 
     client = bigquery.Client(project=body.get("project") or None)
     preset = body.get("preset")
-    if preset:
-        sql = BQ_PRESETS[preset]
-        params = []
-        if "ids" in body:
-            params.append(bigquery.ArrayQueryParameter("ids", "STRING", body["ids"]))
-        if "gene" in body:
-            params.append(bigquery.ScalarQueryParameter("gene", "STRING", body["gene"]))
-        cfg = bigquery.QueryJobConfig(query_parameters=params, maximum_bytes_billed=int(body.get("maxBytes", 20e9)))
-    else:
-        sql = body["sql"]
-        cfg = bigquery.QueryJobConfig(maximum_bytes_billed=int(body.get("maxBytes", 20e9)))
+    if preset not in BQ_PRESETS:
+        # This endpoint has no caller authentication, so only the fixed,
+        # parameterized presets above may run — never caller-supplied SQL.
+        raise ValueError(f"unknown preset {preset!r}; must be one of {sorted(BQ_PRESETS)}")
+    sql = BQ_PRESETS[preset]
+    params = []
+    if "ids" in body:
+        params.append(bigquery.ArrayQueryParameter("ids", "STRING", body["ids"]))
+    if "gene" in body:
+        params.append(bigquery.ScalarQueryParameter("gene", "STRING", body["gene"]))
+    cfg = bigquery.QueryJobConfig(query_parameters=params, maximum_bytes_billed=int(body.get("maxBytes", 20e9)))
     rows = [dict(r) for r in client.query(sql, job_config=cfg).result(max_results=int(body.get("limit", 500)))]
     return {"rows": rows, "sql": sql}
 
