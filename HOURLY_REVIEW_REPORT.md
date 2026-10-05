@@ -24,12 +24,13 @@ top-to-bottom under that invocation:
   All of it — including everything PR #2, #3 and #4 fix or touch — is unreachable in the one process
   operators actually start. The `AgentOrchestrator()` `TypeError` the last run found is real, but only
   under `import server`, a code path real operators never exercise.
-- **Compounding port conflict, confirmed by reading both startup blocks**: the legacy server's own default
-  is `--port 8000` (`server.py:477`), and the Flask layer's final startup block calls
-  `app.run(..., port=8000, ...)` (server.py:1084, after PR #3's fix). They hardcode the *same* port. Simply
-  moving the legacy `main()` into a background thread (the obvious, minimal-looking fix, matching the
-  existing pattern used for `start_websocket_server()`) would not work — the second server to bind would
-  crash with "Address already in use" rather than actually start.
+- **Compounding port conflict, confirmed by reading both startup blocks**: the legacy server's port is a
+  *default*, not hardcoded — `--port 8000` (`server.py:477`), overridable via the CLI flag. The Flask
+  layer's final startup block, by contrast, does hardcode its port: `app.run(..., port=8000, ...)`
+  (server.py:1084, after PR #3's fix), with no flag or env var to change it. Under default usage, both
+  land on the same port 8000. Simply moving the legacy `main()` into a background thread (the obvious,
+  minimal-looking fix, matching the existing pattern used for `start_websocket_server()`) would not work —
+  the second server to bind would crash with "Address already in use" rather than actually start.
 - **Confirmed via the frontend, not just the backend**: grepped `js/*.js` for calls to the Flask layer's
   routes. Nothing calls `/api/auth/*`, `/api/projects`, `/api/voice/process`, `/api/voice/status`, or
   `/api/agent-workflow/*`. The one voice-related call, `js/main.js:1542` (`fetch('/api/voice-command')`),
@@ -54,10 +55,12 @@ file.
 ### Also confirmed this run
 - `server/workflow_persistence.py:138-158` vs `:309-328` (new, medium): `update_workflow_status()` only sets
   `completed_at` when status is `COMPLETED`; `FAILED`/`CANCELLED` workflows keep `completed_at = NULL`
-  forever. `cleanup_old_workflows()` deletes rows where `completed_at < cutoff_date AND status IN
-  (COMPLETED, FAILED)` — since SQLite's `<` never matches `NULL`, failed workflows can never be purged by
-  the one retention mechanism that exists. Unbounded row growth. Not yet fixed; small enough for a future
-  run, held back this run to keep this update to documentation only.
+  forever. Two independent reasons neither ever gets purged by `cleanup_old_workflows()`: `FAILED` rows have
+  a `NULL` `completed_at`, and SQLite's `<` never matches `NULL`, so they can't satisfy the
+  `completed_at < cutoff_date` filter; `CANCELLED` rows are excluded outright, since the query's
+  `status IN (COMPLETED, FAILED)` filter never names `CANCELLED` at all — even one with a timestamp
+  wouldn't be deleted. Unbounded row growth either way. Not yet fixed; small enough for a future run, held
+  back this run to keep this update to documentation only.
 - `error_recovery.py`, `workflow_persistence.py`, `monitoring.py`, `load_testing.py` are imported only by
   `scripts/test_phase5_scaling.py` and `scripts/test_production_hardening.py` — never by `server.py` or any
   other runtime module. All of "Enterprise Hardening" (Phase 4/5) is fully disconnected from the live app,
@@ -155,9 +158,11 @@ module still cannot fully import**; this is now the top blocking issue, see Top 
 
 ## Compliance Score
 **25/100** — Critical auth bypass on `main` (fix already proposed in open PR #2, unmerged), no server-side
-audit trail despite docs claiming one, hardcoded fallback JWT signing secret, debug mode enabled, and a
-live command-injection primitive (`server/agents.py:172-194`, `subprocess.run(shell=True)` on
-caller-supplied input, not currently routed but present in an "agent workflow" module).
+audit trail despite docs claiming one, hardcoded fallback JWT signing secret, one conditional debug path
+(off by default, gated behind `FLASK_DEBUG`), and an unsafe shell-execution sink
+(`server/agents.py:172-194`, `subprocess.run(shell=True)` on caller-supplied input — no in-repository
+caller or external source for that input is established, so this is not currently a reachable
+command-injection path).
 
 ## Database Integration
 **FAIL, now labeled (fix in PR #4, unmerged).** `server/biotech_database_integration.py` and
@@ -206,8 +211,9 @@ above).
 6. **HIGH** — `server/auth.py:17` `SECRET_KEY` defaults to the literal `'dev-secret-change-in-production'`
    when `JWT_SECRET` is unset — production deployments that forget the env var sign tokens with a public,
    guessable secret. **An open PR already fixes this: #5.**
-7. **HIGH** — `server/server.py` calls `app.run(debug=True, ...)` in three places — Werkzeug debugger /
-   remote-code-execution exposure if this code path is ever fixed and deployed.
+7. **DOWNGRADED, already fixed** — `server/server.py` has a single `app.run(...)` call (line 1084), with
+   `debug` gated behind `FLASK_DEBUG` (off by default) since PR #3's fix. The "three places" / hardcoded
+   `debug=True` finding this line previously described was the pre-fix state; no outstanding issue here.
 8. **MEDIUM, new this run** — `server/workflow_persistence.py:138-158` vs `:309-328`: `FAILED`/`CANCELLED`
    workflows never get `completed_at` set, so `cleanup_old_workflows()`'s `completed_at < cutoff_date`
    filter can never match them — unbounded row growth in the only retention mechanism that exists.
@@ -223,8 +229,11 @@ above).
 All **five** open PRs are `mergeable_state: clean` against current `main` (no conflicts), and none has any
 outstanding, unresolved review finding — every bot-review comment on #2, #3, #4 and #5 was fixed and
 confirmed resolved same-day; #1 is bot-approved. There is no CI pipeline configured on this repo (status
-checks are empty on every PR). **Nothing is blocked on more automated work or on CI; everything is blocked
-on a human clicking merge.** This run opened no new PR — see "Why no PR for this run" above.
+checks are empty on every PR). **Nothing is blocked on more automated work or on CI** — all five are
+technically mergeable right now. That is distinct from being *ready* to merge: #1 still needs a dedicated
+human review of its wallet/payment additions, and #2/#3/#4 still have the Flask-architecture decision
+(Top Issue #1) as a prerequisite per "Recommended PRs" below. This run opened no new PR — see "Why no PR
+for this run" above.
 - **#2 — "Fix authentication bypass: verify passwords in login/register"** — open **7 days**, closes the
   critical live auth bypass (Top Issue #2). Small (2 files), all bot findings resolved. Note from this run:
   per Top Issue #1, the live `python server.py` process never reaches this code today regardless.
