@@ -1,7 +1,15 @@
 # Phase 9: Complete Molecular Research & Enterprise Integration
 ## biodao.blockchain - Comprehensive Drug Discovery Platform
 
-**Status:** ✅ **COMPLETE**  
+> **⚠️ Automated review correction (2026-10-05):** `server/server.py` has no `app = Flask(...)` instance and
+> four competing `if __name__ == '__main__':` blocks; the first blocks forever in `main()`, so the routes
+> and agent/orchestration code this document describes never execute when the server is started as
+> documented. The "Foundation Partnership" sections below (ALS Association, Michael J. Fox Foundation,
+> Shriners Children's, and named university centers) are not backed by any agreement, contract, or
+> correspondence in this repository and should be treated as internal planning ideas, not established
+> relationships. See `HOURLY_REVIEW_REPORT.md` for details.
+
+**Status:** ⚠️ **NOT PRODUCTION READY — see correction above**  
 **Date:** 2026-09-19  
 **Components:** 10 new modules (3,500+ lines)  
 **Integration:** Full end-to-end molecular pipeline with agents, VR, and 29 biotech databases  

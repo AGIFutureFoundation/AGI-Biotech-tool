@@ -10,24 +10,45 @@ import os
 import jwt
 import json
 import hashlib
+import hmac
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
 
-SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
+SECRET_KEY = os.getenv('JWT_SECRET')
+if not SECRET_KEY:
+    if os.getenv('FLASK_ENV') == 'production' or os.getenv('ENV') == 'production':
+        raise RuntimeError('JWT_SECRET must be set in production; refusing to start with no secret.')
+    SECRET_KEY = 'dev-secret-change-in-production'
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
 
+PBKDF2_ITERATIONS = 390_000
+
+def _hash_password(password: str, salt: bytes = None) -> str:
+    """PBKDF2-HMAC-SHA256 password hash, stored as 'salt_hex$hash_hex'."""
+    salt = salt or os.urandom(16)
+    digest = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, PBKDF2_ITERATIONS)
+    return f"{salt.hex()}${digest.hex()}"
+
+def _verify_password(password: str, stored: str) -> bool:
+    if not stored or '$' not in stored:
+        return False
+    salt_hex, _ = stored.split('$', 1)
+    candidate = _hash_password(password, bytes.fromhex(salt_hex))
+    return hmac.compare_digest(candidate, stored)
+
 class User:
     """Represents a researcher or lab member."""
-    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher', 
-                 institution: str = '', created_at: str = None):
+    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher',
+                 institution: str = '', created_at: str = None, password_hash: str = None):
         self.user_id = user_id
         self.email = email
         self.name = name
         self.role = role  # admin, pi, researcher, viewer
         self.institution = institution
         self.created_at = created_at or datetime.utcnow().isoformat()
+        self.password_hash = password_hash
 
     def to_dict(self):
         return {
@@ -91,16 +112,15 @@ class Permission:
             return True
         return False
 
-# Mock database of users (replace with PostgreSQL)
-USERS_DB = {
-    'user_001': User('user_001', 'researcher@als.org', 'Alice Smith', 'pi', 'ALS Association'),
-    'user_002': User('user_002', 'scientist@mjff.org', 'Bob Chen', 'researcher', 'MJFF'),
-}
+# In-memory user store (replace with a real database). No accounts ship with a usable password; call
+# create_user() with an explicit password to make one.
+USERS_DB: Dict[str, User] = {}
 
-def create_user(email: str, name: str, role: str = 'researcher', institution: str = '') -> User:
-    """Create a new user account."""
-    user_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:8]}"
-    user = User(user_id, email, name, role, institution)
+def create_user(email: str, name: str, password: str, role: str = 'researcher',
+                 institution: str = '') -> User:
+    """Create a new user account with a hashed password."""
+    user_id = f"user_{hashlib.sha256(email.encode()).hexdigest()[:16]}"
+    user = User(user_id, email, name, role, institution, password_hash=_hash_password(password))
     USERS_DB[user_id] = user
     return user
 
@@ -109,15 +129,10 @@ def get_user(user_id: str) -> Optional[User]:
     return USERS_DB.get(user_id)
 
 def authenticate_user(email: str, password: str) -> Optional[str]:
-    """Authenticate a user and return a token.
-    
-    In production, use bcrypt to hash/verify passwords.
-    For now, this is a stub for demo purposes.
-    """
+    """Authenticate a user by email + password and return a signed token, or None."""
     for user in USERS_DB.values():
-        if user.email == email:
-            token = AuthToken.create(user)
-            return token
+        if user.email == email and _verify_password(password, user.password_hash):
+            return AuthToken.create(user)
     return None
 
 def require_auth(f):

@@ -527,11 +527,15 @@ def register():
     data = request.json
     email = data.get('email')
     name = data.get('name')
+    password = data.get('password', '')
     role = data.get('role', 'researcher')
     institution = data.get('institution', '')
-    
-    user = create_user(email, name, role, institution)
-    token = authenticate_user(email, data.get('password', ''))
+
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+
+    user = create_user(email, name, password, role, institution)
+    token = authenticate_user(email, password)
     
     return jsonify({
         'user_id': user.user_id,

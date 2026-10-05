@@ -1,11 +1,20 @@
 # biodao.blockchain: Project Status & Phase 6 Complete
 
+> **⚠️ Automated review correction (2026-10-05):** The "production-ready" / "complete" status below is not
+> borne out by the code. `server/server.py` never defines an `app = Flask(...)` instance and contains four
+> competing `if __name__ == '__main__':` blocks; the first one blocks forever in `main()`'s
+> `srv.serve_forever()`, so none of the routes, auth, agent orchestration, or websocket code this document
+> describes ever runs when the server is started the documented way. Separately, no agreement, contract, or
+> correspondence anywhere in this repository substantiates a "collaboration" with ALS Association, the
+> Michael J. Fox Foundation, or Shriners Children's Hospital — those names should not be presented as
+> established partners until such a relationship actually exists. See `HOURLY_REVIEW_REPORT.md` for details.
+
 ## Executive Summary
 
-**biodao.blockchain** is a complete, production-ready enterprise-grade AR/VR molecular research workspace for accelerating drug discovery in collaboration with:
-- ALS Association (20+ curated targets)
-- Michael J. Fox Foundation (Parkinson's focus)
-- Shriners Children's Hospital (Genetic diseases)
+**biodao.blockchain** is a molecular research workspace built with the goal of eventually accelerating drug
+discovery for diseases including ALS, Parkinson's, and genetic conditions relevant to Shriners Children's —
+it has no established relationship with ALS Association, the Michael J. Fox Foundation, or Shriners
+Children's Hospital.
 
 **Current Status:** ✅ **PHASE 6 COMPLETE** - All systems fully operational  
 **Total Implementation:** 8,500+ lines of production-grade code  
@@ -335,10 +344,10 @@ agi-bioxr/
 
 ## Ready for Deployment
 
-### Foundation Partners
-- ✅ ALS Association - 20 curated targets ready
-- ✅ Michael J. Fox Foundation - Parkinson's focus enabled
-- ✅ Shriners Children's - Genetic disease targets prepared
+### Potential Beneficiary Organizations (no partnership established)
+- ALS Association - 20 curated targets relevant to ALS research
+- Michael J. Fox Foundation - Parkinson's-relevant targets curated
+- Shriners Children's - genetic disease targets curated
 
 ### Production Environment
 - ✅ Backend: Flask with WSGI (ready for Gunicorn/uWSGI)

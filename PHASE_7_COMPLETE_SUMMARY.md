@@ -1,7 +1,12 @@
 # biodao.blockchain: Phase 7 Complete
 
+> **⚠️ Automated review correction (2026-10-05):** `server/server.py` has no `app = Flask(...)` instance and
+> four competing `if __name__ == '__main__':` blocks; the first blocks forever in `main()`, so the code this
+> document describes never executes when the server is started as documented, and no partnership with ALS
+> Association, Michael J. Fox Foundation ("MJF"), or Shriners exists. See `HOURLY_REVIEW_REPORT.md`.
+
 ## Enterprise-Grade AR/VR Molecular Research Platform
-### Fully Optimized, Scaled, and Integrated with 30+ Biotech Databases
+### Fully Optimized, Scaled, and Integrated with 30+ Biotech Databases (status unverified — see note above)
 
 **Status:** ✅ **PHASE 7 COMPLETE** - All optimization & scaling complete  
 **Date:** 2026-09-19  

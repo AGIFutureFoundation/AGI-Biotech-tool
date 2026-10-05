@@ -1,7 +1,12 @@
 # Enterprise Molecular Research & Development System
 ## biodao.blockchain - Complete Integration
 
-**Status:** ✅ **COMPLETE** - Enterprise-grade R&D platform  
+> **⚠️ Automated review correction (2026-10-05):** `server/server.py` has no `app = Flask(...)` instance and
+> four competing `if __name__ == '__main__':` blocks; the first blocks forever in `main()`, so the code this
+> document describes never executes when the server is started as documented, and no partnership with ALS
+> Association, Michael J. Fox Foundation, or Shriners Children's exists. See `HOURLY_REVIEW_REPORT.md`.
+
+**Status:** ⚠️ **NOT PRODUCTION READY — see correction above**  
 **Date:** 2026-09-19  
 **Implementation:** 2,000+ lines of molecular integration code  
 **Scope:** Drug discovery, repurposing, compound optimization

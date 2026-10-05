@@ -1,23 +1,31 @@
 # Complete Enterprise Guide: biodao.blockchain
 ## Full Platform Overview & Deployment
 
-**Status:** ✅ **PRODUCTION READY**  
+> **⚠️ Automated review correction (2026-10-05):** `server/server.py` has no `app = Flask(...)` instance and
+> four competing `if __name__ == '__main__':` blocks; the first blocks forever in `main()`, so almost
+> everything below this line never runs when the server is started as documented. No agreement, contract,
+> or correspondence in this repository substantiates "Foundation Partners" status with ALS Association, the
+> Michael J. Fox Foundation, or Shriners Children's Hospital. See `HOURLY_REVIEW_REPORT.md` for details.
+
+**Status:** ⚠️ **NOT PRODUCTION READY** - core server entry point does not wire up the described routes  
 **Date:** 2026-09-19  
-**Version:** 1.0 Enterprise Grade  
-**Organization:** AGI Corp + Foundation Partners  
+**Version:** 1.0 Enterprise Grade (unverified)  
+**Organization:** AGI Corp  
 
 ---
 
 ## The Platform at a Glance
 
-biodao.blockchain is a complete enterprise AR/VR molecular research platform that brings together:
+biodao.blockchain aims to be an enterprise AR/VR molecular research platform that brings together:
 
-✅ **AR/VR Interface** - Immersive 3D visualization with hand gestures + voice control  
-✅ **Team Agents** - 3 specialized AI agents (Optimizer, Analyst, Orchestrator)  
-✅ **Molecular Research** - Docking, MD, ADMET, scoring, repurposing, SAR  
-✅ **Biotech Databases** - 29 free databases with 1.5B+ records  
-✅ **Enterprise Features** - Scaling, monitoring, compliance, audit trails  
-✅ **Foundation Partners** - ALS Association, Michael J. Fox Foundation, Shriners Children's  
+- **AR/VR Interface** - Immersive 3D visualization with hand gestures + voice control (code present, not
+  confirmed reachable from the documented server entry point)  
+- **Team Agents** - 3 specialized AI agents (Optimizer, Analyst, Orchestrator) (same caveat)  
+- **Molecular Research** - Docking, MD, ADMET, scoring, repurposing, SAR  
+- **Biotech Databases** - 29 free databases with 1.5B+ records  
+- **Enterprise Features** - Scaling, monitoring, compliance, audit trails (same caveat)  
+- No partnership exists with ALS Association, Michael J. Fox Foundation, or Shriners Children's — these
+  are potential beneficiary organizations, not partners  
 
 ---
 
@@ -655,7 +663,8 @@ biodao.blockchain represents a paradigm shift in drug discovery: from expensive,
 ✨ **Comprehensive data integration**  
 ✨ **Enterprise-grade reliability**  
 
-We enable researchers at ALS Association, Michael J. Fox Foundation, and Shriners Children's Hospital to:
+biodao.blockchain aims to eventually enable researchers working on ALS, Parkinson's, and Shriners
+Children's-relevant genetic conditions to (no partnership with these named organizations exists):
 
 🎯 Discover novel drug leads in days instead of months  
 🎯 Reduce costs by 80%+ through automation  
