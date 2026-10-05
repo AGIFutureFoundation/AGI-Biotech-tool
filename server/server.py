@@ -498,7 +498,7 @@ if __name__ == "__main__":
 # Phase 1 Enhancements: Auth, Projects, Reporting, Agents
 # ================================================================
 
-from auth import require_auth, require_role, authenticate_user, create_user
+from auth import require_auth, require_role, authenticate_user, create_user, Permission
 from projects import create_project, get_project, list_user_projects, create_campaign
 from disease_panels import get_panel, list_panels, get_targets_by_program
 from reporting import Report, generate_screening_report
@@ -523,16 +523,24 @@ def login():
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    """Register a new user account."""
+    """Register a new user account.
+
+    Role is never taken from the request: every self-registration gets the
+    least-privileged 'researcher' role. Elevating a user to 'pi' or 'admin'
+    requires a separate admin-only action, not implemented here.
+    """
     data = request.json
     email = data.get('email')
     name = data.get('name')
-    role = data.get('role', 'researcher')
+    password = data.get('password', '')
     institution = data.get('institution', '')
-    
-    user = create_user(email, name, role, institution)
-    token = authenticate_user(email, data.get('password', ''))
-    
+
+    if not email or not name or not password:
+        return jsonify({'error': 'email, name and password are required'}), 400
+
+    user = create_user(email, name, password, role='researcher', institution=institution)
+    token = authenticate_user(email, password)
+
     return jsonify({
         'user_id': user.user_id,
         'token': token,
@@ -570,6 +578,9 @@ def get_project_details(project_id):
     project = get_project(project_id)
     if not project:
         return jsonify({'error': 'Project not found'}), 404
+    if not Permission.can_access_project(request.user.get('role'), request.user.get('user_id'),
+                                          project.owner_id, project.members):
+        return jsonify({'error': 'Forbidden'}), 403
     return jsonify(project.to_dict()), 200
 
 # ================================================================

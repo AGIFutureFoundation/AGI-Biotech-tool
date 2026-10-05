@@ -10,24 +10,56 @@ import os
 import jwt
 import json
 import hashlib
+import hmac
+import secrets
+import logging
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Dict, List, Optional
 
-SECRET_KEY = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
+logger = logging.getLogger(__name__)
+
+_env_secret = os.getenv('JWT_SECRET')
+if _env_secret:
+    SECRET_KEY = _env_secret
+else:
+    # No persistent secret configured: generate a random one for this process
+    # rather than falling back to a well-known hardcoded string that would let
+    # anyone forge tokens. Tokens won't survive a restart, but can't be forged.
+    SECRET_KEY = secrets.token_hex(32)
+    logger.warning(
+        "JWT_SECRET is not set; using a random per-process secret. "
+        "Set JWT_SECRET in the environment for stable sessions across restarts."
+    )
 ALGORITHM = 'HS256'
 TOKEN_EXPIRE_HOURS = 24
 
+PBKDF2_ITERATIONS = 200_000
+
+def hash_password(password: str, salt: Optional[str] = None) -> Dict[str, str]:
+    """Hash a password with PBKDF2-HMAC-SHA256 and a random salt."""
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), PBKDF2_ITERATIONS)
+    return {'salt': salt, 'hash': digest.hex()}
+
+def verify_password(password: str, salt: str, expected_hash: str) -> bool:
+    """Verify a password against a stored salt/hash using a constant-time comparison."""
+    digest = hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), PBKDF2_ITERATIONS)
+    return hmac.compare_digest(digest.hex(), expected_hash)
+
 class User:
     """Represents a researcher or lab member."""
-    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher', 
-                 institution: str = '', created_at: str = None):
+    def __init__(self, user_id: str, email: str, name: str, role: str = 'researcher',
+                 institution: str = '', created_at: str = None,
+                 password_hash: str = None, password_salt: str = None):
         self.user_id = user_id
         self.email = email
         self.name = name
         self.role = role  # admin, pi, researcher, viewer
         self.institution = institution
         self.created_at = created_at or datetime.utcnow().isoformat()
+        self.password_hash = password_hash
+        self.password_salt = password_salt
 
     def to_dict(self):
         return {
@@ -81,26 +113,36 @@ class Permission:
         return action in Permission.ROLES.get(role, set())
 
     @staticmethod
-    def can_access_project(user: User, project_owner_id: str, project_members: List[str]) -> bool:
+    def can_access_project(role: str, user_id: str, project_owner_id: str, project_members: List[str]) -> bool:
         """Check if a user can access a specific project."""
-        if user.role == 'admin':
+        if role == 'admin':
             return True
-        if user.user_id == project_owner_id:
+        if user_id == project_owner_id:
             return True
-        if user.user_id in project_members:
+        if user_id in project_members:
             return True
         return False
 
-# Mock database of users (replace with PostgreSQL)
+def _seed_user(user_id: str, email: str, name: str, role: str, institution: str, password: str) -> User:
+    creds = hash_password(password)
+    return User(user_id, email, name, role, institution,
+                password_hash=creds['hash'], password_salt=creds['salt'])
+
+# Mock database of users (replace with PostgreSQL). Seed passwords are for
+# local demo use only and must not be reused in a real deployment.
 USERS_DB = {
-    'user_001': User('user_001', 'researcher@als.org', 'Alice Smith', 'pi', 'ALS Association'),
-    'user_002': User('user_002', 'scientist@mjff.org', 'Bob Chen', 'researcher', 'MJFF'),
+    'user_001': _seed_user('user_001', 'researcher@als.org', 'Alice Smith', 'pi',
+                            'ALS Association', os.getenv('DEMO_USER_001_PASSWORD', 'demo-password-change-me')),
+    'user_002': _seed_user('user_002', 'scientist@mjff.org', 'Bob Chen', 'researcher',
+                            'MJFF', os.getenv('DEMO_USER_002_PASSWORD', 'demo-password-change-me')),
 }
 
-def create_user(email: str, name: str, role: str = 'researcher', institution: str = '') -> User:
-    """Create a new user account."""
+def create_user(email: str, name: str, password: str, role: str = 'researcher', institution: str = '') -> User:
+    """Create a new user account with a hashed password."""
     user_id = f"user_{hashlib.md5(email.encode()).hexdigest()[:8]}"
-    user = User(user_id, email, name, role, institution)
+    creds = hash_password(password)
+    user = User(user_id, email, name, role, institution,
+                password_hash=creds['hash'], password_salt=creds['salt'])
     USERS_DB[user_id] = user
     return user
 
@@ -109,15 +151,14 @@ def get_user(user_id: str) -> Optional[User]:
     return USERS_DB.get(user_id)
 
 def authenticate_user(email: str, password: str) -> Optional[str]:
-    """Authenticate a user and return a token.
-    
-    In production, use bcrypt to hash/verify passwords.
-    For now, this is a stub for demo purposes.
-    """
+    """Authenticate a user by email + password and return a signed token."""
+    if not email or not password:
+        return None
     for user in USERS_DB.values():
         if user.email == email:
-            token = AuthToken.create(user)
-            return token
+            if not user.password_hash or not verify_password(password, user.password_salt, user.password_hash):
+                return None
+            return AuthToken.create(user)
     return None
 
 def require_auth(f):
