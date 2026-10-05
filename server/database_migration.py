@@ -29,6 +29,8 @@ class DatabaseMigrator:
             cursor = conn.cursor()
             
             # Create tables with optimizations for PostgreSQL
+            # (PostgreSQL has no inline INDEX clause in CREATE TABLE, unlike MySQL;
+            # indexes are created separately below.)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS workflows (
                     id TEXT PRIMARY KEY,
@@ -39,13 +41,10 @@ class DatabaseMigrator:
                     created_at TIMESTAMP,
                     updated_at TIMESTAMP,
                     completed_at TIMESTAMP,
-                    metadata JSONB,
-                    INDEX idx_user_id (user_id),
-                    INDEX idx_status (status),
-                    INDEX idx_created_at (created_at)
+                    metadata JSONB
                 );
             ''')
-            
+
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS workflow_steps (
                     id SERIAL PRIMARY KEY,
@@ -57,12 +56,10 @@ class DatabaseMigrator:
                     started_at TIMESTAMP,
                     completed_at TIMESTAMP,
                     duration_seconds FLOAT,
-                    result JSONB,
-                    INDEX idx_workflow (workflow_id),
-                    INDEX idx_step_name (step_name)
+                    result JSONB
                 );
             ''')
-            
+
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS checkpoints (
                     id SERIAL PRIMARY KEY,
@@ -71,11 +68,10 @@ class DatabaseMigrator:
                     step_name TEXT,
                     state JSONB,
                     created_at TIMESTAMP,
-                    results_so_far JSONB,
-                    INDEX idx_workflow_checkpoint (workflow_id)
+                    results_so_far JSONB
                 );
             ''')
-            
+
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS retry_history (
                     id SERIAL PRIMARY KEY,
@@ -83,11 +79,20 @@ class DatabaseMigrator:
                     attempt_number INTEGER,
                     failed_at TIMESTAMP,
                     error_message TEXT,
-                    retried_at TIMESTAMP,
-                    INDEX idx_workflow_retry (workflow_id)
+                    retried_at TIMESTAMP
                 );
             ''')
-            
+
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_workflows_user_id ON workflows(user_id);
+                CREATE INDEX IF NOT EXISTS idx_workflows_status ON workflows(status);
+                CREATE INDEX IF NOT EXISTS idx_workflows_created_at ON workflows(created_at);
+                CREATE INDEX IF NOT EXISTS idx_steps_workflow ON workflow_steps(workflow_id);
+                CREATE INDEX IF NOT EXISTS idx_steps_name ON workflow_steps(step_name);
+                CREATE INDEX IF NOT EXISTS idx_checkpoints_workflow ON checkpoints(workflow_id);
+                CREATE INDEX IF NOT EXISTS idx_retry_workflow ON retry_history(workflow_id);
+            ''')
+
             conn.commit()
             cursor.close()
             conn.close()
@@ -110,8 +115,12 @@ class DatabaseMigrator:
             sqlite_conn = sqlite3.connect(self.sqlite_path)
             sqlite_cursor = sqlite_conn.cursor()
             
-            # Connect to PostgreSQL
+            # Connect to PostgreSQL. Autocommit so a single bad row's failed
+            # INSERT doesn't abort the whole transaction (psycopg2 otherwise
+            # requires a rollback() before any further statement succeeds,
+            # which would silently fail every subsequent row in this loop).
             pg_conn = psycopg2.connect(self.postgres_url)
+            pg_conn.autocommit = True
             pg_cursor = pg_conn.cursor()
             
             stats = {
