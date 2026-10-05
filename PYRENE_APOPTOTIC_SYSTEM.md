@@ -1,7 +1,17 @@
 # Pyrene Apoptotic Drug Discovery System
 ## AGI Compounds Series 3 + Continuous Team Agent Evolution
 
-**Status:** ✅ **COMPLETE & READY FOR DEPLOYMENT**  
+> **⚠️ Automated review correction (2026-10-05):** This document describes a purely computational,
+> unvalidated compound-generation heuristic, not a real drug candidate. The "pediatric safety" scores
+> (e.g. "Amide (0.95)", "92% pediatric safety") are hardcoded numbers assigned per chemical warhead in
+> `server/pyrene_apoptotic_discovery.py` — they come from no biochemical assay, animal study, or clinical
+> data of any kind. No compound described here has been synthesized or tested. Calling this
+> "PRODUCTION READY" / "COMPLETE & READY FOR DEPLOYMENT" for pediatric oncology use is not accurate and
+> should not be represented to clinicians, patients, families, investors, or regulators as a validated or
+> deployable pediatric cancer therapy. Additionally, the code path this relies on
+> (`server/server.py`) has no working Flask app entry point — see `HOURLY_REVIEW_REPORT.md`.
+
+**Status:** ⚠️ **COMPUTATIONAL PROTOTYPE ONLY — no experimental or clinical validation, not deployable**  
 **Date:** 2026-09-19  
 **Focus:** Pediatric oncology + apoptotic/anti-apoptotic modulation  
 **Platform:** biodao.blockchain with continuous evolution  
@@ -515,9 +525,10 @@ Team Agent Recommendations (final selection)
 - [ ] IND preparation
 - [ ] Clinical trial nomination
 
-### 🚀 DEPLOYMENT STATUS
+### 🚧 DEPLOYMENT STATUS
 
-**PRODUCTION READY** for:
+**Computational hypothesis-generation prototype only** — not validated, not production ready, and not a
+substitute for real biochemical, cellular, or clinical testing — for:
 1. BCL2 inhibitor discovery
 2. XIAP antagonist design
 3. FAS agonist optimization
