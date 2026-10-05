@@ -9,7 +9,7 @@ Features:
 """
 
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from enum import Enum
 
@@ -127,25 +127,30 @@ class DistributedCache:
     
     def get(self, key: str):
         """Retrieve value from cache."""
-        if key in self.data:
-            self.stats['hits'] += 1
-            return self.data[key]
-        
+        entry = self.data.get(key)
+        if entry is not None:
+            if datetime.utcnow() > datetime.fromisoformat(entry['expires_at']):
+                del self.data[key]
+                self.stats['total_keys'] = len(self.data)
+            else:
+                self.stats['hits'] += 1
+                return entry['value']
+
         self.stats['misses'] += 1
         return None
-    
+
     def set(self, key: str, value, ttl_seconds: int = 3600):
         """Store value in cache."""
-        if len(self.data) >= 10000:  # Max keys
-            # Evict oldest
-            oldest = min(self.data.keys(), key=lambda k: k)
+        if key not in self.data and len(self.data) >= 10000:  # Max keys
+            # Evict oldest (dicts preserve insertion order)
+            oldest = next(iter(self.data))
             del self.data[oldest]
             self.stats['evictions'] += 1
-        
+
         self.data[key] = {
             'value': value,
             'node': self._get_node_for_key(key),
-            'expires_at': datetime.utcnow().isoformat(),
+            'expires_at': (datetime.utcnow() + timedelta(seconds=ttl_seconds)).isoformat(),
         }
         self.stats['total_keys'] = len(self.data)
     
