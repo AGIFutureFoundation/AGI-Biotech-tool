@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 13</span>
-      <span class="tag on">123 JavaScript tests passing</span>
+      <span class="tag">iteration 14</span>
+      <span class="tag on">140 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,35 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 14</div>
+      <div>
+        <h3>The stage upstream of everything</h3>
+        <p>The structure parsers were the last untested stage, and the only one upstream of pocket detection.
+          A column misread there does not announce itself — it arrives at the other end as a slightly wrong
+          answer that looks like a slightly wrong score. Fixtures were hand-written from the PDB format
+          specification rather than from the implementation, so the expectations come from the format.</p>
+        <ul class="checks">
+          <li><strong>Found and fixed: PDB insertion codes were dropped.</strong> ALA 100 and ALA 100A
+            collapsed into one residue, which silently kept only the second C-alpha it saw</li>
+          <li>Antibody CDR loops are numbered 100, 100A, 100B — so half an inserted loop rode on the wrong
+            elastic-network anchor, residue counts came out short, pocket labels named one residue for two</li>
+          <li>Now read from column 27 in PDB and <code>pdbx_PDB_ins_code</code> in mmCIF, so both formats
+            group residues identically, with a ready label of the form <code>ALA100A</code></li>
+          <li>Coordinates packed with no separating space, <code>-123.456-123.456</code>, still parse as three
+            numbers — proof the parser is column-based, not splitting on whitespace</li>
+          <li>An atom named CA is carbon in a residue and calcium as an ion, decided by which column the
+            letters start in, which is the real PDB convention</li>
+          <li>altLoc, multi-model, HETATM standard residues promoted to polymer, waters and ions, CONECT
+            honoured where distance perception would not bond, junk input parsed to an empty structure</li>
+          <li>Mutation-checked: reverting the residue key fails both insertion-code tests</li>
+          <li>The JS-to-Python scoring cross-check on real crystallographic geometry still passes, so the
+            regrouping shifted no score. 140 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The parsers against real RCSB files, where the awkward cases live — multi-character
+            chain IDs, hybrid-36 serials past 99999, structures with over 62 chains. Those need the network</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 13</div>
       <div>
