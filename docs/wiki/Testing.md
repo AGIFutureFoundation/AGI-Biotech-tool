@@ -16,7 +16,7 @@ they are reported here rather than filtered out of the count.
 
 ## The JavaScript suites
 
-All nine run with `node --test`, no browser, no network, no server.
+All ten run with `node --test`, no browser, no network, no server.
 
 | Suite | Cases | What it proves |
 | --- | --- | --- |
@@ -27,6 +27,7 @@ All nine run with `node --test`, no browser, no network, no server.
 | `tests/torsion.test.mjs` | 14 | Torsion geometry exactly, plus the torsional search discipline |
 | `tests/poses.test.mjs` | 14 | Binding-mode clustering, and whether the score discriminated between modes |
 | `tests/pockets.test.mjs` | 12 | Pocket detection on hollow shells, a solid ball, and a surface dimple |
+| `tests/structure.test.mjs` | 17 | The PDB and mmCIF parsers, column by column, and bond perception |
 | `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |
 
@@ -64,6 +65,7 @@ Not a hypothetical list. These were found by a test, not by use:
 | "load LRRK2" arrives from a recogniser as "load lark two" and matched nothing | `voice` |
 | The flexible-refinement pass loop seeded its running best at infinity, so it could never stop on the first pass | `torsion` |
 | The planarity restraint in `js/md.js` holds its plane normal fixed, so its force is about 19% off its own energy gradient | `md` |
+| PDB insertion codes were dropped, so residues 100 and 100A merged and the merged residue kept only one C-alpha | `structure` |
 
 Pocket detection, by contrast, was found correct on every synthetic case put to it, including the one that
 surprised: removing every other atom from a shell halves its atom count but leaves the survivors about

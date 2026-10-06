@@ -29,6 +29,7 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Planarity term in `js/md.js` swapped for the exact-gradient one (iter 13). Measured impact on where
       minimisation lands: negligible — 0.002 to 0.006 A RMSD, energies agreeing to 0.001. The fix is correct
       and removes a latent hazard; it is not a result anyone would notice.
+- [x] Structure parsers under test, and insertion codes fixed (iter 14)
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -477,3 +478,63 @@ conservation means running without it and comparing against the OpenMM backend �
 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Implicit solvent and short
 timescales remain the honest limits of the in-browser dynamics. Five Python failures remain in
 `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 14 — the stage upstream of everything
+
+Both open queue items still need the network or a package install, so the pick came from the preference
+order: the structure parsers were the last untested stage, and the only one upstream of pocket detection.
+A column misread there does not announce itself — it comes out the other end as a slightly wrong answer
+that looks like a slightly wrong score.
+
+Done: `tests/structure.test.mjs`, seventeen cases over `parsePDB`, `parsePDBFrames`, `parseMmCIF`,
+`parseMolblock` and `parseAny`, with fixtures hand-written from the PDB format specification rather than
+from the implementation's current behaviour, so the expectations come from the format and not from the code.
+
+**The finding: PDB insertion codes were dropped.** `buildResidues` keyed residues on chain, sequence number
+and residue name, with no insertion code, so ALA 100 and ALA 100A collapsed into one four-atom residue —
+and because the C-alpha is assigned by scanning, the merged residue silently kept only the *second* C-alpha
+it saw. Antibody CDR loops are numbered 100, 100A, 100B, so this is not an exotic case. The consequences are
+concrete: the elastic network model in `js/md.js` anchors every atom of a residue on its C-alpha, so half an
+inserted loop would ride on the wrong anchor; residue counts come out short; and pocket lining labels name
+one residue where there are two.
+
+Fixed in `js/structure.js`: the insertion code is read from column 27 in `parsePDB`, from
+`pdbx_PDB_ins_code` in `parseMmCIF` so both formats group residues identically, stored per atom, included
+in the residue key, and exposed on each residue as `iCode` plus a ready `label` of the form `ALA100A`. The
+file was clean in the working tree and last touched by an early commit of mine; the other session is in
+`scripts/make_pitch_video.py` and `docs/pitchdeck.html`.
+
+Verified offline (`node --test tests/*.test.mjs`, 140 passed; `node --check js/structure.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed; the JS-to-Python scoring cross-check on real
+crystallographic geometry, 13 passed — so the residue-grouping change shifted no score):
+- Every field of an ATOM record read out of its own columns: name, residue, chain, sequence number,
+  coordinates, B-factor, element, and ATOM versus HETATM.
+- **Coordinates packed with no separating space** — `-123.456-123.456 -99.999` — still parse as three
+  numbers. This is the test that proves the parser is column-based and not splitting on whitespace.
+- Element from columns 77-78 when present, inferred from the atom name when blank. An atom named `CA` is
+  carbon in a residue and calcium as an ion, decided purely by which column the letters start in, which is
+  the actual PDB convention. Two-letter elements FE, CL and ZN survive inference.
+- Only one alternate conformer is kept, not both merged into the same residue.
+- Insertion codes: three residues where there were two, each keeping its own C-alpha, with `ALA100A`
+  labelled distinctly from `ALA100`, and every atom mapped to the residue it was written under. Asserted
+  for mmCIF as well, where `?` correctly means no insertion code.
+- A multi-model file reads the first model only unless `allModels` is passed; `parsePDBFrames` returns one
+  frame per model with the right coordinate count.
+- A standard residue written as HETATM is promoted back to polymer — otherwise a pocket detector would carve
+  a hole in the protein surface where a selenomethionine sits — while an actual ligand stays a heteroatom.
+  Waters and ions are classified apart from the chain.
+- CONECT bonds two heteroatoms 2.4 A apart, which distance perception alone will not bond; removing the
+  CONECT line leaves them unbonded, so the first assertion means something.
+- Bond perception finds exactly the three bonds a backbone fragment implies and does not bond an atom 30 A
+  away. A molblock is read from its counts line and its bond block rather than re-perceived. `parseAny`
+  dispatches on content, not only on the file name. Blank and junk input parse to an empty structure instead
+  of throwing.
+
+Mutation-checked: reverting the residue key to its old form fails both insertion-code tests, in the PDB and
+the mmCIF path. `js/structure.js` was restored and `git diff --stat` confirmed only the intended
+11-insertion, 3-deletion change remained.
+
+Still unproven / blocked: the parsers against real files from the RCSB, which is where the awkward cases
+live — multi-character chain IDs, hybrid-36 serial numbers past 99999, and structures with more than 62
+chains. Those need the network. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A
+stands. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
