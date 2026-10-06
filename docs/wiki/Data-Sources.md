@@ -74,11 +74,29 @@ A failed lookup is reported as a failed lookup. The panel says the source could 
 fall back to a cached guess and present it as current, and it does not fill the gap with a plausible
 number. An empty field means nobody knows, or nobody could be asked.
 
+That paragraph is now tested rather than promised. `tests/api.test.mjs` stubs `fetch` so failures can be
+produced on demand, and checks:
+
+| Behaviour | |
+| --- | --- |
+| A 404 or 503 throws, naming the host and the status | so a failure cannot be mistaken for "no data" |
+| "No hits" and "could not ask" are different results | an empty list is a real answer; an error is not one |
+| A failed GET is retried once through `/api/proxy` | one retry, not a loop, and for the URL originally wanted |
+| **A POST is never replayed through the proxy** | the proxy is read-only; replaying a body would duplicate a request |
+| An aborted request is not retried | a timeout is not served twice |
+| A failed lookup is evicted from the cache | one flaky moment must not poison a source for the session |
+| A structure falls back from PDB format to mmCIF | and fails if neither exists, rather than returning empty text |
+
+One thing worth knowing from having tested it: the proxy fallback catches *any* failure of a GET, not only
+a CORS refusal, so a 502 from a source is also retried through the proxy. That is defensible — the proxy may
+be allowed where the browser is not — but it means a single lookup can cost two requests.
+
 ## Verifying this page
 
 ```bash
-make egress        # every outbound host in the source is declared
-make reachable     # no orphaned module
+make egress                      # every outbound host in the source is declared
+make reachable                   # no orphaned module
+node --test tests/api.test.mjs   # how the layer behaves when a source fails
 ```
 
 See [Known Limits](Known-Limits) for what happens to all of this with no network at all.

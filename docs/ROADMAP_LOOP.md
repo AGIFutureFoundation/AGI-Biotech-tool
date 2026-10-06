@@ -31,6 +31,7 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
       and removes a latent hazard; it is not a result anyone would notice.
 - [x] Structure parsers under test, and insertion codes fixed (iter 14)
 - [x] Provenance ledger under test by actual tampering, plus a standalone export verifier (iter 15)
+- [x] Database layer failure behaviour under test with a stubbed fetch (iter 16)
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -608,3 +609,59 @@ tested while the practice does not yet. The ledger also still proves provenance 
 tamper-evident record of an unvalidated docking score is an unvalidated docking score. The 4-case benchmark
 was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python failures remain in
 `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 16 — what happens when a source does not answer
+
+Both open queue items still need the network or a package install. The pick: `js/api.js` was untested, and
+the wiki's Data Sources page makes a specific claim about it — "a failed lookup is reported as a failed
+lookup ... it does not fill the gap with a plausible number." That is the second published claim in two
+iterations that nothing checked, and like the ledger's it is checkable offline, because the thing being
+tested is how the module behaves when a request *fails*, and a stubbed `fetch` fails on demand far more
+reliably than a real one.
+
+Done: `tests/api.test.mjs`, eighteen cases. Every test installs its own `fetch` stub, records what was
+requested, and asserts both the result and the requests made. Nothing reaches the network — the stub would
+throw if anything tried.
+
+The property worth the most here is not about data at all. The CORS fallback re-sends a failed request
+through the local server's read-only proxy, and it must never do that to a POST: replaying a request body
+because the first attempt looked like a CORS failure is a silent duplicate submission, invisible until it is
+very much not. Two cases pin it down, one for a thrown failure and one for an HTTP status, and both assert
+that nothing with a body ever reaches `/api/proxy`.
+
+Verified offline (`node --test tests/*.test.mjs`, 179 passed; `.venv/bin/python -m pytest tests/ -q`,
+1438 passed):
+- A 404 and a 503 both throw, with the message naming the host that failed and the status it failed with, so
+  a failure cannot be read as "this protein has no data" — a different and much worse statement.
+- "No hits" and "could not ask" stay distinguishable: a search that genuinely returns nothing gives
+  `{ total: 0, ids: [] }`, while a source that cannot be reached rejects. Both are representable and they do
+  not look alike.
+- A failed GET is retried exactly once through the proxy, for the URL originally wanted, decoded and
+  compared — one retry, not a loop.
+- A POST is never replayed, by either failure route. An aborted request is not retried, so a timeout is not
+  served twice.
+- A 204 reads as `null` rather than a parse error. A repeated lookup is served from cache and not
+  re-requested. A failed lookup is evicted from the cache, so one flaky moment does not poison a source for
+  the rest of the session.
+- A structure file falls back from PDB format to mmCIF and tags the result as cif so the caller parses it
+  correctly; with neither format available it fails rather than handing back empty text that would parse to
+  a zero-atom structure.
+- Asking about an empty identifier list makes no request at all. The failure contract is spot-checked across
+  three further providers rather than assumed from one. Every provider URL is https or a local path.
+
+Three of my own test expectations were wrong, not the code — two were guessed method names, and the third was
+more interesting: a test meant to prove cache eviction passed its 502 through to a successful proxy retry and
+so measured the wrong thing entirely. **The proxy fallback catches any failure of a GET, not only a CORS
+refusal**, so a 502 from a source is retried through the proxy too. That is defensible, since the proxy may
+be allowed where the browser is not, but it means one lookup can cost two requests, and it is not obvious
+from the call site. It is now a test of its own and a note on the wiki page.
+
+Mutation-checked: removing the `body ||` condition from the retry guard fails both POST cases. `js/api.js`
+was restored, confirmed by an empty `git diff`.
+
+Still unproven / blocked: the providers against the live services. These tests prove the module handles
+failure honestly; they say nothing about whether any given endpoint still exists, still returns the shape
+expected, or has changed its pagination — which is exactly what `make reachable` and a network would check.
+Response-shape drift at a public API is the most likely way this layer breaks in practice and it cannot be
+caught from here. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five
+Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
