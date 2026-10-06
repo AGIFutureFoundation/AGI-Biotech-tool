@@ -53,3 +53,22 @@ collision fixed before shipping.
 Still unproven / blocked: narration — the requested Higgsfield voice failed on "out of credits", and
 macOS `say` is blocked by the sandbox (produced a silent 4 KB file, −91 dB), so the cut is silent and
 `docs/pitch_narration.txt` waits for either path to open. Everything from iteration 1 remains blocked.
+
+### 2026-10-05 · Iteration 3 — interaction analysis under test
+
+Done: `tests/analysis.test.mjs`, seven cases on synthetic geometry: a five-residue protein and a probe
+ligand placed so each interaction class has exactly one planted hit.
+
+Verified offline (`node --test tests/analysis.test.mjs`, 7 passed):
+- Parallel stacking with PHE at 3.7 Å, hydrogen bond to SER OG at 2.9 Å, salt bridge to ASP at 2.9 Å,
+  hydrophobic contact with LEU at 3.8 Å; a residue 30 Å away never appears.
+- Geometric ring detection accepts a flat unsaturated ring and rejects a puckered one and a saturated one.
+- A ligand moved out of range yields an empty, honest summary.
+- Pocket variant overlap: lining count, pathogenic count at the 0.564 cut-off, enrichment arithmetic.
+- Series clustering: union by Tanimoto, best scorer per series, compounds without fingerprints left out.
+
+Bug found and fixed by the tests: the per-residue detail list capped at 12 entries, so dozens of
+hydrophobic ring contacts crowded out the single stacking record a chemist wants. Counts were right; the
+detail was lost. Only hydrophobic details are capped now.
+
+Still unproven: the same thresholds on real complexes (needs network); every HTTP route (needs a port).

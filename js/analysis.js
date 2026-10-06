@@ -99,7 +99,11 @@ export function interactionFingerprint(protein, ligand, { cutoff = 4.5 } = {}) {
     if (!byRes.has(resIdx)) byRes.set(resIdx, { residue: resIdx, types: {}, details: [] });
     const e = byRes.get(resIdx);
     e.types[type] = (e.types[type] || 0) + 1;
-    if (e.details.length < 12) e.details.push({ type, ...detail });
+    // Hydrophobic contacts come by the dozen and would crowd out the single stacking or salt-bridge
+    // record a chemist actually wants to see, so only they are capped.
+    if (type !== 'hydrophobic' || e.details.filter((d) => d.type === 'hydrophobic').length < 6) {
+      e.details.push({ type, ...detail });
+    }
   };
 
   const lHeavy = Array.from(ligand.heavy);
