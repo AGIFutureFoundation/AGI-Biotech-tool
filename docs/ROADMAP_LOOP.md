@@ -72,3 +72,23 @@ hydrophobic ring contacts crowded out the single stacking record a chemist wants
 detail was lost. Only hydrophobic details are capped now.
 
 Still unproven: the same thresholds on real complexes (needs network); every HTTP route (needs a port).
+
+### 2026-10-06 · Iteration 4 — the spoken-command parser under test
+
+Done: `tests/voice.test.mjs`, fifteen cases over `parseCommand`, which is pure and needs no microphone.
+
+Verified offline (`node --test tests/voice.test.mjs`, 15 passed):
+- Thirteen plain commands reach the intent meant; a target loads with or without verb and articles.
+- A four-character PDB code is read as a structure, not a gene.
+- Colour and representation words map onto renderer modes; an unintelligible colour returns null
+  rather than a guess, because a wrong colour is worse than none.
+- "screen twelve compounds" carries limit 12, since spoken numbers arrive as words.
+- Silence, "um" and unrelated speech all return unknown and never trigger an action.
+- Every published example parses to the intent it is published under, so help text cannot go stale.
+
+Bug found and fixed: gene symbols nearly all end in a digit, and a recogniser returns that digit as a
+word, so "load LRRK2" arrives as "load lark two". Letter-by-letter matching never got close and the
+command silently failed. A spelled-out trailing number is now also offered as a digit, both to the
+vocabulary matcher and to the no-vocabulary path, so "sod one" resolves to SOD1.
+
+Still unproven: real speech input (no microphone and no Web Speech API offline); every HTTP route.

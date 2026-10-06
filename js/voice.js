@@ -70,11 +70,24 @@ const compact = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
 const similarity = (a, b) => (!a || !b ? 0 : 1 - levenshtein(a, b) / Math.max(a.length, b.length));
 
 // Best vocabulary match for a phrase: tries the whole phrase squashed together, each word, and word pairs.
+// Gene symbols nearly all end in a digit, and a recogniser hands that digit back as a word: LRRK2
+// arrives as "lark two", SOD1 as "sod one". Comparing those letter by letter never gets close, so the
+// spelled-out trailing number is also offered to the matcher as a digit.
+function digitiseTail(phrase) {
+  const words = String(phrase).split(' ').filter(Boolean);
+  if (words.length < 2) return null;
+  const last = words[words.length - 1];
+  if (!(last in NUM) || NUM[last] > 20) return null;
+  return [...words.slice(0, -1), String(NUM[last])].join(' ');
+}
+
 function fuzzyVocab(phrase, vocabulary, threshold = 0.7) {
   if (!vocabulary.length || !phrase) return null;
   const words = phrase.split(' ').filter(Boolean);
   const cands = new Set([compact(phrase), ...words.map(compact)]);
   for (let i = 0; i < words.length - 1; i++) cands.add(compact(words[i] + words[i + 1]));
+  const digitised = digitiseTail(phrase);
+  if (digitised) cands.add(compact(digitised));
   let best = null;
   for (const word of vocabulary) for (const c of cands) {
     const score = similarity(c, compact(word));
@@ -133,7 +146,12 @@ function targetSlots(query, vocabulary) {
   if (/^[0-9][a-z0-9]{3}$/.test(compact(q)) && q.split(' ').length <= 4) return ['load_pdb', { id: compact(q).toUpperCase() }];
   const hit = fuzzyVocab(q, vocabulary);
   if (hit) return ['load_target', { query: hit.word, heard: q, score: +hit.score.toFixed(2) }];
-  // Looks like a gene symbol ("sod 1", "lrrk2"): squash and upper-case it.
+  // Looks like a gene symbol ("sod 1", "lrrk2"): squash and upper-case it. A spelled-out trailing
+  // number counts as a digit here too, so "sod one" works with no vocabulary loaded.
+  const spoken = digitiseTail(q);
+  if (spoken && spoken.split(' ').length <= 2 && compact(spoken).length <= 8) {
+    return ['load_target', { query: compact(spoken).toUpperCase(), heard: q }];
+  }
   const words = q.split(' ');
   if (words.length <= 2 && /\d/.test(q) && compact(q).length <= 8) return ['load_target', { query: compact(q).toUpperCase() }];
   return ['load_target', { query: q }];
