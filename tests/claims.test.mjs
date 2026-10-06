@@ -186,7 +186,11 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
       // phrase: an earlier draft allowed any quote anywhere on the line, which in an HTML file matched the
       // quotes around a style attribute and so exempted almost every line in the documents that matter
       // most. A mutation test caught that; the escape hatch is now as narrow as its purpose.
-      const quoted = /["“”'](?:\s*)(3|4|three|four)\s+of\s+(4|four)\b/i.test(line);
+      // The exemption's number set has to track the inflation check's, or the guard trips over its own
+      // documentation: the progress report quotes "8 of 11 succeed. 9 of 11 are reachable." to describe a
+      // hole that was found in this very check. An earlier draft still listed only the four-case digits.
+      const quoted = /["“”'](?:\s*)(\d+|three|four|six|seven|eight|nine|ten|eleven)\s+of\s+(4|11|four|eleven)\b/i
+        .test(line);
       assert.ok(quoted || !INFLATED.test(line),
         `${f}:${i + 1} overstates the benchmark pass rate: ${line.trim()}`);
       // The reachable count is the figure that carries the diagnosis, so it must not drift either.

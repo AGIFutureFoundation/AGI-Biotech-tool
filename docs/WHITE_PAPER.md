@@ -121,7 +121,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-9,488 lines of test code across 37 Python files and 13 JavaScript files. The
+9,492 lines of test code across 37 Python files and 13 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -548,7 +548,7 @@ corrections to numbers that had drifted since it was written.
 | 5 failed, 1438 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
 | 195 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 9,488 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 9,492 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
 | 37 Python and 13 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 66 modules import cleanly | `make imports` |
 | every JS module reachable | `make reachable` |

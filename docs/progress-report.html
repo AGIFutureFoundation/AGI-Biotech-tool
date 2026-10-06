@@ -93,8 +93,9 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 18</span>
-      <span class="tag on">193 JavaScript tests passing</span>
+      <span class="tag">iteration 19</span>
+      <span class="tag on">195 JavaScript tests passing</span>
+      <span class="tag off">benchmark figure corrected</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +107,39 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 19</div>
+      <div>
+        <h3>The figure I had been publishing was the wrong one</h3>
+        <p>Auditing the three unguarded surfaces did not find a stale sentence. It found that the benchmark
+          had been widened to <strong>eleven cases before this build loop began</strong>, and that five
+          surfaces I maintain had gone on citing the four-case set at 2 of 4 for ten iterations. Not invented,
+          not dishonest — superseded, and never checked against the code that produces it.</p>
+        <ul class="checks">
+          <li><code>CASES.length</code> is 11, verified offline. The recorded run is 5 of 11 succeeding,
+            9 of 11 reachable</li>
+          <li class="no">Iterations 17 and 18 built a guard that <em>enforced</em> the stale figure, and 18
+            sharpened its precision against word forms and quotation marks. Precision applied to an
+            unverified premise is the appearance of care, not care</li>
+          <li class="no">The eleven-case record carries a diagnosis I was working against: four of six
+            failures are <em>scoring</em> failures where the pose was found and ranked below something wrong —
+            0.54 Å below 6.82 Å in one case. Perfect ranking would take 45% to 82% with no change to the
+            search. Iterations 7, 8 and 10 went into the search</li>
+          <li>Four surfaces now lead with 5 of 11, name all six failures, and separate scoring from sampling
+            failures — that distinction is the whole value of the measurement</li>
+          <li>The four-case figure is retired in public, not overwritten: a dated correction in the investor
+            brief and a section on the docking page saying what it was and why it is withdrawn</li>
+          <li>The guard now imports <code>CASES</code> from the eval instead of trusting a number written
+            beside the prose — the check that would have caught this at iteration 9</li>
+          <li>Mutation-checked both ways. The inflation case took three attempts: my first exemption was
+            scoped to the line, so "8 of 11 succeed. 9 of 11 are reachable." exempted its own inflated half —
+            iteration 18's hole in a new costume</li>
+          <li>195 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">I cannot re-measure 5 of 11; the benchmark needs the RCSB. It is cited as recorded by
+            another session's run, not as verified here</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 18</div>
       <div>
@@ -543,17 +577,26 @@
       re-measured the moment the sandbox allows <code>node evals/redock.mjs</code> to fetch structures again.</p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Re-docking case</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+        <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
         <tbody>
-          <tr><td>MAO-B · safinamide</td><td class="num">1.20 Å</td><td class="num">−9.62</td><td class="num">−10.01</td><td class="pass">pass</td></tr>
-          <tr><td>Oestrogen receptor · 4-OHT</td><td class="num">1.24 Å</td><td class="num">−9.24</td><td class="num">−10.13</td><td class="pass">pass</td></tr>
-          <tr><td>Thrombin · inhibitor</td><td class="num">3.83 Å</td><td class="num">−11.03</td><td class="num">−8.34</td><td class="fail">fail</td></tr>
-          <tr><td>BCL-XL · ABT-737</td><td class="num">4.04 Å</td><td class="num">−9.96</td><td class="num">−6.92</td><td class="fail">fail</td></tr>
+          <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
+          <tr><td>GSK-3β · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
+          <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
+          <tr><td>β-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
+          <tr><td>BCL-X<sub>L</sub> · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
+          <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:12px"><strong>2 of 4 within 2 Å, median 2.54 Å.</strong> This is the weakest claim in the
-      product and the first thing the loop re-runs when it can.</p>
+    <p style="margin-top:12px"><strong>5 of 11 succeed; 9 of 11 are reachable.</strong> Four of the six
+      failures are <em>scoring</em> failures: the search found a pose within 2 Å and the ranking put something
+      wrong above it. Perfect ranking over poses already produced would take the benchmark from 45% to 82%
+      with no change to the search, so the next work belongs in the energy terms.</p>
+    <p style="margin-top:10px"><strong>Correction, iteration 19.</strong> This section previously carried a
+      four-case table at 2 of 4 within 2 Å, median 2.54 Å. <code>evals/redock.mjs</code> was widened to eleven
+      cases before this build loop began, and those four are four of the eleven; this page and four others had
+      continued citing the superseded set. The earlier timeline entries below are left exactly as written —
+      a log that gets rewritten is not a log — so they still show the old figure as it stood at the time.</p>
   </div>
 </section>
 
