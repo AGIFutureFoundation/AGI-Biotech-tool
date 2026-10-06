@@ -1,0 +1,166 @@
+<title>biodao build log</title>
+<style>
+  /* Layout: a running log. Status rail on the left, evidence plates on the right.
+     Dark-first, matching the workspace and the whitepaper. */
+  :root {
+    --ink: #e6eef8; --ink-dim: #8ea3bb; --ink-faint: #5d718a;
+    --bg: #070b11; --bg-raised: #0d1420; --bg-plate: #111a27; --line: #1d2a3a;
+    --accent: #39d98a; --accent-2: #4cc9f0; --warn: #ffbe0b; --bad: #ff5d73;
+    --display: "Fraunces", Georgia, serif;
+    --body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+      --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+      --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+    --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+    --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.6; }
+  .wrap { max-width: 820px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
+  h1 { font-family: var(--display); font-size: clamp(2rem, 5.5vw, 3rem); letter-spacing: -0.02em; margin: 0;
+       text-wrap: balance; }
+  h2 { font-family: var(--display); font-size: 1.4rem; margin: 0 0 0.7rem; }
+  h3 { font-size: 0.98rem; margin: 0 0 0.3rem; font-weight: 600; }
+  p { margin: 0 0 0.9rem; color: var(--ink-dim); }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: 0.7rem; }
+  header { border-bottom: 1px solid var(--line); padding-block: clamp(36px, 7vw, 64px) 28px;
+    background: radial-gradient(900px 340px at 15% -20%, rgba(57,217,138,0.10), transparent 60%), var(--bg); }
+  .mark { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 0.8rem;
+          color: var(--ink-dim); margin-bottom: 1.2rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+  section { padding-block: 32px; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+  .tag { font-family: var(--mono); font-size: 0.72rem; border: 1px solid var(--line); border-radius: 999px;
+         padding: 4px 11px; color: var(--ink-dim); }
+  .tag.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .tag.off { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+
+  .iter { display: grid; grid-template-columns: 96px 1fr; gap: 18px; padding: 18px 0;
+          border-bottom: 1px solid var(--line); }
+  .iter:last-child { border-bottom: 0; }
+  .iter .when { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-faint); padding-top: 3px; }
+  @media (max-width: 560px) { .iter { grid-template-columns: 1fr; gap: 6px; } }
+  .checks { list-style: none; padding: 0; margin: 10px 0 0; }
+  .checks li { padding-left: 22px; position: relative; font-size: 0.92rem; margin-bottom: 5px; color: var(--ink-dim); }
+  .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); }
+  .checks li.no::before { content: "×"; color: var(--bad); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-plate); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+       color: var(--ink-faint); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--accent); } .fail { color: var(--bad); }
+
+  .plate { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 10px; padding: 15px 17px;
+           min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  .blocked { border-left: 3px solid var(--warn); padding-left: 15px; }
+  .blocked li { color: var(--ink-dim); font-size: 0.93rem; margin-bottom: 0.5rem; }
+  code { font-family: var(--mono); font-size: 0.85em; color: var(--accent-2); }
+  footer { padding-block: 28px; color: var(--ink-faint); font-size: 0.82rem; }
+  .contact { font-family: var(--mono); color: var(--ink); }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<header>
+  <div class="wrap">
+    <div class="mark"><span class="dot"></span> BIODAO.BLOCKCHAIN · BUILD LOG</div>
+    <h1>What changed, and what is proven</h1>
+    <p style="margin-top:1rem;max-width:62ch">A running record of the 20-minute build loop. Each entry says what
+      was done, which command verified it, and what stayed unproven. Claims that were not measured in that
+      iteration are not repeated as if they were.</p>
+    <div class="meta">
+      <span class="tag">iteration 1</span>
+      <span class="tag on">11 offline tests passing</span>
+      <span class="tag off">server blocked by sandbox</span>
+      <span class="tag off">network blocked</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 1</div>
+      <div>
+        <h3>Protocol layer under test</h3>
+        <p>Eleven offline cases over the x402, NANDA and OML code paths, run with
+          <code>pytest tests/test_agent_protocols.py</code>.</p>
+        <ul class="checks">
+          <li>Result signatures verify; tampering and swapped signatures are both rejected</li>
+          <li>Identity is stable — a second instance loads the stored key rather than minting one</li>
+          <li>AgentFacts is signed and carries the benchmark caveat inside the discovery document</li>
+          <li>The 402 challenge names price, asset, scheme, network, and says it settles nothing</li>
+          <li>Test-mode payment accepts once, reports <code>settled: false</code>, refuses a replay</li>
+          <li>A fingerprint challenge never contains its own answer</li>
+          <li class="no">Settlement — nothing is wired to a facilitator</li>
+          <li class="no">Ed25519 signing — the package cannot install here, so the HMAC path ran</li>
+          <li class="no">Every HTTP route — no port can be bound in this sandbox</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Standing figures</div>
+    <h2>Carried forward, not re-measured</h2>
+    <p>These come from the last run that could reach the network. They are repeated here unchanged and will be
+      re-measured the moment the sandbox allows <code>node evals/redock.mjs</code> to fetch structures again.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Re-docking case</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>MAO-B · safinamide</td><td class="num">1.20 Å</td><td class="num">−9.62</td><td class="num">−10.01</td><td class="pass">pass</td></tr>
+          <tr><td>Oestrogen receptor · 4-OHT</td><td class="num">1.24 Å</td><td class="num">−9.24</td><td class="num">−10.13</td><td class="pass">pass</td></tr>
+          <tr><td>Thrombin · inhibitor</td><td class="num">3.83 Å</td><td class="num">−11.03</td><td class="num">−8.34</td><td class="fail">fail</td></tr>
+          <tr><td>BCL-XL · ABT-737</td><td class="num">4.04 Å</td><td class="num">−9.96</td><td class="num">−6.92</td><td class="fail">fail</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px"><strong>2 of 4 within 2 Å, median 2.54 Å.</strong> This is the weakest claim in the
+      product and the first thing the loop re-runs when it can.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Blocked</div>
+    <h2>What this session cannot do</h2>
+    <ul class="blocked">
+      <li><strong>No listening port.</strong> The sandbox refuses to bind, so the server, the browser workspace,
+        the MCP round trip and the video render cannot run. Fix:
+        <code>sandbox.network.allowLocalBinding: true</code>.</li>
+      <li><strong>No outbound network</strong> to pypi.org or the structure databases, so no live evals and no
+        Ed25519 install.</li>
+      <li><strong>No mail.</strong> No mail connector is authorized, so reports are published here to forward
+        rather than sent on a timer.</li>
+      <li><strong>GitHub push needs credentials.</strong> The remote is set; the stored token is invalid.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    biodao.blockchain — powered by AGI Corp · AGI Future Foundation ·
+    <span class="contact">x@agifuturefoundation.org</span>
+  </div>
+</footer>
