@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 14</span>
-      <span class="tag on">140 JavaScript tests passing</span>
+      <span class="tag">iteration 15</span>
+      <span class="tag on">161 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,38 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 15</div>
+      <div>
+        <h3>Tamper detection that is actually tested</h3>
+        <p>The ledger is the project's central honesty mechanism. Every traceability claim rests on one
+          property — alter a record and verification fails — which the wiki asserted, the whitepaper asserted,
+          and nothing checked. A tamper-evident log whose tamper detection is untested is decoration. So the
+          tests tamper: edit a score, delete the caveat, reorder, splice, renumber, forge the header.</p>
+        <ul class="checks">
+          <li>Each caught at the right index with the right reason. Deleting the "not kcal/mol" caveat is
+            caught like any other edit — it is a hashed field, not a note on a page</li>
+          <li>The careful forger's move — edit a payload <em>and</em> re-hash to cover it — still fails at the
+            <em>following</em> record, whose link now dangles</li>
+          <li>New <code>js/ledger-verify.js</code>: the export format promised a root hash you could "later
+            verify" and there was nothing to verify it with. It now checks a document on its own, plus the
+            claimed head and length against the records actually carried</li>
+          <li><strong>The honest limit, now documented:</strong> removing records from the <em>end</em> leaves
+            a chain that verifies perfectly. That is a property of hash chains, it was nowhere in the docs,
+            and it is now the only "no" in the wiki's detection table</li>
+          <li>An external head hash closes it; without one, every result says in as many words that
+            end-removal would not show</li>
+          <li>Proven not assumed: an export survives a JSON round trip and still verifies, and the standalone
+            verifier agrees with the live one — the guard against the two canonical forms drifting apart</li>
+          <li>Mutation-checked: removing the re-hash comparison fails two cases. 161 JavaScript tests and
+            1438 Python tests passing</li>
+          <li class="no">Anchoring a head hash anywhere external, which is the only thing that makes
+            truncation detectable in practice. Needs a network and a counterparty</li>
+          <li class="no">The ledger proves provenance, not correctness. A tamper-evident record of an
+            unvalidated docking score is an unvalidated docking score</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 14</div>
       <div>
