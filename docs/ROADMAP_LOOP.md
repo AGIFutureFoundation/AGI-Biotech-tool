@@ -24,6 +24,7 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
       gap must be before the better-scoring pose is reliably the closer one. Needs the network. Until then the
       default is a stated convention and says so in its own output.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
+- [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -310,3 +311,58 @@ outcome — it should not, since nothing about the score changed, but that is an
 measurement, and the benchmark needs the RCSB. The published figure stays 2 of 4 within 2 A, median 2.54 A,
 and is not restated. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local
 port, which this sandbox refuses.
+
+### 2026-10-06 · Iteration 11 — the one stage of the chain nobody was testing
+
+Done: `tests/pockets.test.mjs`, twelve cases over `findPockets`. Both remaining queue items need the
+network, so the pick came from the preference order: pocket detection was the only stage of the docking
+chain with no JavaScript test at all. It matters more than its position suggests — if it ranks a surface
+dent above a buried cavity, the search, the refinement, the scoring and the analysis all run correctly
+against the wrong site, and nothing in the output says so. A wrong answer from a wrong pocket is
+indistinguishable from a wrong answer from a wrong score.
+
+Receptors built so the cavity is known by construction: Fibonacci-sphere shells whose interior free volume
+follows from the radius and the 2.8 A occlusion margin, a solid ball on a 2.4 A lattice with no interior at
+all, and a hemispherical dimple pressed into a plate.
+
+**No defect found.** Every behaviour put to it was correct, which is the honest result and is why the value
+of this iteration is the guard rather than a fix.
+
+Verified offline (`node --test` over all eight JS suites, 100 passed; `.venv/bin/python -m pytest tests/ -q`,
+1438 passed). Expected numbers were measured against the implementation first, then asserted with
+tolerances tight enough to fail on a real change — a centre to 0.5 A, a buriedness to 0.02:
+- A radius-9 shell gives exactly one pocket, centred within 0.5 A of the cavity centre, volume 900–1200 A^3
+  against a predicted ~1000, buriedness above 0.95. The nearest wall atom is over 6 A from the centre and
+  under 10, so the centre is demonstrably inside the cavity rather than on the wall or outside it.
+- Internal consistency per pocket: volume equals point count times cell volume, buriedness in (0, 1],
+  druggability in [0, 1], score finite and positive, centre finite.
+- Two cavities at different radii are both found and the larger ranks first, with the right centres and
+  the more druggable call going to the bigger one.
+- A convex solid reports **no** pocket: lattice interstices are not cavities.
+- A shallow dimple 25 A from a sealed cavity does not outrank it. In fact it does not register at all,
+  which is the right answer — an open dimple is not a binding site.
+- Excluding a contiguous cap of wall opens the pocket as it should: buriedness 0.986 to 0.837, score 995 to
+  489, and the centre of the buried region retreats to x = −1.4, away from the opening.
+- The answer is stable across grid spacings of 1.0, 1.25 and 1.5 — centre within 0.5 A, buriedness within
+  0.004, volume spread under 15 percent.
+- `maxPockets` caps the list without disturbing the ranking; a structure with no polymer atoms, and one with
+  every atom excluded, both return an empty list rather than throwing.
+- Every pocket names lining residues that are real indices into the structure, and carries a readable label.
+
+One result worth recording because it surprised: removing every other atom from the shell halves its atom
+count but leaves the survivors about 2.9 A apart, which still occludes a 2.8 A probe. The cavity stays
+sealed and its volume grows slightly as the wall thins. That is physically right, not a bug, and it is now
+asserted so a future change cannot quietly turn a sealed wall porous.
+
+The suite was mutation-checked rather than assumed: loosening the buriedness threshold from 19 of 26
+directions to 3 fails six of the twelve cases. `js/dock.js` was restored byte-for-byte afterwards, confirmed
+by an empty `git diff`.
+
+Also updated `docs/wiki/Testing.md` with the three newest suites and the 100-test count;
+`tests/wiki.test.mjs` still passes.
+
+Still unproven / blocked: pocket detection against real crystallographic cavities, which needs structures
+from the RCSB. Synthetic shells prove the algorithm does what it claims; they do not prove its thresholds
+are right for real protein surfaces, which are rougher and rarely sealed. The 4-case benchmark was not
+re-measured — 2 of 4 within 2 A, median 2.54 A stands. Five Python failures remain in
+`tests/test_server_lifecycle.py`; all five bind a local port.
