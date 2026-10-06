@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 9</span>
-      <span class="tag on">74 JavaScript tests passing</span>
+      <span class="tag">iteration 10</span>
+      <span class="tag on">88 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,31 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 10</div>
+      <div>
+        <h3>Saying out loud when the score did not choose</h3>
+        <p>The two complexes the benchmark gets wrong are a long flexible ligand in a shallow groove, where
+          many placements score within a hair of each other and the search returns whichever won by a rounding
+          error — and a sorted table reads as a verdict. <code>js/poses.js</code> groups the surviving poses
+          into binding modes, compares the top two, and when the gap does not clear a margin says so:
+          <em>the next-best sits N Å away and only M behind, so this ranking is not a preference.</em> The
+          numbers go into the provenance record next to the score, so the caveat travels into any export.</p>
+        <ul class="checks">
+          <li>Three synthetic knots at known separations cluster into exactly three modes, populations 3/2/1</li>
+          <li>Modes sorted best first, each led by its own best member; spread and RMSD hand-checked</li>
+          <li>A cutoff past every separation gives one mode; under the wobble, one mode per pose</li>
+          <li>A 0.8 gap discriminates, a 0.1 gap does not, and a gap exactly at the margin counts</li>
+          <li>One mode returns null, not true — the absence of a rival is not evidence the score chose</li>
+          <li>Every verdict carries its uncalibrated-margin disclaimer, and the disclaimer is itself asserted</li>
+          <li>Clustering never mutates the caller's array; 88 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The margin's value. Calibrating it needs the benchmark, which needs the network — now
+            an explicit queue item rather than a convention left to harden into a fact</li>
+          <li class="no">Nothing about the scoring function changed, and the benchmark was not re-measured:
+            2 of 4 within 2 Å, median 2.54 Å stands</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 9</div>
       <div>
