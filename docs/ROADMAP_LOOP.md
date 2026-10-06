@@ -23,6 +23,12 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [ ] Calibrate the discrimination margin in js/poses.js against the re-docking benchmark — how large a score
       gap must be before the better-scoring pose is reliably the closer one. Needs the network. Until then the
       default is a stated convention and says so in its own output.
+- [ ] **Scoring-side work, now that the diagnosis is clear.** The eleven-case benchmark records four of six
+      failures as *scoring* failures: the search found a pose within 2 A (0.54 A in the GSK-3 beta case) and
+      the ranking put something wrong above it. Perfect ranking over poses already produced would take the
+      benchmark from 45 percent to 82 percent with no change to the search. The next work belongs in the
+      energy terms. Iterations 7, 8 and 10 went into the search because they were aimed at a superseded
+      four-case benchmark; see iteration 19.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
 - [x] Dynamics force field under test, with a gradient check (iter 12)
@@ -785,3 +791,74 @@ iteration — `docs/pitch.html`, `docs/whitepaper.html` and `docs/WIKI.md` — a
 them, so a stale claim could still be sitting in any of them; that is a known gap, not a clean bill of
 health. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python
 failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 19 — the figure I had been publishing was the wrong one
+
+Both standing items still need the network or a package install, so this iteration took the gap I recorded
+at the end of iteration 18: three published surfaces — `docs/WIKI.md`, `docs/whitepaper.html` and
+`docs/pitch.html` — were neither audited nor guarded. Auditing them did not find a stale sentence. It found
+that **I had been publishing the wrong benchmark for ten iterations.**
+
+`evals/redock.mjs` defines **eleven** cases. Commit `5902c9a`, "Widen the re-docking benchmark to eleven
+cases; the score drops to 5/11", landed before any of my work, and `docs/WIKI.md` and `docs/pitch.html` have
+reported the eleven-case result all along. Meanwhile five surfaces I maintain — the wiki front page, the
+docking page, the testing page, the investor brief and the progress report — went on citing a four-case set
+at 2 of 4 within 2 A with a 2.54 A median. Those four cases are now four of the eleven. The figure was not
+invented and it was not dishonest; it was simply superseded, and I never checked the number I was
+propagating against the code that produces it. Verified offline: `CASES.length` is 11.
+
+Worse than the stale number: in iterations 17 and 18 I built a guard that **enforced** it, and spent
+iteration 18 sharpening that guard's precision against word forms and quotation marks. The guard was
+rigorous about the wrong figure. Precision applied to an unverified premise is not care, it is the
+appearance of care, and it is the exact failure this project is organised to avoid.
+
+Worse again, the eleven-case record carries a diagnosis I had been working against. Nine of eleven cases are
+**reachable** — the search generates a pose within 2 A — and four of the six failures are *scoring* failures
+where the crystal pose was found and the ranking put something wrong above it, in the GSK-3 beta case
+ranking a 0.54 A pose below a 6.82 A one. Perfect ranking over poses already being produced would take the
+benchmark from 45 percent to 82 percent **with no change to the search at all**. Iterations 7, 8 and 10 went
+into the search: rigid-body refinement, torsional refinement, binding-mode clustering. That work is correct
+and iteration 10's discrimination check is squarely a ranking concern, so it is not wasted — but the
+ordering was set by a four-case benchmark that had already been retired, and the repository was holding the
+better answer the whole time. A queue item now points the next work at the energy terms.
+
+Done:
+- `docs/wiki/Home.md`, `docs/wiki/Docking-and-Scoring.md`, `docs/wiki/Testing.md` and
+  `docs/investor-brief.html` now lead with 5 of 11 succeeding and 9 of 11 reachable, name all six failures,
+  and separate the four scoring failures from the two sampling ones, because that distinction is the whole
+  value of the measurement. The figures are cited as the last recorded run, attributed to the documents that
+  recorded it, and explicitly not as something re-measured here.
+- The four-case figure is **retired in public rather than quietly overwritten**: the docking page keeps a
+  short section saying what it was, that it is superseded, and why a number that was shown to people should
+  be withdrawn where it was shown. The investor brief carries a dated correction note for the same reason.
+- `docs/progress-report.html`'s earlier entries are left exactly as they are. It is a dated log; its past
+  entries record what was believed at the time, and a log that gets rewritten is not a log. The correction
+  goes in the new entry.
+- `tests/claims.test.mjs` no longer compares documents against a number written down beside them. It now
+  imports `CASES` from `evals/redock.mjs` and fails any surface citing a different case count — the check
+  that would have caught this in iteration 9 instead of iteration 19.
+
+Verified offline (`node --test tests/*.test.mjs`, 195 passed; `tests/wiki.test.mjs`, 13 passed;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed). Mutation-checked in both directions: reverting the
+front page to the four-case figure fails with the offending line quoted, and inflating the eleven-case pass
+rate fails too.
+
+Getting the second of those to fail took three attempts, and the reason is worth recording because it is the
+same mistake twice. The reachability figure, nine of eleven, must not be read as a pass rate, so the check
+exempts reachability claims. My first exemption was scoped to the whole **line**, and
+`**8 of 11 succeed. 9 of 11 are reachable.**` passed: the inflated half was exempted by the honest half
+sitting beside it. That is precisely iteration 18's quotation-mark hole in a new costume — a line is too
+coarse a unit to decide what a phrase means. The second attempt used a thirty-character window and was wrong
+in both directions, reaching into the adjacent clause while markdown emphasis, `*generates*`, broke the
+keyword inside the match. The exemption is now scoped to the matched phrase alone, and the case that
+defeated the first draft is a test.
+
+Still unproven / blocked: the eleven-case result itself. I cannot re-measure it — the benchmark fetches
+structures from the RCSB and the network is blocked — so 5 of 11 and 9 of 11 are cited as recorded by
+another session's run, not as verified here, and the same goes for the 0.54 A and 6.82 A figures behind the
+diagnosis. Whether the four-case set was 2 of 4 as my pages said or 3 of 4 as `docs/WIKI.md` says is now
+moot and stays unresolved; the set is retired either way. `docs/pitchdeck.html` remains outside the guard
+while the other session has uncommitted changes to it. `docs/pitch.html`, `docs/whitepaper.html` and
+`docs/WIKI.md` are still not under the guard: they are the other session's documents, they already carry the
+current figure, and adding them means reconciling their stale test counts too, which is a separate task.
+Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.

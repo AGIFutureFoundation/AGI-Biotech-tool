@@ -158,19 +158,30 @@
   <h2>Our docking is honest about where it fails</h2>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Complex</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+      <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
       <tbody>
-        <tr><td>MAO-B · safinamide</td><td class="num2">1.20 Å</td><td class="num2">−9.62</td><td class="num2">−10.01</td><td class="pass">pass</td></tr>
-        <tr><td>Oestrogen receptor · 4-OHT</td><td class="num2">1.24 Å</td><td class="num2">−9.24</td><td class="num2">−10.13</td><td class="pass">pass</td></tr>
-        <tr><td>Thrombin · inhibitor</td><td class="num2">3.83 Å</td><td class="num2">−11.03</td><td class="num2">−8.34</td><td class="fail">fail</td></tr>
-        <tr><td>BCL-XL · ABT-737</td><td class="num2">4.04 Å</td><td class="num2">−9.96</td><td class="num2">−6.92</td><td class="fail">fail</td></tr>
+        <tr><td>CDK5 &middot; 1UNL</td><td class="num2">6.00 Å</td><td class="num2">1.29 Å</td><td>scoring</td></tr>
+        <tr><td>GSK-3&beta; &middot; 1Q41</td><td class="num2">6.82 Å</td><td class="num2">0.54 Å</td><td>scoring</td></tr>
+        <tr><td>Carbonic anhydrase II &middot; 1OQ5</td><td class="num2">7.50 Å</td><td class="num2">1.63 Å</td><td>scoring</td></tr>
+        <tr><td>&beta;-II tryptase &middot; 2BM2</td><td class="num2">5.22 Å</td><td class="num2">1.60 Å</td><td>scoring</td></tr>
+        <tr><td>BCL-XL &middot; 2YXJ</td><td class="num2">4.59 Å</td><td class="num2">3.86 Å</td><td class="fail">sampling</td></tr>
+        <tr><td>MetAP2 &middot; 1R58</td><td class="num2">3.25 Å</td><td class="num2">3.02 Å</td><td class="fail">sampling</td></tr>
       </tbody>
     </table>
   </div>
-  <p style="margin-top:12px"><strong>Two of four within 2 Å, median 2.54 Å.</strong> Good enough to triage a
-    library and decide what to look at first; not good enough to predict affinity. We publish the failures
-    because the first thing a serious buyer does is run their own controls, and a number that collapses on
-    contact costs more than it ever earned.</p>
+  <p style="margin-top:12px"><strong>5 of 11 succeed; 9 of 11 are reachable.</strong> Read the two middle
+    columns together: in four of the six failures the search <em>found</em> a pose within 2 Å — 0.54 Å in one
+    case — and the ranking put something wrong above it. Perfect ranking over poses we already produce would
+    take this from 45% to 82% with no change to the search. That tells us exactly where the next engineering
+    goes, and it is the kind of thing you only learn by publishing your failures. The first thing a serious
+    buyer does is run their own controls, and a number that collapses on contact costs more than it ever
+    earned.</p>
+  <p style="margin-top:10px;font-size:0.88rem;color:var(--ink-faint)"><strong>Correction, iteration 19:</strong>
+    earlier versions of this brief led with a four-case benchmark at two of four and a 2.54 Å median. The
+    benchmark was widened to eleven cases in the repository and those four became four of the eleven; this
+    page had continued citing the superseded set. The figures above are the last recorded eleven-case run.
+    Neither set can be re-measured in the current environment, which has no network access to the structure
+    databases.</p>
 </section>
 
 <section>
@@ -178,7 +189,7 @@
   <h2>The hard part is not the viewer</h2>
   <div class="grid3">
     <div class="plate"><h3>Protocol surface</h3><p>Tools, payment challenges, discovery documents and signatures are one registry. A competitor rebuilds a spine, not a feature.</p></div>
-    <div class="plate"><h3>Evidence discipline</h3><p>Benchmarks published with their failures, 1,438 Python and 193 JavaScript tests that run with no network, provenance on every run. Each figure in our whitepaper is printed beside the command that reproduces it, and a test re-measures them. That is what a regulated buyer audits.</p></div>
+    <div class="plate"><h3>Evidence discipline</h3><p>Benchmarks published with their failures, 1,438 Python and 195 JavaScript tests that run with no network, provenance on every run. Each figure in our whitepaper is printed beside the command that reproduces it, and a test re-measures them. That is what a regulated buyer audits.</p></div>
     <div class="plate"><h3>Disease focus</h3><p>Sixty curated targets across ALS, Parkinson's and paediatric orthopaedics, verified against UniProt rather than scraped.</p></div>
   </div>
 </section>
@@ -197,7 +208,7 @@
   <div class="num">07 · HONEST LIMITS</div>
   <h2>What this is not, yet</h2>
   <ul class="limits">
-    <li><strong>Docking is triage, not prediction.</strong> Two of four, stated above.</li>
+    <li><strong>Docking is triage, not prediction.</strong> 5 of 11, with the failure analysis stated above.</li>
     <li><strong>Payments do not settle.</strong> The 402 challenge is real; the transfer is not implemented.</li>
     <li><strong>A hash chain is not a blockchain.</strong> It makes tampering detectable; it reaches no consensus.</li>
     <li><strong>Hand tracking is untested on hardware.</strong> Written to the WebXR spec and verified in code, not yet worn.</li>

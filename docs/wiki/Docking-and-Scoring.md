@@ -33,29 +33,49 @@ it to an affinity, and do not put it in a figure caption without the caveat atta
 Re-docking is the test that matters: take a complex whose answer the crystal structure already gives,
 extract the ligand, dock it back, and measure RMSD to where it really sat.
 
-| Case | PDB | Top-pose RMSD | Crystal score | Docked score | Result |
-| --- | --- | --- | --- | --- | --- |
-| MAO-B · safinamide | — | 1.20 Å | −9.62 | −10.01 | pass |
-| Oestrogen receptor · 4-OHT | — | 1.24 Å | −9.24 | −10.13 | pass |
-| Thrombin · inhibitor | — | 3.83 Å | −11.03 | −8.34 | fail |
-| BCL-X<sub>L</sub> · ABT-737 | 2YXJ | 4.04 Å | −9.96 | −6.92 | fail |
+`evals/redock.mjs` defines eleven cases. The last recorded run:
 
-**2 of 4 within 2 Å. Median 2.54 Å.**
+**5 of 11 succeed. 9 of 11 are reachable.**
 
-### Which half fails, and why that is predictable
+| Case | PDB | Ranked | Best found | Failure mode |
+| --- | --- | --- | --- | --- |
+| CDK5 · roscovitine analogue | 1UNL | 6.00 Å | **1.29 Å** | scoring |
+| GSK-3β · indirubin-3-monoxime | 1Q41 | 6.82 Å | **0.54 Å** | scoring |
+| Carbonic anhydrase II · celecoxib | 1OQ5 | 7.50 Å | **1.63 Å** | scoring |
+| β-II tryptase | 2BM2 | 5.22 Å | **1.60 Å** | scoring |
+| BCL-X<sub>L</sub> · ABT-737 | 2YXJ | 4.59 Å | 3.86 Å | sampling |
+| MetAP2 · A-357300 | 1R58 | 3.25 Å | 3.02 Å | sampling |
 
-The two passes are compact ligands in deep, enclosed, mostly rigid sites. The two failures are large and
-flexible in shallow or groove-shaped sites. ABT-737 is a long peptidomimetic lying in a surface groove
-where the pocket barely constrains it; the search has far more plausible placements to choose between and
-the score cannot tell them apart. That is a known weakness of this class of scoring function, not a bug
-specific to this implementation.
+### The failure mode is ranking, not search
 
-The pattern is useful: it tells you the tool is more trustworthy on the enzyme-and-small-molecule problems
-than on protein-protein interface inhibitors.
+Read the two right-hand columns together. In four of the six failures the search **did** generate a pose
+within 2 Å of the crystal — 0.54 Å in the GSK-3β case — and the scoring function ranked something wrong
+above it. Only two cases are genuine sampling failures, where no good pose was produced at all.
+
+That is why "reachable" is the more useful number. Perfect ranking over poses the search is *already*
+producing would take the benchmark from 45% to 82% with no change to the search whatsoever. The bottleneck
+is in the energy terms.
+
+It is worth saying what this cost. Iterations 7, 8 and 10 of the build loop invested in the search —
+rigid-body refinement, torsional refinement, binding-mode clustering — while this diagnosis was already
+recorded in the repository. The refinement work is correct and the binding-mode work addresses ranking
+directly, but the ordering was driven by a superseded four-case benchmark rather than by this one. See
+iteration 19 in `docs/ROADMAP_LOOP.md`.
+
+### The four-case set this replaced
+
+Until iteration 19 this page published a four-case table reporting 2 of 4 within 2 Å and a 2.54 Å median.
+Those four cases (MAO-B, oestrogen receptor, thrombin, BCL-X<sub>L</sub>) are now four of the eleven, and
+the four-case figure is **superseded**. It is recorded here rather than deleted because the figure appeared
+in a published whitepaper, deck, investor brief and film, and a number that was shown to people should be
+retired in public rather than quietly overwritten.
+
+Neither figure can be re-measured in the current environment: the benchmark fetches structures from the
+RCSB and the network is blocked.
 
 ### What the benchmark cannot tell you
 
-Four cases is far too few to generalise. It does not measure screening enrichment, it does not measure
+Eleven cases is still far too few to generalise. It does not measure screening enrichment, it does not measure
 ranking across a congeneric series, and re-docking is the easiest version of the problem — the ligand's
 bound conformation came from the structure it is being docked back into. Cross-docking into a different
 structure of the same protein is harder and has not been measured.

@@ -13,21 +13,28 @@ rather than the strongest.
 
 ## The weakest result, first
 
-Re-docking four complexes where the answer is known from the crystal structure:
+Re-docking crystal ligands blind: pull each one out of its structure, dock it back, and measure RMSD to
+where it really sat. `evals/redock.mjs` defines eleven cases.
 
-| Case | Top-pose RMSD | Result |
-| --- | --- | --- |
-| MAO-B · safinamide | 1.20 Å | pass |
-| Oestrogen receptor · 4-hydroxytamoxifen | 1.24 Å | pass |
-| Thrombin · inhibitor | 3.83 Å | fail |
-| BCL-X<sub>L</sub> · ABT-737 | 4.04 Å | fail |
+**5 of 11 succeed. 9 of 11 are reachable.**
 
-**2 of 4 within 2 Å. Median 2.54 Å.** A compact, buried, mostly rigid ligand is placed well. A long
-peptidomimetic in a shallow groove is not. Treat a score from this tool as a filter for ranking, never as
-an affinity prediction, and never in units — see [Docking and Scoring](Docking-and-Scoring).
+"Reachable" is the more useful number: in nine of eleven cases the search *generates* a pose within 2 Å. Of
+the six failures, **four are scoring failures** — the crystal pose was found and the scoring function ranked
+something wrong above it, in one case ranking a 0.54 Å pose below a 6.82 Å one. Only two are sampling
+failures. Perfect ranking over poses already being produced would take the benchmark from 45% to 82% with no
+change to the search at all.
 
-This figure is carried forward from the last run with network access. It is re-measured by
-`node evals/redock.mjs`, which needs to fetch structures from the RCSB.
+That is a diagnosis, not just a score: **the next work belongs in the energy terms, not the search.**
+
+The six failures, named: CDK5 (1UNL), GSK-3β (1Q41), carbonic anhydrase II (1OQ5) and β-II tryptase (2BM2)
+are **scoring** failures — a good pose was found and ranked below a bad one. BCL-X<sub>L</sub> (2YXJ) and
+MetAP2 (1R58) are **sampling** failures, where no good pose was generated at all.
+
+Treat a score from this tool as a filter for ranking, never as an affinity prediction, and never in units —
+see [Docking and Scoring](Docking-and-Scoring).
+
+These figures are carried forward from the last run with network access and are re-measured by
+`node evals/redock.mjs`, which fetches structures from the RCSB. The four-case table published here until iteration 19 is **superseded**. `evals/redock.mjs` now defines eleven cases, and the figure above is the last recorded run of it, published in `docs/WIKI.md` and `docs/pitch.html`. Neither set can be re-measured here, because the benchmark fetches structures from the RCSB and the network is blocked.
 
 ## What is in it
 

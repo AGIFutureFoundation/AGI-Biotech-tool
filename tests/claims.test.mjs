@@ -118,7 +118,64 @@ const BENCHMARK_SURFACES = [
 // An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four
 // within 2 Å" — so a digit-only check would have let "Three of four" through the one document where an
 // overstatement costs the most. Found by auditing that file rather than by the check working.
-const INFLATED = /\b(3|4|three|four)\s+of\s+(4|four)\b[^.]{0,40}within\s+2/i;
+const INFLATED_RAW = /\b(6|7|8|9|10|11|six|seven|eight|nine|ten|eleven)\s+of\s+(11|eleven)\b[^.]{0,40}(within|succeed)/gi;
+// "nine of eleven are reachable" is the recorded figure and the more useful one, so a reachability claim is
+// not a claim about the pass rate.
+//
+// The exemption is applied to each MATCH, not to the line. A first draft tested the whole line, and
+// "8 of 11 succeed. 9 of 11 are reachable." sailed through it: the inflated half was exempted by the honest
+// half sitting next to it. That is the same mistake as iteration 18's quotation exemption — a line is too
+// coarse a unit to decide what a phrase means — and a mutation test caught it the same way.
+// `generat` rather than `generates a pose`: markdown emphasis writes it `*generates*` and the
+// longer phrase stopped matching because of the asterisks.
+const REACHABILITY = /reachable|generat/i;
+const INFLATED = {
+  test(line) {
+    for (const m of line.matchAll(INFLATED_RAW)) {
+      // The matched phrase alone, with no trailing context. A 30-character window was tried and was wrong
+      // in both directions: it reached past "8 of 11 succeed" into an adjacent "9 of 11 are reachable" and
+      // exempted the inflated claim, while markdown emphasis inside the match broke the keyword it needed.
+      if (!REACHABILITY.test(m[0])) return true;
+    }
+    return false;
+  },
+};
+
+// The four-case benchmark was superseded when evals/redock.mjs was widened to eleven cases. Five published
+// surfaces went on citing it for ten iterations, and the guard written in iterations 17 and 18 enforced the
+// stale figure with great rigour. The lesson is in this constant: a published figure must be checked
+// against the code that produces it, not against a number written down beside it.
+const SUPERSEDED_FOURCASE = /\b(2|two)\s+of\s+(4|four)\b[^.]{0,30}within\s+2/i;
+
+test('every surface agrees with the case count in evals/redock.mjs', async () => {
+  // The check that would have caught this ten iterations earlier. The number of cases is defined in code;
+  // a document claiming a different count is citing a benchmark that no longer exists.
+  const { CASES } = await import('../evals/redock.mjs');
+  assert.equal(CASES.length, 11, 'if the eval was widened again, the documents need updating with it');
+  for (const f of BENCHMARK_SURFACES) {
+    // docs/progress-report.html is a dated log: its earlier entries record what was believed at the time,
+    // including the superseded figure, and a log that gets rewritten is not a log. The correction belongs
+    // in a new entry, which iteration 19 adds, not in an edit to the old ones.
+    if (f === 'docs/progress-report.html') continue;
+    const text = read(f);
+    if (!/redock|re-dock/i.test(text)) continue;
+    for (const [i, line] of text.split('\n').entries()) {
+      const quoted = /["“”'](?:\s*)(2|two)\s+of\s+(4|four)\b/i.test(line);
+      const historical = /supersed|correction|until iteration|replaced|earlier version/i.test(line);
+      assert.ok(quoted || historical || !SUPERSEDED_FOURCASE.test(line),
+        `${f}:${i + 1} cites the superseded four-case benchmark: ${line.trim()}`);
+    }
+  }
+});
+
+test('the superseded-figure check catches the citation it was built for', () => {
+  for (const bad of ['2 of 4 within 2 Å. Median 2.54 Å.', 'Two of four within 2 Å, median 2.54 Å']) {
+    assert.ok(SUPERSEDED_FOURCASE.test(bad), `should reject "${bad}"`);
+  }
+  for (const good of ['5 of 11 succeed; 9 of 11 are reachable', '2 of 4 of the failures were sampling']) {
+    assert.ok(!SUPERSEDED_FOURCASE.test(good), `should accept "${good}"`);
+  }
+});
 
 test('the benchmark figure is the measured one, everywhere it is published', () => {
   // The weakest claim in the product, and the one with the most incentive to drift upward.
@@ -132,8 +189,10 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
       const quoted = /["“”'](?:\s*)(3|4|three|four)\s+of\s+(4|four)\b/i.test(line);
       assert.ok(quoted || !INFLATED.test(line),
         `${f}:${i + 1} overstates the benchmark pass rate: ${line.trim()}`);
-      for (const m of line.matchAll(/median\s+([\d.]+)\s*(Å|A)\b/gi)) {
-        assert.equal(m[1], '2.54', `${f}:${i + 1} gives a median of ${m[1]}; the measured value is 2.54 Å`);
+      // The reachable count is the figure that carries the diagnosis, so it must not drift either.
+      for (const m of line.matchAll(/\b(\d+|nine)\s+of\s+(11|eleven)\s+(?:are\s+)?reachable/gi)) {
+        assert.ok(/^(9|nine)$/i.test(m[1]),
+          `${f}:${i + 1} says ${m[1]} of eleven reachable; the recorded figure is 9`);
       }
     }
   }
@@ -141,14 +200,18 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
 
 test('the inflation check actually catches an inflated claim, in digits and in words', () => {
   // A guard this cheap to get wrong is worth proving against known-bad input rather than trusting.
-  for (const bad of ['3 of 4 within 2 Å', 'Four of four within 2 Å, median 2.54 Å',
-    'three of 4 within 2 A', '4 of 4 within 2 Å']) {
+  for (const bad of ['7 of 11 within 2 Å', 'Nine of eleven succeed on the panel',
+    'eight of 11 within 2 A', '11 of 11 succeed']) {
     assert.ok(INFLATED.test(bad), `the check should reject "${bad}"`);
   }
-  for (const good of ['2 of 4 within 2 Å', 'Two of four within 2 Å, median 2.54 Å',
-    'two of 4 within 2 A', 'four of the compounds were screened']) {
+  for (const good of ['5 of 11 succeed, 9 of 11 reachable', 'Five of eleven succeed',
+    'nine of eleven are reachable — the search generates a pose within 2 Å',
+    'eleven of the compounds were screened']) {
     assert.ok(!INFLATED.test(good), `the check should accept "${good}"`);
   }
+  // The case that defeated the first draft: an inflated claim sharing a line with an honest one.
+  assert.ok(INFLATED.test('**8 of 11 succeed. 9 of 11 are reachable.**'),
+    'an inflated pass rate must not be exempted by a reachability claim beside it');
 });
 
 test('the quoted-phrase exemption is narrow enough to be useless as a loophole', () => {
@@ -169,10 +232,11 @@ test('a surface that publishes the benchmark also publishes the failures', () =>
   // and drops the two failing rows has kept the number and lost the point of it.
   for (const f of BENCHMARK_SURFACES) {
     const text = read(f);
-    if (!/\b(2|two)\s+of\s+(4|four)\b/i.test(text)) continue;
-    assert.ok(/thrombin/i.test(text) && /BCL/i.test(text),
-      `${f} states the benchmark pass rate without naming the two cases that fail`);
-    assert.ok(/fail/i.test(text), `${f} should say plainly that those cases failed`);
+    if (!/\b(5|five)\s+of\s+(11|eleven)\b/i.test(text)) continue;
+    assert.ok(/BCL/i.test(text) && /MetAP2|1R58/i.test(text),
+      `${f} states the benchmark pass rate without naming the cases that fail`);
+    assert.ok(/sampling/i.test(text) && /scoring/i.test(text),
+      `${f} should distinguish the sampling failures from the scoring failures — that is the diagnosis`);
   }
 });
 
