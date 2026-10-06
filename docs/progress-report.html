@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 7</span>
-      <span class="tag on">47 JavaScript tests passing</span>
+      <span class="tag">iteration 8</span>
+      <span class="tag on">61 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,30 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 8</div>
+      <div>
+        <h3>The torsions the search only sampled coarsely</h3>
+        <p>Iteration 7 tightened a pose as a rigid body. A ligand with rotatable bonds has more freedom than
+          that. <code>js/torsion.js</code> rotates the atoms on one side of a bond about that bond's own axis,
+          pattern-searches every rotatable bond with a shrinking angular step, and alternates rigid-body and
+          torsional passes until a full pass of both stops helping. The geometry checks are exact and make no
+          reference to the scoring function, which is the point of them.</p>
+        <ul class="checks">
+          <li>Every bond length holds to 1e-4 Å and every bond angle to 1e-4 rad through a rotation</li>
+          <li>The spanning dihedral moves by precisely the angle asked for; the two flanking it move by nothing</li>
+          <li>Hinge atoms and the whole fixed side do not move; a rotation composed with its inverse is the identity</li>
+          <li>A six-carbon sp3 chain yields exactly the three rotatable bonds the geometry implies</li>
+          <li>Never worse than its input, byte-identical determinism, budget respected, rigid ligand costs one call</li>
+          <li>Bug found by the test: the pass loop seeded its best at infinity and so could never stop on pass one</li>
+          <li>61 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Whether this improves the 4-case benchmark — needs structures from the RCSB, and the
+            network is blocked. The published figure stays what was measured: 2 of 4 within 2 Å, median 2.54 Å</li>
+          <li class="no">No internal-strain term: the score sees protein-ligand contacts only, so this polishes
+            a conformer rather than generating one</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 7</div>
       <div>
