@@ -21,6 +21,7 @@ line for the browser-side hash chain and this is its server-side counterpart.
 import hashlib
 import json
 import os
+import tempfile
 from typing import Dict, List, Optional, Tuple
 
 import synthetic_provenance as sp
@@ -77,10 +78,26 @@ def put(data) -> str:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     # Write to a temporary name first so an interrupted write cannot leave a
     # file sitting at an address whose content does not hash to it.
-    tmp = f"{path}.{os.getpid()}.tmp"
-    with open(tmp, "wb") as fh:
-        fh.write(raw)
-    os.replace(tmp, path)
+    #
+    # The temp name has to be unique per WRITER, not per process. It was
+    # f"{path}.{os.getpid()}.tmp", and the server is a ThreadingHTTPServer:
+    # two threads storing the same content share that name, the first
+    # os.replace moves it away, and the second raises FileNotFoundError from
+    # inside the provenance store. Reproduced with 12 threads on one payload --
+    # 2 failed. mkstemp gives each writer its own file, in the same directory
+    # so the replace stays atomic.
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(raw)
+        os.replace(tmp, path)
+    except BaseException:
+        # Leave no debris at an address that would then read as content.
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
     return digest
 
 

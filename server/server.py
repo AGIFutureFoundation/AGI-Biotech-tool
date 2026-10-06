@@ -1172,6 +1172,18 @@ def main():
         # what, and what to do about it.
         sys.exit(_port_in_use_message(a.host, a.port))
 
+    # Binding beyond loopback puts an almost entirely unauthenticated API on the
+    # network. That is a legitimate thing to want -- it is how a headset reaches
+    # the workspace over Wi-Fi -- but it should never be something a person
+    # discovers afterwards. The argparse help says it; this says it at the
+    # moment it happens, which is the only time it can still be reconsidered.
+    if a.host not in ("127.0.0.1", "localhost", "::1"):
+        print(f"\n  !!  Binding {a.host}, not loopback.")
+        print("      Almost every /api route requires no token, so anything that can reach")
+        print("      this port can drive the workspace, read loaded structures and enqueue")
+        print("      commands. Use it on a network you trust, and stop the server after.")
+        print("      For a headset over Wi-Fi this is expected; on shared Wi-Fi it is not.\n")
+
     scheme = "http"
     if a.https:
         crt, key = self_signed(os.path.join(ROOT, ".certs"))

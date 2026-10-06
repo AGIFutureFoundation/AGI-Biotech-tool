@@ -150,6 +150,14 @@ DECLARED = {
                                  "api.platform.opentargets.org", "Nothing."),
     "pumpscience.gitbook.io": (CATALOGUE, "cited as a source in the validation write-up",
                                "Nothing; a citation."),
+    "nanda.media.mit.edu": (CATALOGUE,
+                            "a JSON-LD @context URI in the AgentFacts document, like the w3.org one "
+                            "beside it", "Nothing. server/agent_protocols.py contains no HTTP call; "
+                            "the URI is a namespace identifier embedded in a dict, not a request."),
+    "agifuturefoundation.org": (CATALOGUE,
+                                "the provider URL and contact inside the AgentFacts document",
+                                "Nothing; it is published metadata about who runs this node, never "
+                                "fetched."),
 }
 
 URL = re.compile(r"""https?://([A-Za-z0-9.\-]+\.[A-Za-z]{2,})""")

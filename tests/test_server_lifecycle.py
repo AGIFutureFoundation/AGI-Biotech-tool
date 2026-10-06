@@ -208,3 +208,26 @@ def test_the_jwt_warning_says_how_to_fix_it():
     secret_warnings = [m for m in messages if "JWT_SECRET" in m]
     assert secret_warnings, "no JWT_SECRET warning was raised"
     assert "export JWT_SECRET=" in secret_warnings[0]
+
+
+# --------------------------------------------------------------------------- exposure
+
+def test_binding_beyond_loopback_says_so_at_the_moment_it_happens(server_module):
+    """The argparse help mentions it; a person starting the server may not read it.
+
+    Almost every /api route takes no token, so --host 0.0.0.0 puts the whole
+    surface on the network. That is a reasonable thing to want for a headset,
+    and an unreasonable thing to learn afterwards.
+    """
+    source = (pathlib.Path(REPO_ROOT) / "server" / "server.py").read_text()
+    start = source.index('if a.host not in ("127.0.0.1"')
+    block = source[start:start + 900]
+
+    assert "requires no token" in block
+    assert "127.0.0.1" in block and "localhost" in block and "::1" in block
+
+
+def test_the_loopback_default_is_unchanged(server_module):
+    """The warning is for the opt-in case; it must not become the default."""
+    source = (pathlib.Path(REPO_ROOT) / "server" / "server.py").read_text()
+    assert 'ap.add_argument("--host", default="127.0.0.1")' in source

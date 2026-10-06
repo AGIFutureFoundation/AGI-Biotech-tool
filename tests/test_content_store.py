@@ -110,3 +110,40 @@ def test_manifest_is_itself_addressable():
 def test_manifest_states_that_nothing_is_broadcast():
     """Guards against this being described as a blockchain later."""
     assert "not" in cs.manifest({"x": 1})["note"].lower()
+
+
+def test_concurrent_writers_do_not_collide(tmp_path, monkeypatch):
+    """Two threads storing the same content must not fight over one temp file.
+
+    The temp name was f"{path}.{os.getpid()}.tmp" -- unique per process, and the
+    server is a ThreadingHTTPServer. Threads storing identical content shared
+    that name, the first os.replace moved it away, and the second raised
+    FileNotFoundError from inside the provenance store. Twelve threads on one
+    payload reproduced it twice.
+    """
+    import threading
+
+    monkeypatch.setenv("AGI_CONTENT_STORE", str(tmp_path))
+    import content_store
+
+    payload = {"big": "x" * 400_000}        # wide enough write window to collide
+    errors, digests = [], []
+
+    def store():
+        try:
+            digests.append(content_store.put(payload))
+        except Exception as exc:                      # noqa: BLE001 - that is the bug
+            errors.append(f"{type(exc).__name__}: {exc}")
+
+    threads = [threading.Thread(target=store) for _ in range(24)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert not errors, errors
+    assert len(set(digests)) == 1, "writers disagreed about the address"
+    assert content_store.verify(digests[0]), "stored content does not hash to its address"
+    leftovers = [f for _, _, files in __import__("os").walk(tmp_path)
+                 for f in files if f.endswith(".tmp")]
+    assert not leftovers, f"temporary files left at content addresses: {leftovers}"
