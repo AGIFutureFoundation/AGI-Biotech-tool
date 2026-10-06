@@ -169,6 +169,13 @@ def verify_payment(header_value, tool, accept_test_payments=False):
         payload = json.loads(base64.b64decode(header_value).decode())
     except Exception:  # noqa: BLE001
         return False, "X-PAYMENT is not base64-encoded JSON"
+    # json.loads returns whatever the JSON says, including a list, a string or a
+    # number. The membership test below raises TypeError on an int, and a string
+    # like "schemenetworkpayload" passes all three substring checks and then
+    # raises on the index. /api/command calls this without a try, so either one
+    # turned a priced request into an unhandled exception instead of a 402.
+    if not isinstance(payload, dict):
+        return False, "X-PAYMENT must decode to a JSON object"
     for field in ("scheme", "network", "payload"):
         if field not in payload:
             return False, f"payment payload is missing {field}"
@@ -224,11 +231,26 @@ def verify_stamp(envelope):
     digest = "sha256:" + hashlib.sha256(raw).hexdigest()
     if proof.get("digest") != digest:
         return {"ok": False, "reason": "the result does not match its digest: it was altered after signing"}
+    # The key is OURS, never the envelope's. This used to verify against
+    # proof["key"] -- the key the caller supplied alongside the signature -- so
+    # anyone could generate a keypair, sign any body they liked, enclose their
+    # own public key and have /api/verify answer {"ok": true}. That proves
+    # somebody signed it, which is not a claim worth making; the question this
+    # endpoint answers is whether THIS service signed it.
+    #
+    # An envelope naming a different key is rejected by name rather than left
+    # to fail the signature check, so the reason is legible. Verifying envelopes
+    # from other agents would need an explicit allowlist of known keys, not
+    # whatever arrives in the request.
+    if proof.get("key") != IDENTITY.public:
+        return {"ok": False,
+                "reason": "signed with a key that is not this service's; an envelope "
+                          "carrying its own key proves nothing about who issued it"}
     if HAVE_ED25519:
         try:
             from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-            Ed25519PublicKey.from_public_bytes(base64.b64decode(proof["key"])).verify(
-                base64.b64decode(proof["signature"]), raw)
+            Ed25519PublicKey.from_public_bytes(base64.b64decode(IDENTITY.public)).verify(
+                base64.b64decode(proof.get("signature", "")), raw)
             return {"ok": True, "agent": envelope.get("agent"), "alg": proof.get("alg")}
         except Exception as e:  # noqa: BLE001
             return {"ok": False, "reason": f"signature does not verify: {e}"}

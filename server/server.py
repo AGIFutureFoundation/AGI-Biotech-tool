@@ -545,13 +545,35 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _body(self):
+    #: Upper bound on a request body. Generous, because /api/extract takes PDFs
+    #: and /api/md takes structure files; endpoints that need less say so.
+    MAX_BODY = 64 * 1024 * 1024
+    #: What a form post should ever need. /api/intake is unauthenticated and
+    #: appends to disk, so it reads with this instead of the default.
+    MAX_SMALL_BODY = 64 * 1024
+
+    def _body(self, limit=None):
+        """The request body, refusing to buffer more than `limit` bytes.
+
+        Content-Length is checked before the read rather than after, so an
+        oversized request costs nothing to reject. It used to read whatever
+        length was declared, which on the unauthenticated /api/intake meant any
+        caller could choose how much memory the server allocated and how much
+        disk the log consumed.
+
+        Returns None when over the limit; callers answer 413.
+        """
+        limit = self.MAX_BODY if limit is None else limit
         n = int(self.headers.get("Content-Length") or 0)
+        if n > limit:
+            return None
         return self.rfile.read(n) if n else b""
 
-    def _payload(self):
+    def _payload(self, limit=None):
         """Decoded JSON request body, or {} when there is none."""
-        raw = self._body()
+        raw = self._body(limit)
+        if raw is None:
+            return None
         return json.loads(raw) if raw.strip() else {}
 
     def _qs(self):
@@ -784,7 +806,10 @@ class Handler(SimpleHTTPRequestHandler):
             if p == "/api/verify":
                 return self._json(AP.verify_stamp(json.loads(self._body())))
             if p == "/api/intake":
-                b = json.loads(self._body())
+                raw = self._body(self.MAX_SMALL_BODY)
+                if raw is None:
+                    return self._json({"error": "request body too large"}, 413)
+                b = json.loads(raw) if raw.strip() else {}
                 path = os.path.join(ROOT, "data", "intake.jsonl")
                 b["received"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                 b["signature"] = AP.IDENTITY.sign_json(b)
