@@ -5,6 +5,7 @@ import { parsePDB, parseMmCIF, parseMolblock, parsePDBFrames } from './structure
 import { MolView, REPS, COLORS, textSprite, dashedLine } from './render.js';
 import { MDEngine } from './md.js';
 import { ProteinGrid, vinaScore, findPockets, dockLigand, centroid } from './dock.js';
+import { refineAll } from './refine.js';
 import { analyze, smilesTo3D, loadRDKit, setServerCaps, depict, heavyAtomModel, fingerprint } from './chem.js';
 import { CompoundLibrary, importFile } from './compounds.js';
 import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek, trials, interpro, reactome,
@@ -327,17 +328,24 @@ async function doDock() {
       xr.panel.setStatus(`docking ${run + 1}/12`);
     },
   });
-  S.poses = poses;
+  // The MC search stops wherever its last accepted move landed; this tightens each pose inside the
+  // basin it found. Refinement only ever accepts a strict improvement, so this cannot make a pose worse.
+  status('refining poses…');
+  const refined = poses.length ? refineAll(S.grid, S.ligand, poses) : poses;
+  S.poses = refined;
   $('#btnDock').disabled = false;
-  if (poses.length) applyPose(0);
+  if (refined.length) applyPose(0);
   renderPoses();
-  if (poses.length) { try { analysePose(); } catch { /* analysis is a bonus, never a blocker */ } }
-  if (poses.length) {
+  if (refined.length) { try { analysePose(); } catch { /* analysis is a bonus, never a blocker */ } }
+  if (refined.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
-      target: S.protein.name, site: S.pocket?.label || null, score: +poses[0].score.toFixed(2),
-      poses: poses.length, method: 'Monte Carlo, Vina-style score', provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
+      target: S.protein.name, site: S.pocket?.label || null, score: +refined[0].score.toFixed(2),
+      poses: refined.length, method: 'Monte Carlo search, Vina-style score, local rigid-body refinement',
+      refinedBy: +(refined[0].refinedBy || 0).toFixed(2),
+      provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
   }
-  toast(`${poses.length} poses · best ${plain(fmt(poses[0]?.score), DOCK_TIER)} · ${Math.round((performance.now() - t0) / 1000)} s`);
+  const gain = refined[0]?.refinedBy ? ` · refined ${refined[0].refinedBy.toFixed(2)}` : '';
+  toast(`${refined.length} poses · best ${plain(fmt(refined[0]?.score), DOCK_TIER)}${gain} · ${Math.round((performance.now() - t0) / 1000)} s`);
 }
 
 function applyPose(i) {

@@ -16,7 +16,8 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Unit tests for js/analysis.js interaction geometry on synthetic coordinates (iter 3)
 - [x] Unit tests for js/voice.js parseCommand across the intent grammar (iter 4)
 - [x] Unit tests for js/agent.js intent-to-tool mapping and enum translation (iter 6)
-- [ ] Docking: wider search budget and a rescoring pass, measured against the 4-case benchmark
+- [~] Docking: local rigid-body refinement built and unit-tested (iteration 7). The 4-case benchmark
+      re-measurement still waits on the network, so the 2-of-4 / 2.54 A median figure stands unchanged.
 - [ ] docs/wiki/ pages ready to paste into the GitHub wiki
 - [ ] Ed25519 signing once `cryptography` can install
 
@@ -139,3 +140,34 @@ from "approximate" to "unitless Vina-like score ... not kcal/mol", which is the 
 assertion now checks that the field disclaims exactness rather than demanding one phrase.
 
 Still unproven: the tools against a live workspace (needs a port and a browser); every HTTP route.
+
+### 2026-10-06 · Iteration 7 — a pose that actually sits in its minimum
+
+Done: `js/refine.js`, a local refinement pass over the six rigid-body degrees of freedom. The Monte Carlo
+search in `dock.js` ends wherever its last accepted move happened to land, which is near a minimum rather
+than in it; Vina follows every MC run with a quasi-Newton polish for exactly this reason. This is the cheap
+equivalent — a pattern search with a shrinking step that only ever accepts a strict improvement, so a
+refined pose cannot score worse than the one it started from. Rotations pivot on the ligand centroid, so a
+rotation probe never also translates the molecule. Wired into the interactive dock path in `js/main.js`:
+poses are refined and re-sorted before they are shown, and the ledger now records the refinement gain
+alongside the score instead of the raw search output.
+
+Verified offline (`node --test` over all four JS suites, 47 passed; `node --check js/main.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed):
+- On a synthetic carbon cup with a known seat, refinement from four different displacements never returns
+  a worse score than its input, and the reported improvement is never negative.
+- A pose displaced 1.8 A + 1.4 A off the seat comes back closer to it than it started.
+- The input coordinate array is never mutated, so a caller can compare before and after.
+- Deterministic: the same input gives a byte-identical output. No RNG in the refinement path.
+- The evaluation budget is respected; a finer `minStep` never scores worse and always costs at least as much.
+- `refineAll` re-sorts, because refinement can reorder a ranking, and every pose keeps its gain record.
+- With translation disabled the centroid holds to within 1e-3 A, confirming the rotation pivot.
+
+What this does not do, stated plainly: it does not change the scoring function and it does not move
+torsions. A pose placed in the wrong pocket is still in the wrong pocket, and a tighter fit to an
+unvalidated score is not a better prediction.
+
+Still unproven / blocked: whether refinement improves the 4-case re-docking benchmark. That needs
+structures from the RCSB and the network is blocked, so the published figure stays what it was measured at
+— 2 of 4 within 2 A, median 2.54 A — and is not restated as improved. Five Python failures remain in
+`tests/test_server_lifecycle.py`; all five need to bind a local port, which this sandbox refuses.
