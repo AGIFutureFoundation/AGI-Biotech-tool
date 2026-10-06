@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 12</span>
-      <span class="tag on">121 JavaScript tests passing</span>
+      <span class="tag">iteration 13</span>
+      <span class="tag on">123 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,33 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 13</div>
+      <div>
+        <h3>Landing the fix, and measuring that it barely matters</h3>
+        <p>The exact planarity term is now in <code>js/md.js</code>, the superseded implementation removed
+          rather than left unused, and the test that recorded the defect replaced by the test that proves the
+          fix. Then the question iteration 12 left open — does it change any result a user sees? — was
+          measured rather than assumed, and the answer is <strong>almost none</strong>.</p>
+        <ul class="checks">
+          <li><code>ligandForces</code> as a whole is gradient-exact to under 1e-6 at every pyramidalisation
+            tested; the same check failed at 6.26e-2 before the swap</li>
+          <li>Momentum still conserved to 1e-9; the old in-place implementation asserted gone, not just unused</li>
+          <li>Mutation-checked: reinstating the old term inline fails the new test, and md.js was restored to
+            exactly the intended 5-insertion, 13-deletion swap</li>
+          <li>Measured impact: minimising a two-sp2-centre fragment from three distortions, residual
+            out-of-plane is at most 0.001 Å either way, energies agree to 0.001, geometries differ by
+            0.002–0.006 Å RMSD. Both terms flatten the centre; they disagree only about the force on the way,
+            and FIRE's line search absorbed it</li>
+          <li>123 JavaScript tests, 1438 Python tests, and the JS-to-Python scoring cross-check all passing</li>
+          <li class="no">So: the fix is correct and removes a latent hazard, and it is not a result anyone
+            would notice. Both halves belong in the record</li>
+          <li class="no">Energy conservation over a long trajectory is where an inexact force would show most.
+            The thermostat dominates at these timescales, so measuring it means the OpenMM comparison — which
+            needs the server</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 12</div>
       <div>
