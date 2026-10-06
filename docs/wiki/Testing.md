@@ -8,7 +8,7 @@ right now is marked as carried forward rather than restated as fresh.
 | Command | Result |
 | --- | --- |
 | `.venv/bin/python -m pytest tests/ -q` | **1438 passed**, 55 skipped, 1 xfailed, **5 failed** |
-| `node --test tests/*.test.mjs` | **195 passed**, 0 failed |
+| `node --test tests/*.test.mjs` | **208 passed**, 0 failed |
 
 The five Python failures are all in `tests/test_server_lifecycle.py` and all need to bind a local port,
 which the environment these were run in refuses. They are an environment limitation, not a regression, and
@@ -16,7 +16,7 @@ they are reported here rather than filtered out of the count.
 
 ## The JavaScript suites
 
-All thirteen run with `node --test`, no browser, no network, no server.
+All fourteen run with `node --test`, no browser, no network, no server.
 
 | Suite | Cases | What it proves |
 | --- | --- | --- |
@@ -30,6 +30,7 @@ All thirteen run with `node --test`, no browser, no network, no server.
 | `tests/structure.test.mjs` | 17 | The PDB and mmCIF parsers, column by column, and bond perception |
 | `tests/ledger.test.mjs` | 21 | The provenance hash chain, by actually tampering with it |
 | `tests/api.test.mjs` | 18 | How the database layer behaves when a source fails, with `fetch` stubbed |
+| `tests/rescore.test.mjs` | 13 | Three rescoring terms, and a corrected ranking inversion |
 | `tests/claims.test.mjs` | 16 | Re-measures the published figures, and guards the benchmark claim |
 | `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |

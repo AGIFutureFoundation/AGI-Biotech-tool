@@ -23,12 +23,14 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [ ] Calibrate the discrimination margin in js/poses.js against the re-docking benchmark — how large a score
       gap must be before the better-scoring pose is reliably the closer one. Needs the network. Until then the
       default is a stated convention and says so in its own output.
-- [ ] **Scoring-side work, now that the diagnosis is clear.** The eleven-case benchmark records four of six
-      failures as *scoring* failures: the search found a pose within 2 A (0.54 A in the GSK-3 beta case) and
-      the ranking put something wrong above it. Perfect ranking over poses already produced would take the
-      benchmark from 45 percent to 82 percent with no change to the search. The next work belongs in the
-      energy terms. Iterations 7, 8 and 10 went into the search because they were aimed at a superseded
-      four-case benchmark; see iteration 19.
+- [~] **Scoring-side work.** `js/rescore.js` adds three terms vinaScore lacks — buried unsatisfied polar,
+      metal coordination, internal clash — unit-tested on synthetic geometry including a corrected ranking
+      inversion (iter 20). **Not yet wired into the dock path, and the weights are not calibrated.**
+- [ ] Calibrate the rescoring weights in `js/rescore.js` against the eleven-case benchmark: how often does
+      each term flip a ranking the right way, and what weight maximises that. Needs the network. Until then
+      every result the module returns carries `WEIGHTS_ARE_UNCALIBRATED`.
+- [ ] Wire `rerank` into `doDock` once the weights mean something. Rescoring with invented weights in the
+      product would be worse than not rescoring at all; it belongs behind calibration, not in front of it.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
 - [x] Dynamics force field under test, with a gradient check (iter 12)
@@ -862,3 +864,65 @@ while the other session has uncommitted changes to it. `docs/pitch.html`, `docs/
 `docs/WIKI.md` are still not under the guard: they are the other session's documents, they already carry the
 current figure, and adding them means reconciling their stale test counts too, which is a separate task.
 Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 20 — working on the bottleneck for the first time
+
+The queue item iteration 19 wrote is now the top one, and it is the first time in this loop that the work
+has been aimed at a bottleneck the measurements actually identify. The eleven-case benchmark records nine of
+eleven cases as *reachable* and four of six failures as **ranking** failures: the search produced a pose
+within 2 A and the scoring function put something wrong above it. So this is a rescoring pass, not a search
+change.
+
+Done: `js/rescore.js`, three terms `vinaScore` does not have, each chosen because it is a known blind spot
+of this class of function *and* matches a recorded failure:
+
+- **Buried unsatisfied polar.** Desolvating a donor or acceptor and giving it no partner costs real energy.
+  vinaScore charges nothing: gauss1, gauss2 and hydrophobic all reward the packing, and the absent hydrogen
+  bond merely fails to earn its bonus. A decoy that buries a polar group in a greasy sub-pocket therefore
+  scores like a good pose — and CDK5 and GSK-3 beta, both recorded scoring failures, are kinase sites full
+  of places to do that.
+- **Metal coordination.** vinaScore has no metal term at all. Carbonic anhydrase II (1OQ5) is a recorded
+  scoring failure and celecoxib binds it by putting a sulfonamide nitrogen on the catalytic zinc; a pose
+  that makes that bond earns nothing for it. MetAP2 (1R58) is dinuclear and also fails.
+- **Internal clash.** The gap iteration 8 noted and did not close: vinaScore sees protein-ligand pairs only,
+  so a conformer folded through itself is free.
+
+Verified offline (`node --test tests/*.test.mjs`, 208 passed; `node --check js/rescore.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed). Thirteen cases in `tests/rescore.test.mjs`:
+- **A ranking inversion of the recorded shape is corrected.** The fixture builds two sub-pockets in one
+  receptor: a tight all-carbon slot that packs the ligand well and offers its oxygen nothing, and a roomier
+  site with a zinc at the floor. vinaScore prefers the greasy decoy at -1.684 over the zinc-coordinating
+  native at -0.583 — the carbonic-anhydrase failure in miniature — and rescoring reverses it, -1.383 against
+  -1.234. The test asserts the fixture *starts* inverted, so it cannot silently stop proving anything.
+- A buried polar atom with a partner at 2.9 A is not penalised; the same atom at 4.0 A is. A
+  solvent-exposed polar atom is not penalised at all, because it is not desolvated — the penalty is for
+  burying a polar group, not for having one.
+- A metal at 2.1 A is credited; at 4.0 A it is not; at 1.4 A it is a clash and not a bond. Only divalent and
+  transition metals coordinate: rewarding a pose for sitting next to a chloride or a sodium would be wrong,
+  so `COORDINATING_METALS` is deliberately narrower than `IONS`.
+- Internal clashes counted for a folded chain and not an extended one, with pairs under four bonds apart
+  excluded since the geometry holds those.
+- **Zero weights reduce rescoring to vinaScore exactly** — the property a reviewer should check first: the
+  rescoring can be turned off and shown to be off. Signs match roles. Deterministic, no mutation of input.
+- `rerank` re-sorts and records each pose's old score, new score, terms and `rankChange`, because changing
+  an order is the only thing it does and a caller who cannot see what moved cannot judge whether it helped.
+
+One real bug in my own module, found by probing it before writing the tests: the satisfaction check accepted
+a metal anywhere in the 5 A burial shell, so a zinc 4 A away excused a completely unsatisfied oxygen.
+Coordination now requires coordination distance, and the case is a test with the bug named in it.
+
+Mutation-checked: zeroing the metal weight breaks the inversion test, and reinstating the satisfaction bug
+fails the case written for it. `js/rescore.js` was restored, confirmed by an empty `git diff`.
+
+Still unproven / blocked, and this is the main thing:
+- **The weights are not calibrated and the module says so on every call.** Fitting them means running the
+  eleven-case benchmark, measuring how often each term flips a ranking the right way, and tuning against
+  that. That needs the RCSB. The defaults are round numbers of the same order as the Vina terms beside them,
+  nothing more, and `WEIGHTS_ARE_UNCALIBRATED` is returned with every result.
+- **It is deliberately not wired into `doDock`.** Rescoring with invented weights in the product would be
+  worse than not rescoring at all: it would move rankings for reasons nobody had checked. Two queue items
+  now record calibration first, wiring second.
+- Whether these three terms are the right three is unmeasured. The synthetic tests prove each does what it
+  claims on geometry built to exercise it; they say nothing about how often any of them matters on real
+  structures. The benchmark was not re-measured; 5 of 11 and 9 of 11 stand as recorded by another session's
+  run. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.

@@ -112,7 +112,7 @@ $ .venv/bin/python -m pytest tests/ -q
 5 failed, 1438 passed, 55 skipped, 1 xfailed, 43 warnings in 19.08s
 
 $ node --test tests/*.test.mjs
-pass 195  fail 0
+pass 208  fail 0
 ```
 
 **The five failures are stated rather than filtered.** All five are in
@@ -121,7 +121,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-9,492 lines of test code across 37 Python files and 13 JavaScript files. The
+9,740 lines of test code across 37 Python files and 14 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -547,13 +547,13 @@ corrections to numbers that had drifted since it was written.
 |---|---|
 | 5 failed, 1438 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
-| 195 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 9,492 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
-| 37 Python and 13 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
+| 208 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
+| 9,740 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 37 Python and 14 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 66 modules import cleanly | `make imports` |
 | every JS module reachable | `make reachable` |
 | 27,161 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
-| 29 JS modules | `ls js/*.js \| wc -l` |
+| 30 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
 | 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` |
 | 84 target records checked | `grep -cE "^[A-Z][A-Z0-9]* - " <citations output>` |
