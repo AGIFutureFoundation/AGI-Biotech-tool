@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 11</span>
-      <span class="tag on">100 JavaScript tests passing</span>
+      <span class="tag">iteration 12</span>
+      <span class="tag on">121 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,34 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 12</div>
+      <div>
+        <h3>The force must be the gradient, and in one place it was not</h3>
+        <p>A force field has one property worth more than the others: the force must be the negative gradient
+          of its energy. When it fails, nothing in the output says so — the molecule just behaves slightly
+          oddly in a way that reads as physics being hard. A central finite difference in double precision at
+          three step sizes makes the convergence visible rather than assumed: 3.18e-5 at h=1e-3, 3.18e-7 at
+          1e-4, 2.27e-9 at 1e-5. Bonds, angles and repulsion are exact. <strong>The planarity term was
+          not.</strong></p>
+        <ul class="checks">
+          <li>Found: <code>js/md.js</code> holds its plane normal fixed, so the force misses the normal's own
+            motion — 19% off its energy gradient at 0.3 Å of pyramidalisation, worst where a minimiser lives</li>
+          <li>Nearly missed: the first check read 3e-10 because that geometry's errors cancelled. Pyramidalising
+            the centre alone exposed it</li>
+          <li><code>js/planarity.js</code> is the corrected term, gradient-exact to 1e-7 and momentum-conserving
+            to 1e-12, held as a new file because another session is working in md.js</li>
+          <li>The defect is asserted as a bounded fact, so the number cannot drift unnoticed</li>
+          <li>Newton's third law to 1e-9; exact spring and repulsion energies; the law-of-cosines 1-3 distance</li>
+          <li>400 steps with no NaN and both bonds intact; a frozen protein that moves by not one float</li>
+          <li>The steric guard bounds its shift to 0.25 Å and skips coincident atoms instead of dividing by zero</li>
+          <li>121 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Whether the fix changes any result a user sees. It should matter most to conformer
+            relaxation, but measuring that means the OpenMM comparison, which needs the server</li>
+          <li class="no">Implicit solvent and short timescales stay the honest limits of the dynamics regardless</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 11</div>
       <div>
