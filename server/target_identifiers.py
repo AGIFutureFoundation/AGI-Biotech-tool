@@ -23,10 +23,24 @@ _MEMO_LOCK = threading.Lock()
 
 
 def _memo(key, fn):
+    """Cache successful lookups for the process. Never cache a failure.
+
+    Every fetcher here returns an error dict rather than raising, and this used
+    to store whatever came back. db.HTTP fails fast when its circuit breaker is
+    open or another host failed recently, so one network blip produced an error
+    dict that was then served for the life of the process: genes_for_chembl_target
+    returned no genes for that target forever after, and repurposing_joins
+    silently dropped every hypothesis depending on it.
+
+    The on-disk cache already retries correctly. Only this in-process memo kept
+    the failure, so only this needed fixing.
+    """
     with _MEMO_LOCK:
         if key in _MEMO:
             return _MEMO[key]
     value = fn()
+    if isinstance(value, dict) and value.get("error"):
+        return value              # transient: answer now, retry next time
     with _MEMO_LOCK:
         _MEMO[key] = value
     return value

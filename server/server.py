@@ -494,9 +494,31 @@ class Handler(SimpleHTTPRequestHandler):
         if "/api/room" not in line:
             sys.stderr.write("%s - %s\n" % (self.address_string(), line))
 
+    #: Origins the app is legitimately served from. A request carrying any other
+    #: Origin is a page on some other site talking to this server through the
+    #: user's browser, which is not a thing this server exists to serve.
+    def _origin_allowed(self):
+        origin = self.headers.get("Origin")
+        if not origin:
+            return True                      # curl, a native client, same-origin GET
+        host = self.headers.get("Host", "")
+        for scheme in ("http://", "https://"):
+            if origin == f"{scheme}{host}":
+                return True
+        parsed = urllib.parse.urlparse(origin)
+        return parsed.hostname in ("localhost", "127.0.0.1", "::1")
+
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Access-Control-Allow-Origin", "*")
+        # Echo the caller's Origin only when it is one of ours, instead of the
+        # blanket "*" this used to send. With "*" and no auth on /api/command,
+        # any page the user happened to be visiting could POST commands into
+        # their local workspace -- the server binds 127.0.0.1, but a browser tab
+        # is on 127.0.0.1 too.
+        origin = self.headers.get("Origin")
+        if origin and self._origin_allowed():
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         super().end_headers()
 
@@ -696,6 +718,12 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         p = self.path.split("?")[0]
+        # A cross-origin POST is refused before it reaches any handler. The
+        # response headers alone are not a defence: the browser enforces CORS on
+        # reading the reply, not on sending the request, so a state-changing
+        # POST lands whether or not the attacker can see what came back.
+        if not self._origin_allowed():
+            return self._json({"error": "cross-origin request refused"}, 403)
         try:
             if p == "/api/auth/siwe":
                 # Wallet sign-in. The signature is verified first and the token
@@ -861,7 +889,15 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json([x.to_dict() for x in list_user_projects(user["user_id"])]) or True
         if p.startswith("/api/projects/"):
             project = get_project(self._seg(p, 2))
-            if not project:
+            # Membership is checked here, not just in the listing. /api/projects
+            # filters by `user_id in p.members`, but this path was a bare dict
+            # lookup, so any logged-in user could read any project by its id --
+            # and the ids are eight hex characters. The listing being scoped
+            # made that easy to miss.
+            if not project or user["user_id"] not in project.members:
+                # Deliberately the same 404 either way. "Project not found" and
+                # "not yours" must be indistinguishable, or the endpoint
+                # confirms which ids exist to anyone who asks.
                 return self._json({"error": "Project not found"}, 404) or True
             return self._json(project.to_dict()) or True
         if p == "/api/master-agent/status":
@@ -905,9 +941,27 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"token": token, "email": b.get("email")}) or True
         if p == "/api/auth/register":
             b = self._payload()
-            user = create_user(b.get("email"), b.get("name"), b.get("role", "researcher"),
-                               b.get("institution", ""))
-            return self._json({"user_id": user.user_id, "token": authenticate_user(user.email, b.get("password", "")),
+            password = b.get("password") or ""
+            if not b.get("email") or not password:
+                return self._json({"error": "email and password are required"}, 400) or True
+
+            # The role is NOT taken from the request. It used to be
+            # b.get("role", "researcher"), on an endpoint that needs no
+            # authentication -- so anyone could POST {"role": "admin"} and
+            # receive manage_users, delete_projects and edit_all. Everyone
+            # registers as a researcher; promoting an account is an
+            # administrative action, not something the new account asks for.
+            #
+            # The password is also passed through now. It was being dropped, so
+            # create_user stored password_hash = None ("without a password the
+            # account cannot log in"), and the authenticate_user call on the
+            # next line could never succeed: registration returned a null token
+            # and left behind an account nobody could ever sign in to.
+            user = create_user(b.get("email"), b.get("name"), "researcher",
+                               b.get("institution", ""), password=password)
+            token = authenticate_user(user.email, password)
+            return self._json({"user_id": user.user_id, "token": token,
+                               "role": user.role,
                                "message": "Account created"}, 201) or True
 
         # Everything below needs a bearer token.
