@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 19</span>
-      <span class="tag on">195 JavaScript tests passing</span>
+      <span class="tag">iteration 20</span>
+      <span class="tag on">208 JavaScript tests passing</span>
       <span class="tag off">benchmark figure corrected</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
@@ -107,6 +107,38 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 20</div>
+      <div>
+        <h3>Working on the bottleneck, for the first time</h3>
+        <p>The first iteration of this loop aimed at a bottleneck the measurements actually identify. The
+          benchmark records nine of eleven cases as reachable and four of six failures as <em>ranking</em>
+          failures — the search produced a good pose and the score put something wrong above it. So this is a
+          rescoring pass, not a search change. <code>js/rescore.js</code> adds three terms vinaScore lacks,
+          each a known blind spot and each matching a recorded failure.</p>
+        <ul class="checks">
+          <li><strong>Buried unsatisfied polar:</strong> desolvating a donor with no partner costs energy and
+            vinaScore charges nothing — CDK5 and GSK-3β are kinase sites full of places to exploit that</li>
+          <li><strong>Metal coordination:</strong> there is no metal term at all, and carbonic anhydrase II is
+            a recorded scoring failure where celecoxib puts a sulfonamide nitrogen on the catalytic zinc</li>
+          <li><strong>Internal clash:</strong> the gap iteration 8 noted, where a conformer folded through
+            itself is free</li>
+          <li>The test that matters: a two-site receptor where vinaScore prefers a greasy decoy at −1.684
+            over the zinc-coordinating native at −0.583, and rescoring reverses it. The test asserts the
+            fixture <em>starts</em> inverted, so it cannot silently stop proving anything</li>
+          <li>Zero weights reduce rescoring to vinaScore exactly — the property a reviewer checks first</li>
+          <li>A real bug found by probing first: a zinc 4 Å away was excusing a completely unsatisfied
+            oxygen. Coordination now requires coordination distance</li>
+          <li>Mutation-checked: zeroing the metal weight breaks the inversion test. 208 JavaScript tests and
+            1438 Python tests passing</li>
+          <li class="no"><strong>The weights are not calibrated</strong> and every result says so. Fitting
+            them means running the benchmark, which needs the network</li>
+          <li class="no"><strong>Deliberately not wired into the dock path.</strong> Rescoring with invented
+            weights would move rankings for reasons nobody checked — worse than not rescoring. Calibration
+            first, wiring second</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 19</div>
       <div>
