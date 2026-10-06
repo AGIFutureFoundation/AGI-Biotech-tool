@@ -38,3 +38,18 @@ Verified offline (`.venv/bin/python -m pytest tests/test_agent_protocols.py -q`,
 
 Still unproven: settlement (nothing is wired to a facilitator); Ed25519 signing (package unavailable
 here, so the HMAC path is what ran); every HTTP route, since no port can be bound this session.
+
+### 2026-10-05 · Iteration 2 — pitch video and deck, offline
+
+Done: `scripts/make_pitch_video.py` renders ten designed slides with Pillow, depicts public-record
+reference drugs with RDKit, and assembles a 110.0 s H.264 cut with ffmpeg; no browser, no network.
+`docs/pitchdeck.html` published as an artifact with the film attached as an asset, the benchmark table,
+roadmap, limits and the ask. Loop rescoped to job c65e6f33 (every 20 min) with a one-shot stop 879b69ab
+at 23:13; the new prompt checks `git status` first because another session commits here concurrently.
+
+Verified: `ffprobe` reports 110.0 s, 1920×1080, H.264; two slides inspected as frames and a footer
+collision fixed before shipping.
+
+Still unproven / blocked: narration — the requested Higgsfield voice failed on "out of credits", and
+macOS `say` is blocked by the sandbox (produced a silent 4 KB file, −91 dB), so the cut is silent and
+`docs/pitch_narration.txt` waits for either path to open. Everything from iteration 1 remains blocked.
