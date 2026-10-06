@@ -93,10 +93,31 @@ prediction.
 **Whether refinement improves the four-case benchmark has not been measured.** It cannot be until the
 network allows the structures to be fetched. The figure above is not restated as improved.
 
+## Binding modes, and whether the score chose
+
+A ranked list of poses invites one reading: row one is the answer. For the two complexes this tool places
+well, that reading is fair. For the two it gets wrong it is not — several placements score within a hair of
+each other, the search picks whichever won by a rounding error, and a sorted table presents that as a
+result.
+
+So the surviving poses are grouped into **binding modes** by leader clustering at a cutoff coarser than the
+1.5 Å de-duplication, and the top two modes are compared. If the gap between them is below a stated margin,
+the workspace says so directly: *the next-best sits N Å away and only M behind, so this ranking is not a
+preference.* It goes in the toast, and it goes into the provenance record next to the score.
+
+**The margin is a convention, not a measured resolution.** Calibrating it means running the re-docking
+benchmark and asking how large a score gap has to be before the better-scoring pose is reliably the closer
+one to the crystal. That benchmark needs the network, so the default is a cautious round number, every
+caller can override it, and the sentence the workspace produces admits the margin is uncalibrated rather
+than implying a rigour it does not have.
+
+This does not improve the score. It makes an existing weakness legible instead of hiding it behind a sort
+order, which is the most useful thing available while the weakness cannot be fixed.
+
 ## Verifying this page
 
 ```bash
-node --test tests/refine.test.mjs tests/torsion.test.mjs
+node --test tests/refine.test.mjs tests/torsion.test.mjs tests/poses.test.mjs
 .venv/bin/python -m pytest tests/test_vina_score_port.py tests/test_dock_seeding.py -q
 ```
 

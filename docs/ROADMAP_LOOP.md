@@ -16,9 +16,13 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Unit tests for js/analysis.js interaction geometry on synthetic coordinates (iter 3)
 - [x] Unit tests for js/voice.js parseCommand across the intent grammar (iter 4)
 - [x] Unit tests for js/agent.js intent-to-tool mapping and enum translation (iter 6)
-- [~] Docking: local rigid-body refinement (iteration 7) and torsional refinement (iteration 8) built and
-      unit-tested on synthetic geometry. The 4-case benchmark re-measurement still waits on the network, so
-      the 2-of-4 / 2.54 A median figure stands unchanged and must not be restated as improved.
+- [~] Docking: local rigid-body refinement (iteration 7), torsional refinement (iteration 8) and binding-mode
+      clustering with a discrimination check (iteration 10), all unit-tested on synthetic geometry. The 4-case
+      benchmark re-measurement still waits on the network, so the 2-of-4 / 2.54 A median figure stands
+      unchanged and must not be restated as improved.
+- [ ] Calibrate the discrimination margin in js/poses.js against the re-docking benchmark — how large a score
+      gap must be before the better-scoring pose is reliably the closer one. Needs the network. Until then the
+      default is a stated convention and says so in its own output.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [ ] Ed25519 signing once `cryptography` can install
 
@@ -258,3 +262,51 @@ and the stored GitHub token is invalid, so publishing waits on the user running 
 figures on the wiki are marked carried-forward because they cannot be re-measured here: the re-docking
 benchmark (2 of 4 within 2 A, median 2.54 A, needs the RCSB) and MD throughput (needs the server). Five
 Python failures remain in `tests/test_server_lifecycle.py`; all five need to bind a local port.
+
+### 2026-10-06 · Iteration 10 — saying out loud when the score did not choose
+
+Checked first whether the obvious scoring-side gap was already closed, and it was: another session's
+`tests/test_vina_score_port.py` already runs `js/dock.js` and `server/vina_score.py` over the same real
+geometry and compares every term, the atom typing behind every term, the rotatable-bond count and the H-bond
+list. So no duplicate was written.
+
+Done instead: `js/poses.js`, which addresses the benchmark's *diagnosed* failure mode rather than its number.
+The two complexes this tool gets wrong are a long flexible ligand in a shallow groove, where many placements
+score within a hair of each other and the search returns whichever won by a rounding error. `dockLigand`
+already thins poses to 1.5 A apart and returns them sorted, and a sorted table reads as a verdict. This
+groups the survivors into binding modes by leader clustering in score order at a coarser cutoff, then
+compares the top two modes and reports whether the gap between them clears a margin. When it does not, the
+workspace says so: *the next-best sits N A away and only M behind, so this ranking is not a preference.* The
+sentence goes into the toast and the numbers go into the provenance record next to the score —
+`bindingModes`, `topModeGap`, `discriminates` — so the caveat travels with the result into any export.
+
+The margin is a convention and is labelled one. Calibrating it means asking how large a score gap has to be
+before the better-scoring pose is reliably closer to the crystal, which needs the benchmark, which needs the
+network. So the default is a cautious round number, every caller can override it, and the exported constant
+`MARGIN_IS_UNCALIBRATED` is appended to every verdict the module produces. A new queue item records the
+calibration as owed work rather than letting the convention harden into a fact.
+
+Verified offline (`node --test` over all seven JS suites, 88 passed; `node --check js/poses.js js/main.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed):
+- Three synthetic knots at known separations cluster into exactly three modes with populations 3, 2, 1;
+  every pose lands in exactly one mode and no index is invented.
+- Modes come out best-score-first and each is led by its own best-scoring member. `spread`, `best`, `worst`
+  and `rmsdToBest` were checked against hand-computed values.
+- A cutoff past every separation gives one mode; a cutoff under the intra-knot wobble gives one mode per
+  pose. An empty or null list returns nothing rather than throwing.
+- A 0.8 gap is reported as discriminating; a 0.1 gap is reported as not a preference, and the note carries
+  how far away the rival pose actually is. A gap exactly at the margin counts as clearing it.
+- **One mode returns `null`, not `true`**: the absence of a rival is not evidence that the score chose. Zero
+  poses is reported, not guessed at.
+- Every verdict that leans on the margin includes the uncalibrated disclaimer, and the disclaimer is itself
+  asserted to actually disclaim rather than merely exist.
+- Clustering does not mutate the poses it was given, including not re-sorting the caller's array in place.
+
+Also updated `docs/wiki/Docking-and-Scoring.md` with a binding-modes section; `tests/wiki.test.mjs` still
+passes, so the new prose did not break the link graph or smuggle in an uncalibrated claim.
+
+Still unproven / blocked: the margin's value, as above. Whether surfacing modes changes the 4-case benchmark
+outcome — it should not, since nothing about the score changed, but that is an expectation and not a
+measurement, and the benchmark needs the RCSB. The published figure stays 2 of 4 within 2 A, median 2.54 A,
+and is not restated. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local
+port, which this sandbox refuses.

@@ -6,6 +6,7 @@ import { MolView, REPS, COLORS, textSprite, dashedLine } from './render.js';
 import { MDEngine } from './md.js';
 import { ProteinGrid, vinaScore, findPockets, dockLigand, centroid } from './dock.js';
 import { refineAllFlexible } from './torsion.js';
+import { poseSummary } from './poses.js';
 import { analyze, smilesTo3D, loadRDKit, setServerCaps, depict, heavyAtomModel, fingerprint } from './chem.js';
 import { CompoundLibrary, importFile } from './compounds.js';
 import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek, trials, interpro, reactome,
@@ -337,14 +338,25 @@ async function doDock() {
   S.poses = refined;
   $('#btnDock').disabled = false;
   if (refined.length) applyPose(0);
+  // Group the surviving poses into binding modes and ask whether the score actually chose between them.
+  // A ranked list invites the reading that row one is the answer; when two modes score within a hair of
+  // each other that reading is wrong, and this is where it gets said out loud.
+  const { modes, verdict } = refined.length
+    ? poseSummary(refined, S.ligand.n) : { modes: [], verdict: null };
+  S.poseModes = modes;
+  S.poseVerdict = verdict;
   renderPoses();
   if (refined.length) { try { analysePose(); } catch { /* analysis is a bonus, never a blocker */ } }
+  if (verdict && verdict.discriminates === false) toast(verdict.note, true);
   if (refined.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
       target: S.protein.name, site: S.pocket?.label || null, score: +refined[0].score.toFixed(2),
       poses: refined.length, method: 'Monte Carlo search, Vina-style score, local rigid-body and torsional refinement',
       refinedBy: +(refined[0].refinedBy || 0).toFixed(2),
-      provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
+      bindingModes: modes.length, topModeGap: verdict?.gap ?? null, discriminates: verdict?.discriminates ?? null,
+      provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol'
+        + (verdict && verdict.discriminates === false ? ' · ranking is within the margin, not a preference' : ''),
+    }).then(renderLedger);
   }
   const gain = refined[0]?.refinedBy ? ` · refined ${refined[0].refinedBy.toFixed(2)}` : '';
   toast(`${refined.length} poses · best ${plain(fmt(refined[0]?.score), DOCK_TIER)}${gain} · ${Math.round((performance.now() - t0) / 1000)} s`);
