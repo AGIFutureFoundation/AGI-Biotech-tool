@@ -19,7 +19,7 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [~] Docking: local rigid-body refinement (iteration 7) and torsional refinement (iteration 8) built and
       unit-tested on synthetic geometry. The 4-case benchmark re-measurement still waits on the network, so
       the 2-of-4 / 2.54 A median figure stands unchanged and must not be restated as improved.
-- [ ] docs/wiki/ pages ready to paste into the GitHub wiki
+- [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -210,3 +210,51 @@ within 2 A, median 2.54 A — and is not restated. Nor does this add an internal
 protein-ligand contacts only, so a torsion that folds the ligand onto itself costs nothing in this search,
 which is why `refineFlexible` polishes a conformer rather than generating one. Five Python failures remain in
 `tests/test_server_lifecycle.py`; all five need to bind a local port, which this sandbox refuses.
+
+### 2026-10-06 · Iteration 9 — the wiki, with a test that reads it
+
+Done: `docs/wiki/`, nine pages written as one file per GitHub wiki page — `Home`, `Getting-Started`,
+`Data-Sources`, `Docking-and-Scoring`, `Voice-and-Agent-Control`, `Agent-Protocols`, `XR-and-Hand-Tracking`,
+`Provenance-Ledger`, `Testing`, `Known-Limits` — plus `_Sidebar.md` for the navigation rail and a `README.md`
+with the push-to-`.wiki.git` recipe. `docs/WIKI.md` is untouched: that stays the one long page for someone
+reading the repository top to bottom, while these are short pages for someone who arrived from a search
+result with one question.
+
+Two editorial decisions worth recording. `Home` leads with the re-docking failure, not the feature list —
+the 2-of-4 table is the first thing under the first heading. And `Known-Limits` is its own page linked from
+the front page rather than a section at the bottom of a long document, because a limits section nobody
+scrolls to is decoration.
+
+Facts on the pages were read out of the code, not recalled: the 19 intents from `INTENTS` in `js/voice.js`,
+the 22 tools and their six `slow` flags by instantiating `buildTools` against a proxy, and the 21 database
+hosts by extracting every `https://` literal from `js/api.js`.
+
+Done also: `tests/wiki.test.mjs`, thirteen cases, because prose is not compiled and so rots silently.
+
+Verified offline (`node --test` over all six JS suites, 74 passed; `.venv/bin/python -m pytest tests/ -q`,
+1438 passed):
+- Every internal wiki link resolves to a page that exists; the sidebar and the page set agree in both
+  directions; no page is orphaned from both Home and the sidebar; every page opens with exactly one H1.
+- No page gives the docking score an energy unit except to disclaim it.
+- The benchmark figure is checked, not trusted: any line claiming "3 of 4" or "4 of 4 within 2 A" fails, any
+  median other than 2.54 A fails, and Home, the docking page and the testing page must each say the figure
+  was carried forward rather than re-measured.
+- `Known-Limits` must cover the wet lab, Ray-Ban, settlement, the blockchain claim, revenue and Ed25519;
+  the ledger page must say in as many words that it is not a blockchain, and why.
+- No line may assert narration, settlement or lab validation as done unless the line negates it.
+- The intent count on the wiki is compared against `INTENTS.length` and every intent name must appear, so a
+  new intent cannot ship undocumented. Every host listed on the data-sources page must be one `js/api.js`
+  actually calls.
+
+The guards were mutation-checked rather than assumed: changing Home's table to "4 of 4 within 2 A, median
+1.20 A" fails the benchmark test, and misspelling one link target as `Docking-And-Scoring` fails the link
+test. Both were reverted. Two of my first-draft checks were too crude and flagged their own disclaimers —
+"it looks like a kcal/mol number" and "Nothing here has been validated in a wet lab" — so both now allow a
+negated or warning line. That is the honest limit of a regex over prose: it catches a confident false
+claim, not a carefully hedged one.
+
+Still unproven / blocked: the pages are not pushed. That needs `git push` to `AGI-Biotech-tool.wiki.git`,
+and the stored GitHub token is invalid, so publishing waits on the user running `gh auth refresh`. Two
+figures on the wiki are marked carried-forward because they cannot be re-measured here: the re-docking
+benchmark (2 of 4 within 2 A, median 2.54 A, needs the RCSB) and MD throughput (needs the server). Five
+Python failures remain in `tests/test_server_lifecycle.py`; all five need to bind a local port.
