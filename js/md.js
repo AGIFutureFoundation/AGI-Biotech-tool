@@ -9,6 +9,7 @@
 // Units: Å, ps, amu, kcal/mol.  Acceleration factor F/m -> Å/ps² is 418.4.
 import { vdwRadius, covRadius, mass as elMass } from './elements.js';
 import { contactRadius } from './dock.js';
+import { planarityForce } from './planarity.js';
 
 const ACC = 418.4;
 const KB = 0.0019872041;
@@ -96,7 +97,7 @@ export function ligandForces(ff, P, F, { repel = 3.1, krep = 4 } = {}) {
   for (let k = 0; k < A.length; k += 4) E += spring(P, F, A[k], A[k + 1], A[k + 2], A[k + 3]);
   if (ff.fourteenRef) { const T = ff.fourteen; for (let k = 0; k < T.length; k += 2) E += spring(P, F, T[k], T[k + 1], ff.fourteenRef[k / 2], 25); }
   const PL = ff.planar;
-  for (let k = 0; k < PL.length; k += 4) E += planarity(P, F, PL[k], PL[k + 1], PL[k + 2], PL[k + 3], 40);
+  for (let k = 0; k < PL.length; k += 4) E += planarityForce(P, F, PL[k], PL[k + 1], PL[k + 2], PL[k + 3], 40);
   const PR = ff.pairs;
   for (let k = 0; k < PR.length; k += 2) {
     const i = PR[k], j = PR[k + 1];
@@ -121,18 +122,9 @@ function spring(P, F, i, j, r0, k) {
   return k * dr * dr;
 }
 
-function planarity(P, F, c, a, b, d, k) {
-  const ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2];
-  const ux = P[b * 3] - ax, uy = P[b * 3 + 1] - ay, uz = P[b * 3 + 2] - az;
-  const vx = P[d * 3] - ax, vy = P[d * 3 + 1] - ay, vz = P[d * 3 + 2] - az;
-  let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-  const nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
-  const h = (P[c * 3] - ax) * nx + (P[c * 3 + 1] - ay) * ny + (P[c * 3 + 2] - az) * nz;
-  const f = -2 * k * h;
-  F[c * 3] += f * nx; F[c * 3 + 1] += f * ny; F[c * 3 + 2] += f * nz;
-  for (const o of [a, b, d]) { F[o * 3] -= f * nx / 3; F[o * 3 + 1] -= f * ny / 3; F[o * 3 + 2] -= f * nz / 3; }
-  return k * h * h;
-}
+// The sp2 planarity restraint lives in js/planarity.js. The version that used to sit here held its
+// plane normal fixed, which made its force about 19% off its own energy gradient at small
+// pyramidalisation; tests/md.test.mjs gradient-checks the replacement.
 
 // FIRE minimiser (used for the fast in-browser 3D embedding and for pose relaxation).
 export function minimize(P, forceFn, { steps = 800, dtMax = 0.12, fTol = 0.02 } = {}) {

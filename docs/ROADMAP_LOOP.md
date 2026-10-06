@@ -26,11 +26,9 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
 - [x] Dynamics force field under test, with a gradient check (iter 12)
-- [ ] Swap the planarity term in `js/md.js` for `planarityForce` from `js/planarity.js`. The md.js version
-      holds its plane normal fixed, so its force is about 19 percent off its own energy gradient at small
-      pyramidalisation. The replacement is written and gradient-checked to 1e-7; the swap is one line, held
-      back only because another session is working in md.js. Delete the recording test in tests/md.test.mjs
-      when it lands.
+- [x] Planarity term in `js/md.js` swapped for the exact-gradient one (iter 13). Measured impact on where
+      minimisation lands: negligible — 0.002 to 0.006 A RMSD, energies agreeing to 0.001. The fix is correct
+      and removes a latent hazard; it is not a result anyone would notice.
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -440,3 +438,42 @@ running the OpenMM comparison, which needs the server. The 4-case benchmark was 
 within 2 A, median 2.54 A stands. Implicit solvent and short timescales remain the honest limits of the
 dynamics regardless of this fix. Five Python failures remain in `tests/test_server_lifecycle.py`; all five
 bind a local port.
+
+### 2026-10-06 · Iteration 13 — landing the fix, and measuring that it barely matters
+
+Done: swapped the planarity term in `js/md.js` for `planarityForce` from `js/planarity.js`, removed the
+superseded implementation rather than leaving it in place unused, and replaced the test that recorded the
+defect with the test that proves the fix landed. `js/md.js` was last touched by an early commit of mine, is
+clean in the working tree, and the other session is working in `scripts/make_pitch_video.py` and
+`docs/pitchdeck.html`, so a one-line swap there was safe to make.
+
+Verified offline (`node --test tests/*.test.mjs`, 123 passed; `node --check js/md.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed; the JS-to-Python scoring cross-check, 13 passed):
+- `ligandForces` as a whole — bonds, angles, 1-4 restraints, planarity and repulsion together — is now
+  gradient-exact to under 1e-6 at every pyramidalisation tested, on a fixture that exercises both the
+  planarity term and the 1-4 restraints. Before the swap the same check failed at 6.26e-2.
+- The complete force field still conserves momentum to 1e-9 after the change.
+- The superseded in-place implementation is asserted **gone**, not merely unused: a second implementation
+  left behind is a second implementation someone calls by mistake.
+- Mutation-checked: reinstating the old term inline fails the new gradient test at 6.26e-2 with z = 0.1 A.
+  `js/md.js` was restored afterwards and `git diff --stat` confirmed only the intended 5-insertion,
+  13-deletion swap remained.
+
+**The honest part.** Last iteration left "whether the fix changes any result a user sees" unproven. Part of
+that is measurable offline, so it was measured: minimise a conjugated fragment with two sp2 centres from
+three different starting distortions, with the old term and the new one, and compare. The answer is that it
+barely matters. Residual out-of-plane distance is at most 0.001 A either way, final energies agree to about
+0.001, and the minimised geometries differ by 0.002 to 0.006 A RMSD. Both terms flatten an sp2 centre; they
+only disagree about the force on the way there, and FIRE's line search absorbed the difference.
+
+So the fix is correct, it removes a latent hazard — a force that is not a gradient does no definite work, and
+the minimiser steers on the sign of F·V together with the energy — and on the evidence available it is not a
+result anyone would notice. Both halves of that belong in the record. The original 19 percent figure was a
+real defect in the force, and it is also true that it did not propagate to the geometry.
+
+Still unproven / blocked: energy conservation over a long trajectory, where an inexact force would show up
+most clearly. The Langevin thermostat dominates the energy budget at these timescales, so measuring
+conservation means running without it and comparing against the OpenMM backend — which needs the server. The
+4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Implicit solvent and short
+timescales remain the honest limits of the in-browser dynamics. Five Python failures remain in
+`tests/test_server_lifecycle.py`; all five bind a local port.

@@ -14,8 +14,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Structure } from '../js/structure.js';
-import { buildLigandFF, ligandForces, minimize, MDEngine } from '../js/md.js';
+import { buildLigandFF, ligandForces, minimize, setFourteenRef, MDEngine } from '../js/md.js';
 import { planarityForce, planarityForces, outOfPlane } from '../js/planarity.js';
+import { readFileSync } from 'node:fs';
 
 // --- fixtures -------------------------------------------------------------------------------------------
 
@@ -323,13 +324,15 @@ test('the exact restraint vanishes at planarity and grows as the centre leaves t
   }
 });
 
-test('the exact restraint is the exact gradient, including where md.js’s version is not', () => {
+test('the restraint is the exact gradient at every pyramidalisation, not just small ones', () => {
   const st = sp2Centre();
   const ff = buildLigandFF(st);
   assert.equal(ff.planar.length / 4, 1);
   const f = (P, F) => planarityForces(ff, P, F, 40);
-  // Pyramidalise the sp2 centre on its own. Small displacements are the regime a minimiser lives in and
-  // the regime where the md.js term is furthest off.
+  // Pyramidalise the sp2 centre on its own, holding the substituents still. This is the geometry that
+  // exposed the defect in the term this one replaced: distorting the substituent plane as well made the
+  // errors cancel, and an earlier check read clean because of it. Small displacements are also the regime a
+  // minimiser spends its time in, so they matter most.
   for (const z of [0.1, 0.3, 0.9, 1.6]) {
     const coords = Array.from(st.pos);
     coords[2] = z;
@@ -356,26 +359,42 @@ test('degenerate substituent geometry contributes nothing instead of dividing by
   assert.equal(outOfPlane(P, 0, 1, 2, 3), 0);
 });
 
-test('md.js’s planarity force is NOT its exact gradient, and this records by how much', () => {
-  // This is a finding, not a preference. The md.js term holds the plane normal fixed, so its force misses
-  // the normal's dependence on the substituent positions. The error is worst at small pyramidalisation.
-  //
-  // This test asserts the defect is still there so that the number cannot drift unnoticed. When md.js is
-  // switched to js/planarity.js — the queue item in docs/ROADMAP_LOOP.md — this test should be deleted and
-  // the exact-gradient test above will cover the term.
+test('ligandForces is gradient-exact on an sp2 molecule, planarity term included', () => {
+  // This is the test that proves the swap landed. Until iteration 13 the planarity term in js/md.js held
+  // its plane normal fixed, so the whole force field was about 19 percent off its own gradient wherever an
+  // sp2 centre was pyramidalised. It now calls planarityForce, so the complete force field — bonds, angles,
+  // 1-4 restraints, planarity and repulsion together — must pass the same check the simple terms do.
   const st = sp2Centre();
   const ff = buildLigandFF(st);
-  const planarOnly = { ...ff, bonds: [], angles: [], pairs: [], fourteen: [], fourteenRef: null };
-  const f = (P, F) => ligandForces(planarOnly, P, F);
-  const coords = Array.from(st.pos);
-  coords[2] = 0.3;
-  const mdErr = worstGradientError(f, coords, 1e-5);
-  assert.ok(mdErr > 0.05,
-    `expected the known md.js planarity inexactness, but the error was only ${mdErr.toExponential(3)}; `
-    + 'if the term was fixed, delete this test');
-  assert.ok(mdErr < 0.5, `the error grew beyond what was measured: ${mdErr.toExponential(3)}`);
+  assert.equal(ff.planar.length / 4, 1, 'this fixture must exercise the planarity term');
+  assert.ok(ff.fourteen.length / 2 > 0, 'and the 1-4 restraints, since it has a double bond');
+  setFourteenRef(ff, Float64Array.from(st.pos));
 
-  // The exact version on the same geometry, for the contrast.
-  const exactErr = worstGradientError((P, F) => planarityForces(ff, P, F, 40), coords, 1e-5);
-  assert.ok(exactErr < 1e-7, `the replacement should be exact, got ${exactErr.toExponential(3)}`);
+  const f = (P, F) => ligandForces(ff, P, F);
+  for (const z of [0.1, 0.3, 0.9, 1.6]) {
+    const coords = Array.from(st.pos);
+    coords[2] = z; // pyramidalise the sp2 centre on its own: the geometry that exposed the defect
+    const err = worstGradientError(f, coords, 1e-5);
+    assert.ok(err < 1e-6,
+      `ligandForces gradient error ${err.toExponential(3)} at z=${z} A; the planarity term is inexact again`);
+  }
+});
+
+test('the whole force field still conserves momentum after the swap', () => {
+  const st = sp2Centre();
+  const ff = buildLigandFF(st);
+  setFourteenRef(ff, Float64Array.from(st.pos));
+  const P = Float64Array.from(displaced(st));
+  const F = new Float64Array(P.length);
+  ligandForces(ff, P, F);
+  for (const [d, sum] of netForce(F, ff.n).entries()) {
+    assert.ok(Math.abs(sum) < 1e-9, `net force on axis ${d} is ${sum.toExponential(2)}, should be zero`);
+  }
+});
+
+test('the superseded in-place planarity implementation is gone, not merely unused', () => {
+  // A second implementation left behind is a second implementation someone will call by mistake.
+  const src = readFileSync(new URL('../js/md.js', import.meta.url), 'utf8');
+  assert.ok(!/^function planarity\(/m.test(src), 'js/md.js still defines its own planarity function');
+  assert.match(src, /planarityForce/, 'js/md.js should call the restraint from js/planarity.js');
 });
