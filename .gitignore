@@ -14,3 +14,8 @@ assets/scenes/
 # a 210 MB master in git made the repo unpushable to GitHub, which caps a
 # single file at 100 MB. They are build output, not source.
 docs/*.mp4
+# ...except the 14 MB shareable cut, which is well under GitHub's 100 MB
+# per-file cap and is what the whitepaper and wiki embed. The 210 MB
+# master is what made this repository unpushable and stays out.
+!docs/biodao-walkthrough.mp4
+!docs/walkthrough-share.mp4

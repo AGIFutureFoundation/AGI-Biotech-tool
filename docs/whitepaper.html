@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGI BioXR — molecular research you can check</title>
+<meta name="description" content="A molecular research workspace built so every number can be traced to where it came from, or is marked as a placeholder in the output itself.">
+<style>
+:root{--bg:#070b12;--panel:#0d141f;--panel2:#111a27;--line:#1e2b3c;--ink:#e8f1ff;
+  --dim:#93a7bd;--accent:#39d98a;--accent2:#4cc9f0;--warn:#ffbe0b;--radius:12px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent2)}
+.wrap{max-width:900px;margin:0 auto;padding:0 20px}
+code{font-family:var(--mono);font-size:.87em;color:var(--accent2)}
+h2{font-size:26px;margin:0 0 12px;letter-spacing:-.01em}
+h3{font-size:18px;margin:30px 0 8px}
+p{margin:0 0 16px}
+.sub{color:var(--dim);max-width:66ch}
+section{padding:54px 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:14px}
+
+header{padding:76px 0 46px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(32px,5.4vw,50px);line-height:1.1;margin:0 0 18px;letter-spacing:-.025em}
+.lede{font-size:clamp(17px,2.1vw,19.5px);color:var(--dim);max-width:62ch;margin:0 0 26px}
+.meta{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+
+figure{margin:26px 0}
+img,video{max-width:100%;height:auto;display:block;border:1px solid var(--line);
+  border-radius:var(--radius);background:#000}
+figcaption{margin-top:10px;font-size:13.5px;color:var(--dim)}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.grid2 figure{margin:0}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.n{font-size:38px;font-weight:700;line-height:1;letter-spacing:-.02em;margin:0 0 6px}
+.cap{color:var(--dim);font-size:14px;margin:0}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:18px 0}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+td.m{font-family:var(--mono)}
+.ok{color:var(--accent)}.warn{color:var(--warn)}
+
+.honest{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:var(--radius);padding:24px}
+.honest ul{margin:12px 0 0;padding-left:20px;color:var(--dim)}
+.honest li{margin-bottom:10px}
+.honest b{color:var(--ink)}
+.marker{font-family:var(--mono);font-size:12.5px;color:var(--warn)}
+
+.cta{display:flex;gap:28px;align-items:center;flex-wrap:wrap;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+.cta img{width:168px;height:168px;border:none;background:#fff;padding:10px;border-radius:10px}
+.btn{display:inline-block;padding:11px 20px;border-radius:var(--radius);text-decoration:none;
+  font-weight:600;font-size:14.5px;background:var(--accent);color:#05210f;border:1px solid var(--accent)}
+.btn.ghost{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+footer{padding:38px 0 70px;color:var(--dim);font-size:13px}
+footer a{margin-right:16px}
+@media(max-width:600px){th:nth-child(4),td:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="eyebrow">Whitepaper · AGI Future Foundation</div>
+  <h1>Molecular research you can check.</h1>
+  <p class="lede">A drug-discovery workspace that runs in a browser or a headset, built on one rule:
+  every number it shows is either traceable to the thing that produced it, or marked in the output
+  itself as a placeholder. Nothing in between.</p>
+  <p class="meta">Updated 2026-10-05 · Open source · Contact: <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a></p>
+</div></header>
+
+<section><div class="wrap">
+  <div class="eyebrow">See it work</div>
+  <h2>Two minutes, rendered by the app itself</h2>
+  <p class="sub">The walkthrough below is produced by the software from a live session. Every figure on
+  screen comes from a real run against real public databases — nothing is staged for the film.</p>
+  <figure>
+    <video controls preload="metadata" playsinline poster="media/frame-12s.jpg">
+      <source src="biodao-walkthrough.mp4" type="video/mp4">
+      Your browser cannot play this video. The file is <code>docs/biodao-walkthrough.mp4</code>.
+    </video>
+    <figcaption>2:08 (128&nbsp;s), 1920×1080, captions burned in. A 110-second cut was asked for;
+    this is the existing render and runs 18 seconds longer. Trimming it would cut mid-caption, so the
+    real length is stated rather than the requested one claimed. A longer 3:02 cut is also in the
+    repository as <code>docs/walkthrough-share.mp4</code>.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">The problem</div>
+  <h2>A plausible number is worse than no number</h2>
+  <p class="sub">Computational drug discovery produces figures that look alike whatever their origin.
+  A docking score from a validated engine, an estimate from an unvalidated one, and a placeholder a
+  developer left in a stub all render as <code>-8.4</code>. Downstream — in a grant application, a
+  board deck, a paper — they are indistinguishable.</p>
+  <p>The failure is not that tools are wrong. It is that they are <em>silent about how right they
+  are</em>. A score with no provenance cannot be challenged, reproduced, or retracted, and the person
+  relying on it usually cannot tell which kind they are holding.</p>
+  <p>This project takes the opposite default. A value carries its origin, or it announces that it has
+  none. That constraint shaped every component below, and it is the reason several of them refuse to
+  do things their users might want.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">What it does</div>
+  <h2>A workspace, not a pipeline</h2>
+  <div class="grid2">
+    <figure><img src="media/frame-38s.jpg" alt="A protein structure in the workspace with a bound ligand and an evidence panel showing trial, interaction, domain and paper counts.">
+      <figcaption>Evidence gathered from nine public databases in one action — domains, pathways,
+      interactions, expression, population constraint, trials and literature.</figcaption></figure>
+    <figure><img src="media/frame-64s.jpg" alt="The workspace showing docking and scoring in progress.">
+      <figcaption>Pocket detection and docking run in the browser; the score updates as the compound
+      is pulled through the site.</figcaption></figure>
+  </div>
+  <h3>Structures from the real sources</h3>
+  <p>Load by gene, PDB id, UniProt accession or disease. Experimental structures come from the RCSB
+  PDB, predicted ones from AlphaFold, and per-residue confidence is displayed rather than averaged
+  away — a 70 pLDDT loop and a 95 pLDDT core are not the same evidence.</p>
+  <h3>Docking that reports its own accuracy</h3>
+  <p>A Vina-style scoring function runs in the browser, with a Python implementation checked term by
+  term against it so the two cannot silently diverge. The weights are Vina's published values. What
+  is unusual is not the function but that the repository measures it, publishes the number, and the
+  number is not flattering.</p>
+  <h3>Shared sessions with real ownership</h3>
+  <p>Several people in one molecule, on a laptop or in a headset. The server arbitrates who holds an
+  object — two clients cannot settle a grab between themselves, because at 12&nbsp;Hz each believes it
+  was first. Holds are leases, so a crashed tab releases rather than blocking the room forever.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">Evidence</div>
+  <h2>The benchmark, including the part that looks bad</h2>
+  <p class="sub">Eleven crystal ligands are pulled out of their structures and docked back blind. Five
+  land within 2&nbsp;Å. That is the honest headline, and it is worse than the four-case set this
+  replaced, which scored three of four.</p>
+  <figure><img src="media/chart-redock.svg" alt="Chart comparing ranked and best-found RMSD across eleven re-docking cases.">
+    <figcaption>Green dot: the best pose the search generated. Coloured dot: the pose the scoring
+    function ranked first. The gap between them is the finding.</figcaption></figure>
+  <p>Widening the set is what produced the drop. With four cases each result was worth 25 points, and
+  the four happened to suit a shape-and-hydrophobicity score. Eleven cases span kinase, protease,
+  nuclear-receptor, metalloenzyme and protein–protein-interface sites, and the score fell to 45%.</p>
+  <h3>Which half is broken</h3>
+  <p>A success rate says a case failed. It does not say whether the search never found the pose or the
+  scoring function found it and ranked it below something wrong — and those call for opposite work.
+  The benchmark now separates them.</p>
+  <table>
+    <tr><th>Case</th><th>Ranked</th><th>Best found</th><th>Failure mode</th></tr>
+    <tr><td>1UNL · CDK5</td><td class="m warn">6.00 Å</td><td class="m ok">1.29 Å</td><td>scoring</td></tr>
+    <tr><td>1Q41 · GSK-3β</td><td class="m warn">6.82 Å</td><td class="m ok">0.54 Å</td><td>scoring</td></tr>
+    <tr><td>1OQ5 · carbonic anhydrase</td><td class="m warn">7.50 Å</td><td class="m ok">1.63 Å</td><td>scoring</td></tr>
+    <tr><td>2BM2 · tryptase</td><td class="m warn">5.22 Å</td><td class="m ok">1.60 Å</td><td>scoring</td></tr>
+    <tr><td>2YXJ · BCL-XL</td><td class="m warn">4.59 Å</td><td class="m warn">3.86 Å</td><td>sampling</td></tr>
+    <tr><td>1R58 · MetAP2</td><td class="m warn">3.25 Å</td><td class="m warn">3.02 Å</td><td>sampling</td></tr>
+  </table>
+  <figure><img src="media/chart-ceiling.svg" alt="Bar chart: 5 of 11 succeed, 9 of 11 reachable, 11 total.">
+    <figcaption>The gap between the first two bars is what the ranking costs.</figcaption></figure>
+  <p>Four of six failures are poses the search located and the scorer mis-ranked. Perfect ranking over
+  poses already being generated would take the benchmark from 45% to 82% with no change to the search
+  at all. That is where the next work belongs, and it is a measurement rather than an intuition.</p>
+  <h3>What the benchmark cannot tell you</h3>
+  <p>Single runs are draws. The same case scored 1.44&nbsp;Å and 7.50&nbsp;Å on consecutive runs of
+  identical code, and three runs of the unmodified benchmark gave 3/11, 5/11 and 6/11. An A/B of a
+  scoring change over three runs per arm came back inconclusive for exactly that reason. Runs are now
+  seedable so both arms see identical random draws — without that, noise reads as a result.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">Architecture</div>
+  <h2>How a run becomes something a third party can verify</h2>
+  <figure><img src="media/graph-provenance.svg" alt="Graph showing a docking run, compound and target feeding a result record, which goes into a content store and a Merkle root, which can be anchored or attested.">
+    <figcaption>Every edge is code in this repository.</figcaption></figure>
+  <h3>Placeholders cannot launder themselves</h3>
+  <p>Where no model has run, a value is a marked number, not a number. The marker survives arithmetic,
+  formatting, JSON, storage and export, because it is carried by the type rather than by a convention
+  someone has to remember. Finding this was instructive: the helper written to preserve it through
+  JSON <em>did not work</em> — <code>default=</code> is never consulted for a <code>float</code>
+  subclass, so every JSON path in the repository had been silently stripping the marker, including
+  content-addressed storage.</p>
+  <p>Even a count is covered. <span class="marker">Screening of 5 compounds identified 2 [SYNTHETIC]
+  compounds with favorable binding</span> — a tally derived from placeholders is re-marked, because a
+  bare integer is the most quotable number in any document.</p>
+  <h3>Anchoring refuses placeholder data</h3>
+  <p>A Merkle root can be anchored on Monad for a timestamp a third party can check. The anchor
+  <em>refuses</em> a record containing placeholders: permanence reads as authority, and
+  "verified on-chain" attached to a stub is a claim that cannot be withdrawn. No key is ever held —
+  the software builds an unsigned transaction and a person signs it.</p>
+  <h3>Evidence that re-resolves</h3>
+  <p>Disease panels ship with verbatim quotes and identifiers, and two scripts re-ask the sources
+  whether each record still exists and still says what is claimed. The registry check covers 126
+  assertions across 46 trial records. A claim that cannot be checked is reported as a failure, not a
+  skip.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">Where it stands</div>
+  <h2>Figures, each reproducible by a command</h2>
+  <div class="cards">
+    <div class="card"><p class="n">1,265</p><p class="cap">tests, one command</p></div>
+    <div class="card"><p class="n">126/126</p><p class="cap">trial claims verified live</p></div>
+    <div class="card"><p class="n">14</p><p class="cap">public sources, no API keys</p></div>
+    <div class="card"><p class="n">1</p><p class="cap">host contacted on page load</p></div>
+  </div>
+  <h3>Data egress is a gate, not a promise</h3>
+  <p>Every outbound host is declared with what it is for and what is sent to it, and the build fails
+  on one that is not. Running it the first time found 26 undeclared hosts; most turned out to be a
+  directory that <em>describes</em> databases and never calls them, which is now a separate category —
+  a reviewer who checks one entry and finds it never contacted stops believing the whole table.</p>
+  <p>The one host contacted on load is a CDN serving the 3D engine. That is the genuine weak point in
+  "runs locally", and the inventory says so rather than listing it flatly.</p>
+  <figure><img src="media/frame-115s.jpg" alt="The workspace showing the provenance ledger with chained records.">
+    <figcaption>The session ledger: each record chained by hash to the one before it.</figcaption></figure>
+</div></section>
+
+<section><div class="wrap">
+  <div class="honest">
+    <h2>What this is not</h2>
+    <p class="sub" style="margin-bottom:0">Most of the harm a tool like this can do is by sounding
+    more certain than it is.</p>
+    <ul>
+      <li><b>Not a validated predictor.</b> The in-browser score is for ranking and teaching. It is not
+        kcal/mol, has not been validated against experiment, and is not a replacement for Vina or Glide.
+        Eleven cases is a sanity check, not a validation study.</li>
+      <li><b>Not a deployed product.</b> No cluster, no hosted instance, no user base, no service-level
+        commitment. It runs locally, for one team at a time.</li>
+      <li><b>Not clinical or regulatory.</b> Not a medical device, gives no medical advice, and a
+        supplier listing a compound is not clearance to obtain or handle it.</li>
+      <li><b>Not endorsed.</b> The disease focus reflects design intent. No partnership, sponsorship or
+        endorsement exists with any organisation working in those areas.</li>
+      <li><b>Several integrations are unverified and say so in their own output.</b> No live Monad node
+        has answered, no real wallet signature has been checked, and x402 settlement is not
+        implemented. Each returns a field stating this rather than implying otherwise.</li>
+    </ul>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">Next</div>
+  <h2>Read the code, or tell us where it is wrong</h2>
+  <p class="sub">Everything above is reproducible from the repository with a single command. We would
+  rather you checked than took our word for it.</p>
+  <div class="cta">
+    <img src="media/qr-repo.png" alt="QR code linking to the AGI-Biotech-tool repository on GitHub.">
+    <div>
+      <p style="margin-bottom:10px"><b>Scan, or clone it:</b></p>
+      <p style="margin-bottom:16px"><code>github.com/AGIFutureFoundation/AGI-Biotech-tool</code></p>
+      <p style="margin-bottom:16px"><a class="btn" href="mailto:x@agifuturefoundation.org?subject=AGI%20BioXR">Email the team</a>
+      <a class="btn ghost" href="https://github.com/AGIFutureFoundation/AGI-Biotech-tool">Open on GitHub</a></p>
+      <p class="cap" style="margin:0">Collaboration, review and correction all welcome at
+      <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a>.</p>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <a href="../index.html">Workspace</a><a href="WIKI.md">Wiki</a><a href="SPEC.md">Spec</a>
+  <a href="../PROJECT_STATUS.md">Status</a>
+  <p style="margin-top:16px">Structures from the RCSB PDB, AlphaFold DB (EMBL-EBI / DeepMind), UniProt,
+  ChEMBL and Open Targets. Trials from ClinicalTrials.gov. Literature via PubMed. Environments from
+  Poly Haven (CC0). Contact: <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a>.</p>
+</div></footer>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 400" width="1120" height="400" aria-label="Provenance graph: a docking run, compound and target produce a result record; the record goes into a content store and a Merkle root; the root can be anchored on Monad and the store attested by a signer.">
+<rect width="1120" height="400" fill="#0d141f"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#93a7bd"/></marker></defs>
+<path d="M205.0 80 C260.0 80, 260.0 190, 315.0 190" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<text x="260" y="127" fill="#93a7bd" font-size="12" font-family="monospace" text-anchor="middle">produces</text>
+<path d="M205.0 190 C260.0 190, 260.0 190, 315.0 190" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<path d="M205.0 300 C260.0 300, 260.0 190, 315.0 190" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<path d="M485.0 190 C530.0 190, 530.0 110, 575.0 110" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<text x="530" y="142" fill="#93a7bd" font-size="12" font-family="monospace" text-anchor="middle">put()</text>
+<path d="M485.0 190 C530.0 190, 530.0 270, 575.0 270" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<text x="530" y="222" fill="#93a7bd" font-size="12" font-family="monospace" text-anchor="middle">merkle</text>
+<path d="M745.0 270 C790.0 270, 790.0 270, 835.0 270" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<text x="790" y="262" fill="#93a7bd" font-size="12" font-family="monospace" text-anchor="middle">you sign</text>
+<path d="M745.0 110 C790.0 110, 790.0 110, 835.0 110" fill="none" stroke="#93a7bd" stroke-width="1.6" opacity="0.6" marker-end="url(#a)"/>
+<text x="790" y="102" fill="#93a7bd" font-size="12" font-family="monospace" text-anchor="middle">signed claim</text>
+<rect x="35.0" y="53.0" width="170" height="54" rx="10" fill="#111a27" stroke="#39d98a" stroke-width="1.6"/>
+<text x="120" y="76" fill="#e8f1ff" font-size="15" text-anchor="middle">Docking run</text>
+<text x="120" y="95" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">in the browser</text>
+<rect x="35.0" y="163.0" width="170" height="54" rx="10" fill="#111a27" stroke="#39d98a" stroke-width="1.6"/>
+<text x="120" y="186" fill="#e8f1ff" font-size="15" text-anchor="middle">Compound</text>
+<text x="120" y="205" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">SMILES / InChIKey</text>
+<rect x="35.0" y="273.0" width="170" height="54" rx="10" fill="#111a27" stroke="#39d98a" stroke-width="1.6"/>
+<text x="120" y="296" fill="#e8f1ff" font-size="15" text-anchor="middle">Target structure</text>
+<text x="120" y="315" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">PDB or AlphaFold</text>
+<rect x="315.0" y="163.0" width="170" height="54" rx="10" fill="#111a27" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="400" y="186" fill="#e8f1ff" font-size="15" text-anchor="middle">Result record</text>
+<text x="400" y="205" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">values + provenance</text>
+<rect x="575.0" y="83.0" width="170" height="54" rx="10" fill="#111a27" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="660" y="106" fill="#e8f1ff" font-size="15" text-anchor="middle">Content store</text>
+<text x="660" y="125" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">SHA-256 addressed</text>
+<rect x="575.0" y="243.0" width="170" height="54" rx="10" fill="#111a27" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="660" y="266" fill="#e8f1ff" font-size="15" text-anchor="middle">Merkle root</text>
+<text x="660" y="285" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">one hash per run</text>
+<rect x="835.0" y="83.0" width="170" height="54" rx="10" fill="#111a27" stroke="#ffbe0b" stroke-width="1.6"/>
+<text x="920" y="106" fill="#e8f1ff" font-size="15" text-anchor="middle">Attestation</text>
+<text x="920" y="125" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">who claims it</text>
+<rect x="835.0" y="243.0" width="170" height="54" rx="10" fill="#111a27" stroke="#ffbe0b" stroke-width="1.6"/>
+<text x="920" y="266" fill="#e8f1ff" font-size="15" text-anchor="middle">Monad anchor</text>
+<text x="920" y="285" fill="#93a7bd" font-size="11.5" font-family="monospace" text-anchor="middle">unsigned tx</text>
+<text x="560.0" y="386" fill="#93a7bd" font-size="13" text-anchor="middle">Every edge is code in this repository. Nothing is signed or broadcast without a person.</text>
+</svg>
