@@ -25,6 +25,12 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
       default is a stated convention and says so in its own output.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
+- [x] Dynamics force field under test, with a gradient check (iter 12)
+- [ ] Swap the planarity term in `js/md.js` for `planarityForce` from `js/planarity.js`. The md.js version
+      holds its plane normal fixed, so its force is about 19 percent off its own energy gradient at small
+      pyramidalisation. The replacement is written and gradient-checked to 1e-7; the swap is one line, held
+      back only because another session is working in md.js. Delete the recording test in tests/md.test.mjs
+      when it lands.
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -366,3 +372,71 @@ from the RCSB. Synthetic shells prove the algorithm does what it claims; they do
 are right for real protein surfaces, which are rougher and rarely sealed. The 4-case benchmark was not
 re-measured — 2 of 4 within 2 A, median 2.54 A stands. Five Python failures remain in
 `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 12 — the force must be the gradient, and in one place it was not
+
+Both open queue items still need the network, so the pick came from the preference order again: the dynamics
+engine was the last part of the chain with no JavaScript test. Done: `tests/md.test.mjs`, twenty-one cases
+over `buildLigandFF`, `ligandForces`, `minimize` and `MDEngine`, and `js/planarity.js`, a replacement for one
+term that the tests showed was wrong.
+
+The centrepiece is a central finite-difference gradient check in double precision. A force field has one
+property worth more than all the others — the force must be the negative gradient of the energy — and when
+it fails nothing in the output says so; the molecule just behaves slightly oddly in a way that reads as
+physics being hard. Running the check at three step sizes makes second-order convergence visible rather
+than assumed: 3.18e-5 at h=1e-3, 3.18e-7 at 1e-4, 2.27e-9 at 1e-5. Bonds, angles and non-bonded repulsion
+are exact.
+
+**The finding: the planarity term in `js/md.js` is not the gradient of its own energy.** It computes the
+plane normal from the three substituents and then treats it as fixed, so the force misses the normal's
+dependence on where those substituents are. Measured against the finite difference, it is about 19 percent
+off when the sp2 centre is pyramidalised by 0.3 A, falling to 0.9 percent by 1.6 A — worst at small
+displacement, which is precisely the regime a minimiser spends its time in. The FIRE minimiser steers on the
+sign of F·V together with the energy, so an inconsistent pair can make it shrink a timestep it should be
+growing, and a force that is not a gradient does no definite work.
+
+This was nearly missed. The first gradient check of the term returned 3e-10 and looked clean; that geometry
+had the substituent plane distorted too, and the errors happened to cancel. Pyramidalising the centre alone,
+holding the substituents still, is what exposed it.
+
+`js/planarity.js` is the corrected term, differentiated properly through the normalised cross product, with
+the fourth derivative taken as minus the sum of the other three so the forces sum to zero in floating point
+as well as in algebra. It is a new file rather than an edit to `js/md.js` because another session is working
+in that file; the swap is one line and is now a queue item.
+
+Verified offline (`node --test tests/*.test.mjs`, 121 passed; `node --check js/planarity.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed):
+- One force-field term per piece of topology; non-bonded pairs are exactly the 1-4 and 1-5 pairs, so nothing
+  is double-counted against a bond or angle term. Bond rest lengths shorten with order, triple < double <
+  single, with a C-C single bond at 1.52 A. The 1-3 restraint distance matches the law of cosines at 109.5
+  degrees to 1e-3 A.
+- A bond at rest costs nothing; stretched by dr it costs exactly k·dr² to 1e-6. Repulsion is exactly zero at
+  and beyond its cutoff, rises monotonically inside it, matches krep·(repel−r)² to 1e-6, and pushes the pair
+  apart rather than together.
+- Forces sum to zero to 1e-9 — Newton's third law, which a sign error in any term would break.
+- Minimisation lowers the energy, returns every bond to within 0.1 A of its rest length, produces no NaN, and
+  moves an already-settled geometry by under 0.05 A on a second pass.
+- Dynamics over 400 steps: no NaN, both bonds still between 1.2 and 2.0 A so the molecule did not come apart,
+  kinetic temperature physical for a 300 K bath, finite ligand RMSD. A second relaxation never raises the
+  energy.
+- A frozen protein does not move by a single float. The steric guard separates a real clash, shifts no atom
+  further than its 0.25 A limit, reports the fix count, and leaves an exactly coincident pair alone instead
+  of dividing by zero.
+- The replacement restraint: zero at planarity, monotonically rising with displacement, gradient-exact to
+  1e-7 at every pyramidalisation tested, momentum-conserving to 1e-12, and silent on degenerate collinear
+  substituents where no plane exists.
+- The md.js defect is asserted as a bounded fact in its own test, between 5 and 50 percent, so the number
+  cannot drift unnoticed and whoever fixes the term is told to delete the test.
+
+Two of my own test expectations were wrong rather than the code. The repulsion test first moved a bonded atom
+and measured the bond term by mistake, which drowned the effect it was looking for; it now strips the bonded
+terms and varies one pair. And `stericGuard` looked broken in a probe — it returned undefined and the ligand
+did not move — until reading it showed it writes to the engine's own `lp` buffer, records its count in
+`lastGuardFixes`, and deliberately skips coincident atoms. The code was right on all three counts.
+
+Still unproven / blocked: whether fixing the planarity term changes any result a user sees. It should matter
+most to conformer relaxation, but that is an expectation and not a measurement, and measuring it means
+running the OpenMM comparison, which needs the server. The 4-case benchmark was not re-measured — 2 of 4
+within 2 A, median 2.54 A stands. Implicit solvent and short timescales remain the honest limits of the
+dynamics regardless of this fix. Five Python failures remain in `tests/test_server_lifecycle.py`; all five
+bind a local port.

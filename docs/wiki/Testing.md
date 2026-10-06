@@ -8,7 +8,7 @@ right now is marked as carried forward rather than restated as fresh.
 | Command | Result |
 | --- | --- |
 | `.venv/bin/python -m pytest tests/ -q` | **1438 passed**, 55 skipped, 1 xfailed, **5 failed** |
-| `node --test tests/*.test.mjs` | **100 passed**, 0 failed |
+| `node --test tests/*.test.mjs` | **121 passed**, 0 failed |
 
 The five Python failures are all in `tests/test_server_lifecycle.py` and all need to bind a local port,
 which the environment these were run in refuses. They are an environment limitation, not a regression, and
@@ -16,7 +16,7 @@ they are reported here rather than filtered out of the count.
 
 ## The JavaScript suites
 
-All eight run with `node --test`, no browser, no network, no server.
+All nine run with `node --test`, no browser, no network, no server.
 
 | Suite | Cases | What it proves |
 | --- | --- | --- |
@@ -27,6 +27,7 @@ All eight run with `node --test`, no browser, no network, no server.
 | `tests/torsion.test.mjs` | 14 | Torsion geometry exactly, plus the torsional search discipline |
 | `tests/poses.test.mjs` | 14 | Binding-mode clustering, and whether the score discriminated between modes |
 | `tests/pockets.test.mjs` | 12 | Pocket detection on hollow shells, a solid ball, and a surface dimple |
+| `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |
 
 ### Why synthetic geometry
@@ -38,6 +39,9 @@ these suites build receptors and ligands where the right answer follows from the
   3.7 Å, a hydrogen bond at 2.9 Å, a salt bridge at 2.9 Å, a hydrophobic contact at 3.8 Å — and a residue
   30 Å away that must never appear in the output.
 - **Refinement** gets a carbon cup with one obvious seat, so "did it find the minimum" has an answer.
+- **The force field** gets a central finite-difference gradient check in double precision at three step
+  sizes, so second-order convergence is visible rather than assumed. The force must be the negative gradient
+  of the energy; when it is not, a minimiser can be steered the wrong way and nothing in the output says so.
 - **Pocket detection** gets hollow spheres whose interior free volume follows from the radius and the probe
   margin, a solid ball with no interior at all, and a shallow dimple pressed into a plate. The dimple must
   not outrank the sealed cavity — if pocket detection picks the wrong site, everything downstream runs
@@ -59,6 +63,7 @@ Not a hypothetical list. These were found by a test, not by use:
 | A flat detail cap let hydrophobic contacts crowd out the one π-stacking record | `analysis` |
 | "load LRRK2" arrives from a recogniser as "load lark two" and matched nothing | `voice` |
 | The flexible-refinement pass loop seeded its running best at infinity, so it could never stop on the first pass | `torsion` |
+| The planarity restraint in `js/md.js` holds its plane normal fixed, so its force is about 19% off its own energy gradient | `md` |
 
 Pocket detection, by contrast, was found correct on every synthetic case put to it, including the one that
 surprised: removing every other atom from a shell halves its atom count but leaves the survivors about
