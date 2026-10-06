@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 3</span>
-      <span class="tag on">18 offline tests passing</span>
+      <span class="tag">iteration 4</span>
+      <span class="tag on">33 offline tests passing</span>
       <span class="tag on">110 s film published</span>
       <span class="tag on">11 offline tests passing</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,23 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 4</div>
+      <div>
+        <h3>The spoken-command parser under test</h3>
+        <p>Fifteen offline cases over <code>parseCommand</code>, which is pure and needs no microphone.
+          Run with <code>node --test tests/voice.test.mjs</code>.</p>
+        <ul class="checks">
+          <li>Thirteen plain commands reach the intent meant; targets load with or without articles</li>
+          <li>A four-character code reads as a structure, not a gene</li>
+          <li>An unintelligible colour returns null rather than a guess</li>
+          <li>Silence, "um" and unrelated speech return unknown and never act</li>
+          <li>Every published example parses to its own intent, so help text cannot go stale</li>
+          <li>Bug fixed: "load LRRK2" arrives as "load lark two" and matched nothing; a spoken trailing digit now resolves</li>
+          <li class="no">Real speech input — no microphone or Web Speech API offline</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">5 Oct<br>iter 3</div>
       <div>
