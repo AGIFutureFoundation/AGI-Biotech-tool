@@ -21,3 +21,6 @@ docs/*.mp4
 !docs/walkthrough-share.mp4
 .keys/
 !docs/pitch.mp4
+!docs/investor.mp4
+!docs/investor-web.mp4
+!docs/investor-vertical.mp4

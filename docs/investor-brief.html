@@ -1,0 +1,267 @@
+<title>biodao investor brief</title>
+<style>
+  /* Layout: the film leads, then a numbered brief that reads top to bottom like a memo, with evidence
+     plates where a claim needs backing. Dark-first, continuous with the product and the deck. */
+  :root {
+    --ink: #e6eef8; --ink-dim: #8ea3bb; --ink-faint: #5d718a;
+    --bg: #070b11; --bg-raised: #0d1420; --bg-plate: #111a27; --line: #1d2a3a;
+    --accent: #39d98a; --accent-2: #4cc9f0; --warn: #ffbe0b; --bad: #ff5d73;
+    --display: "Fraunces", Georgia, serif;
+    --body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+      --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+      --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+    --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+    --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.6; }
+  .wrap { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
+  h1 { font-family: var(--display); font-size: clamp(2.2rem, 6vw, 3.6rem); letter-spacing: -0.02em; margin: 0;
+       text-wrap: balance; line-height: 1.1; }
+  h2 { font-family: var(--display); font-size: clamp(1.4rem, 3.2vw, 2rem); margin: 0 0 0.6rem; text-wrap: balance; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.3rem; }
+  p { margin: 0 0 0.9rem; color: var(--ink-dim); }
+  p.lead { font-size: 1.1rem; color: var(--ink); }
+  strong { color: var(--ink); font-weight: 600; }
+  a { color: var(--accent-2); }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: 0.6rem; }
+  header { padding-block: clamp(36px, 7vw, 60px) 16px;
+    background: radial-gradient(900px 340px at 12% -20%, rgba(57,217,138,0.10), transparent 60%), var(--bg); }
+  .mark { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 0.8rem;
+          color: var(--ink-dim); margin-bottom: 1rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+
+  .film { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 22px; }
+  .film video { display: block; width: 100%; aspect-ratio: 16/9; max-width: 100%; background: #000; }
+  .film .cap { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; padding: 11px 15px;
+               font-family: var(--mono); font-size: 0.75rem; color: var(--ink-faint); border-top: 1px solid var(--line); }
+  .nofilm { padding: 26px 18px; text-align: center; color: var(--ink-dim); font-size: 0.93rem; }
+
+  section { padding-block: 30px; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+  .num { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  .plate { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .plate p { margin: 0; font-size: 0.9rem; }
+  .plate .rail { display: block; width: 100%; height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 10px; }
+
+  .big { font-family: var(--mono); font-size: 2rem; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+  .big small { display: block; font-family: var(--body); font-size: 0.78rem; color: var(--ink-faint); margin-top: 7px; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-plate); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.89rem; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.1em;
+       color: var(--ink-faint); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num2 { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--accent); } .fail { color: var(--bad); }
+
+  .limits { border-left: 3px solid var(--warn); padding-left: 15px; }
+  .limits li { color: var(--ink-dim); margin-bottom: 0.5rem; font-size: 0.94rem; }
+  ul { padding-left: 20px; margin: 0 0 0.8rem; }
+  li { color: var(--ink-dim); margin-bottom: 0.35rem; }
+
+  .assets { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .asset { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 10px; padding: 13px 15px; }
+  .asset b { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+  .asset span { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); }
+
+  .cta { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 20px;
+         display: grid; grid-template-columns: 1fr 168px; gap: 22px; align-items: start; margin-block: 10px 36px; }
+  @media (max-width: 680px) { .cta { grid-template-columns: 1fr; } }
+  #qr { width: 160px; height: 160px; background: #fff; border-radius: 10px; padding: 9px; }
+  #qr canvas, #qr img { width: 100%; height: 100%; display: block; }
+  .qr-cap { font-family: var(--mono); font-size: 0.67rem; color: var(--ink-faint); text-align: center; margin-top: 7px; }
+  .contact { font-family: var(--mono); font-size: 1rem; color: var(--ink); word-break: break-all; }
+  button { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+           padding: 9px 14px; font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  footer { padding-block: 22px 36px; color: var(--ink-faint); font-size: 0.8rem; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<header>
+  <div class="wrap">
+    <div class="mark"><span class="dot"></span> AGI FUTURE FOUNDATION · INVESTOR BRIEF</div>
+    <h1>biodao.blockchain</h1>
+    <p class="lead" style="margin-top:0.9rem;max-width:60ch">Drug discovery software that an AI agent can
+      operate, pay for, and be held to. Built for the diseases nobody else is staffing.</p>
+    <div class="film">
+      <video id="film" controls playsinline preload="metadata" hidden></video>
+      <div class="nofilm" id="nofilm">The 120-second brief is being attached.</div>
+      <div class="cap">
+        <span>120 s · 720p on this page, 1080p master in the repo</span>
+        <span>silent cut · narration script ready</span>
+        <span>every figure from a command that ran</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <div class="num">01 · WHY NOW</div>
+  <h2>The next user of scientific software is not a person</h2>
+  <p>An agent can already read a paper, write code and call an API. What it cannot do is run a discovery
+    workflow, because the software has no tool schema, no way to pay per call, and no way to prove afterwards
+    which system produced a number. Whoever builds that surface first owns the layer the others plug into.</p>
+</section>
+
+<section>
+  <div class="num">02 · WHAT IS BUILT</div>
+  <h2>A workspace, and the machinery around it</h2>
+  <div class="grid2">
+    <div class="plate"><span class="rail"></span><h3>Molecular workspace</h3><p>Structures, pocket detection, docking, molecular dynamics, interaction analysis and library screening — in a browser or a headset.</p></div>
+    <div class="plate"><span class="rail"></span><h3>Agent surface</h3><p>22 typed tools. An MCP client lists them and drives a live session; verified end to end against a running browser.</p></div>
+    <div class="plate"><span class="rail"></span><h3>Hands-free operation</h3><p>Voice commands and WebXR hand tracking, so the workspace runs with no keyboard and no controllers.</p></div>
+    <div class="plate"><span class="rail"></span><h3>Open data spine</h3><p>Fourteen public databases. No account and no API key anywhere in the stack.</p></div>
+    <div class="plate"><span class="rail"></span><h3>Agent economics</h3><p>x402 payment challenges, NANDA discovery documents, OML-style fingerprints signing every result.</p></div>
+    <div class="plate"><span class="rail"></span><h3>Provenance</h3><p>A SHA-256 chain over every run. Alter one record and verification names it.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="num">03 · WHAT IS NEWLY PROVEN</div>
+  <h2>Thirty-three tests that run with no network</h2>
+  <p>Added over the past two days, each verified by a command in the repository rather than asserted here.</p>
+  <div class="grid3">
+    <div class="plate"><div class="big">33<small>offline tests · node --test, pytest</small></div></div>
+    <div class="plate"><div class="big">22<small>JavaScript · analysis and voice parsing</small></div></div>
+    <div class="plate"><div class="big">11<small>Python · payment, discovery, signing</small></div></div>
+  </div>
+  <p style="margin-top:14px"><strong>Two real defects were caught, and both would have reached a user.</strong>
+    A flat limit on stored contacts was hiding the single aromatic-stacking record a chemist actually reads,
+    while the counts stayed correct. And every spoken gene symbol ending in a digit silently failed to load,
+    because a speech recogniser returns "lark two" for LRRK2 and letter-matching never got close. Neither
+    shows up without tests, and neither would have been visible in a demo.</p>
+</section>
+
+<section>
+  <div class="num">04 · THE NUMBER WE LEAD WITH</div>
+  <h2>Our docking is honest about where it fails</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Complex</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>MAO-B · safinamide</td><td class="num2">1.20 Å</td><td class="num2">−9.62</td><td class="num2">−10.01</td><td class="pass">pass</td></tr>
+        <tr><td>Oestrogen receptor · 4-OHT</td><td class="num2">1.24 Å</td><td class="num2">−9.24</td><td class="num2">−10.13</td><td class="pass">pass</td></tr>
+        <tr><td>Thrombin · inhibitor</td><td class="num2">3.83 Å</td><td class="num2">−11.03</td><td class="num2">−8.34</td><td class="fail">fail</td></tr>
+        <tr><td>BCL-XL · ABT-737</td><td class="num2">4.04 Å</td><td class="num2">−9.96</td><td class="num2">−6.92</td><td class="fail">fail</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:12px"><strong>Two of four within 2 Å, median 2.54 Å.</strong> Good enough to triage a
+    library and decide what to look at first; not good enough to predict affinity. We publish the failures
+    because the first thing a serious buyer does is run their own controls, and a number that collapses on
+    contact costs more than it ever earned.</p>
+</section>
+
+<section>
+  <div class="num">05 · WHY IT IS DEFENSIBLE</div>
+  <h2>The hard part is not the viewer</h2>
+  <div class="grid3">
+    <div class="plate"><h3>Protocol surface</h3><p>Tools, payment challenges, discovery documents and signatures are one registry. A competitor rebuilds a spine, not a feature.</p></div>
+    <div class="plate"><h3>Evidence discipline</h3><p>Benchmarks published with failures, offline tests, provenance on every run. That is what a regulated buyer audits.</p></div>
+    <div class="plate"><h3>Disease focus</h3><p>Sixty curated targets across ALS, Parkinson's and paediatric orthopaedics, verified against UniProt rather than scraped.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="num">06 · WHO PAYS</div>
+  <h2>Three buyers, three reasons</h2>
+  <ul>
+    <li><strong>Disease foundations.</strong> A target and a grant, no computational team. They buy a workspace and a screen.</li>
+    <li><strong>Pharma and biotech.</strong> An agent-operable workspace behind their own firewall, with an audit trail.</li>
+    <li><strong>Agent platforms.</strong> They need a scientific tool their agents can call and pay for.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num">07 · HONEST LIMITS</div>
+  <h2>What this is not, yet</h2>
+  <ul class="limits">
+    <li><strong>Docking is triage, not prediction.</strong> Two of four, stated above.</li>
+    <li><strong>Payments do not settle.</strong> The 402 challenge is real; the transfer is not implemented.</li>
+    <li><strong>A hash chain is not a blockchain.</strong> It makes tampering detectable; it reaches no consensus.</li>
+    <li><strong>Hand tracking is untested on hardware.</strong> Written to the WebXR spec and verified in code, not yet worn.</li>
+    <li><strong>No revenue and no signed customer yet.</strong> This brief is about what is built and measured.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num">08 · THE ASK</div>
+  <h2>Fund the scoring function</h2>
+  <p>The benchmark is the ceiling on everything else we sell. Capital goes to the search and rescoring work
+    that moves two of four toward the field standard, hardware testing on Quest and Vision Pro, and wiring
+    payment settlement to a facilitator.</p>
+</section>
+
+<section>
+  <div class="num">09 · ASSETS</div>
+  <h2>What you can share</h2>
+  <div class="assets">
+    <div class="asset"><b>Investor brief</b><span>120 s · 16:9 · this page</span></div>
+    <div class="asset"><b>Vertical teaser</b><span>30 s · 9:16 · social</span></div>
+    <div class="asset"><b>Product walkthrough</b><span>110 s · 16:9 · separate deck</span></div>
+    <div class="asset"><b>Whitepaper</b><span>sections · intake form</span></div>
+    <div class="asset"><b>Build log</b><span>what each iteration proved</span></div>
+  </div>
+</section>
+
+<div class="cta">
+  <div>
+    <div class="eyebrow">Contact</div>
+    <h2>Start a conversation</h2>
+    <p style="margin-top:0.5rem">Tell us which of the three you are and we will come back with a specific next step.</p>
+    <p><span class="contact">x@agifuturefoundation.org</span></p>
+    <button type="button" id="copy">Copy email</button>
+  </div>
+  <div>
+    <div id="qr" aria-label="QR code linking to this brief"></div>
+    <div class="qr-cap">Scan to open and share</div>
+  </div>
+</div>
+</main>
+
+<footer><div class="wrap">biodao.blockchain — powered by AGI Corp · AGI Future Foundation. Figures come from runs
+  of the shipped code, not projections.</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  var FILM_URL = "/_blob/32a01f3b59c3cee1a594aa50827c48fb";
+  (function attach() {
+    var v = document.getElementById('film'), n = document.getElementById('nofilm');
+    if (!FILM_URL || FILM_URL === "FILM_ASSET") return;
+    v.src = FILM_URL; v.hidden = false; n.hidden = true;
+  })();
+  (function qr() {
+    var host = document.getElementById('qr');
+    if (!host || typeof QRCode === 'undefined') return;
+    try { new QRCode(host, { text: location.href, width: 300, height: 300, colorDark: '#07110c',
+      colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { host.remove(); }
+  })();
+  document.getElementById('copy').addEventListener('click', function () {
+    var b = this, addr = 'x@agifuturefoundation.org';
+    var done = function (t) { b.textContent = t; setTimeout(function () { b.textContent = 'Copy email'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(addr).then(function () { done('Copied'); }, function () { done('Select the address above'); });
+    } else done('Select the address above');
+  });
+</script>

@@ -92,3 +92,26 @@ command silently failed. A spelled-out trailing number is now also offered as a 
 vocabulary matcher and to the no-vocabulary path, so "sod one" resolves to SOD1.
 
 Still unproven: real speech input (no microphone and no Web Speech API offline); every HTTP route.
+
+### 2026-10-06 · Iteration 5 — investor brief, 120 s film, vertical social cut
+
+Done: `scripts/make_investor_video.py` (new file, so it does not collide with the other session's
+uncommitted edits to make_pitch_video.py) renders a nine-slide 120 s investor cut leading with what is
+newly proven, plus a purpose-built 27.5 s vertical teaser. `docs/investor-brief.html` published as an
+artifact with the film attached.
+
+Verified offline:
+- `ffprobe`: investor.mp4 is 120.0 s at 1920×1080; investor-vertical.mp4 is 27.5 s at 1080×1920.
+- Two frames inspected. The proof slide reads correctly and a caption that touched its plate border was
+  shortened before shipping.
+- Shares the FIGURES table with the walkthrough film, so a number cannot differ between the two.
+
+Discarded after inspection: letterboxing the 16:9 deck into 9:16 for social. The body text came out about
+four millimetres tall on a phone, so the vertical cut was rebuilt natively at 1080×1920 with six large
+cards instead.
+
+Still unproven / blocked: narration (Higgsfield workspace out of credits, macOS speech blocked by the
+sandbox, so all cuts are silent and docs/pitch_narration.txt still waits); the artifact store refused a
+12.8 MB upload twice, so the page carries a 4 MB 720p copy while the 1080p master stays in the repo.
+No revenue, no signed customer, and no team or raise figures: those are the user's to supply, not mine
+to invent.
