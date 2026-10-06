@@ -109,10 +109,10 @@ Measured 6 October 2026. Two suites, both offline.
 
 ```
 $ .venv/bin/python -m pytest tests/ -q
-5 failed, 1438 passed, 55 skipped, 1 xfailed, 43 warnings in 19.08s
+5 failed, 1455 passed, 55 skipped, 1 xfailed, 43 warnings in 231.69s (0:03:51)
 
 $ node --test tests/*.test.mjs
-pass 208  fail 0
+pass 224  fail 0
 ```
 
 **The five failures are stated rather than filtered.** All five are in
@@ -121,7 +121,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-9,740 lines of test code across 37 Python files and 14 JavaScript files. The
+10,311 lines of test code across 39 Python files and 15 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -545,14 +545,14 @@ corrections to numbers that had drifted since it was written.
 
 | Claim | Command |
 |---|---|
-| 5 failed, 1438 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
+| 5 failed, 1455 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
-| 208 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 9,740 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
-| 37 Python and 14 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
-| 66 modules import cleanly | `make imports` |
-| every JS module reachable | `make reachable` |
-| 27,161 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
+| 224 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
+| 10,311 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 39 Python and 15 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
+| 85 modules import cleanly | `make imports` |
+| 28 of 30 JS modules reachable from the app; 2 staged, 0 dead | `make reachable` |
+| 27,377 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
 | 30 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
 | 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` |

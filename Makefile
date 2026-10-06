@@ -4,24 +4,34 @@
 # wrong interpreter produces a passing run that proves nothing.
 PY := .venv/bin/python
 
-.PHONY: help test imports reachable citations trials verify inventory serve egress llm
+.PHONY: help test jstest imports reachable citations trials verify inventory serve egress llm wiki
 .DEFAULT_GOAL := help
 
 help:
 	@echo "make test       full pytest suite"
+	@echo "make jstest     the JavaScript suites (node --test)"
 	@echo "make imports    every module under server/ and scripts/ imports"
 	@echo "make reachable  no orphaned JS modules"
 	@echo "make citations  every identifier in all 5 panels resolves (hits the network)"
 	@echo "make trials     every cited trial still says what the panel claims (network)"
-	@echo "make verify     test + imports + reachable + egress"
+	@echo "make verify     test + jstest + imports + reachable + egress"
 	@echo "make inventory  rebuild the compound inventory from FILES=..."
 	@echo "make anchor     build an unsigned Monad anchor for RESULTS=..."
 	@echo "make egress     every host the app can contact, declared and checked"
 	@echo "make llm        is an LLM provider configured and reachable?"
+	@echo "make wiki       publish docs/wiki to the GitHub wiki (checks pages first)"
 	@echo "make serve      run the app on http://localhost:8000"
 
 test:
 	$(PY) -m pytest tests/ -q
+
+# Fifteen .test.mjs files existed before this target did and nothing ran them --
+# not CI, not `make verify`, not any other target. The `node --check js/` job
+# checks syntax only, so the JavaScript half of this repository was being parsed
+# and never executed. Quoted glob: the shell must not expand it, because node
+# resolves a bare `tests/` as a module path and fails.
+jstest:
+	node --test "tests/*.test.mjs"
 
 # The single check that would have caught this repo's three worst bugs: an API
 # layer that raised NameError on import, a module missing a typing import, and
@@ -42,6 +52,10 @@ citations:
 trials:
 	$(PY) scripts/verify_trial_claims.py
 
+# Checks the pages before it publishes, and refuses to push ones that fail.
+wiki:
+	$(PY) scripts/publish_wiki.py
+
 # Reads LLM_API_KEY from your environment and never anywhere else, and prints
 # the endpoint but never the key. Not in `verify`: an LLM is optional.
 llm:
@@ -52,7 +66,7 @@ llm:
 egress:
 	$(PY) scripts/check_egress.py
 
-verify: test imports reachable egress
+verify: test jstest imports reachable egress
 
 inventory:
 	@test -n "$(FILES)" || { echo 'usage: make inventory FILES="a.pdf b.pdf"'; exit 1; }

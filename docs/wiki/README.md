@@ -10,18 +10,24 @@ top to bottom. These are short pages for someone who arrived from a search resul
 ## Publishing
 
 ```bash
-git clone https://github.com/AGIFutureFoundation/AGI-Biotech-tool.wiki.git /tmp/biodao-wiki
-cp docs/wiki/*.md /tmp/biodao-wiki/
-rm /tmp/biodao-wiki/README.md          # this file is instructions, not a wiki page
-cd /tmp/biodao-wiki && git add -A && git commit -m "Sync wiki from docs/wiki" && git push
+make wiki            # checks the pages, then pushes them
 ```
 
-The wiki repository has to be initialised once from the web interface — GitHub will not accept a push to
-`<repo>.wiki.git` until the wiki has at least one page. Create any page in the browser, then push over it.
+or `.venv/bin/python scripts/publish_wiki.py --dry-run` to see what it would publish without
+publishing it. It derives the wiki URL from `origin`, so a fork publishes to its own wiki, and it runs
+`tests/wiki.test.mjs` first and refuses to push pages that fail. This used to be a block of shell to paste
+by hand, which is how a wiki drifts from the repository that is meant to be its source: what gets pushed
+is whatever was in the clipboard.
 
-Or paste by hand: each filename is the page title with hyphens for spaces, which is exactly how GitHub
-names wiki pages. `Home.md` is the landing page and `_Sidebar.md` is the navigation rail; both names are
-GitHub conventions and must not be changed.
+The wiki repository has to be initialised once from the web interface — GitHub will not accept a push to
+`<repo>.wiki.git` until the wiki has at least one page, and no REST or GraphQL endpoint creates one.
+Create any page in the browser, then publish over it; the command detects this case and prints the link
+rather than failing with git's "Repository not found", which reads like a permissions problem and is not
+one.
+
+Each filename is the page title with hyphens for spaces, which is exactly how GitHub names wiki pages.
+`Home.md` is the landing page and `_Sidebar.md` is the navigation rail; both names are GitHub conventions
+and must not be changed. `README.md` is this file and is never published.
 
 ## Rules these pages follow
 

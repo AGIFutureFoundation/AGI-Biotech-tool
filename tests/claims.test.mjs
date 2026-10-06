@@ -99,11 +99,19 @@ test('the claimed JavaScript test count is the number of cases declared', () => 
 test('the whitepaper states the Python result honestly, failures included', () => {
   // The number that matters is not the flattering one. Five tests fail here because they bind a local port
   // and the sandbox refuses; the document must say so rather than quoting a clean run.
-  assert.match(WHITEPAPER, /5 failed, 1438 passed/,
-    'the suite line must carry the failures alongside the passes');
+  //
+  // What is asserted is the SHAPE, not the passing count. Pinning the literal "1438 passed" contradicted
+  // this file's own opening note -- two sessions commit here concurrently, so that figure moves between
+  // runs, and the assertion went red every time either of them added a test. A red test that means "someone
+  // wrote a test" trains people to edit the number until it goes green, which is exactly the habit this
+  // suite exists to prevent. The failure count stays pinned: that one is a property of the environment,
+  // and if it changes the document genuinely needs rereading.
+  const suite = WHITEPAPER.match(/(\d+) failed, ([\d,]+) passed/);
+  assert.ok(suite, 'the suite line must carry the failures alongside the passes');
+  assert.equal(Number(suite[1]), 5, 'the five sandbox port-binding failures must still be stated');
   assert.match(WHITEPAPER, /bind a local (TCP )?port/,
     'and must say why those five fail, so a reader can judge whether it matters to them');
-  assert.ok(!/^\s*1438 passed[^,]*$/m.test(WHITEPAPER),
+  assert.ok(!new RegExp(`^\\s*${suite[2]} passed[^,]*$`, 'm').test(WHITEPAPER),
     'the passing count must never appear without its failures');
 });
 
