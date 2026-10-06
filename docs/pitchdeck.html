@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>biodao pitch deck</title>
 <style>
   /* Layout: the film first, then the deck as a vertical run of 16:9 slides, then the ask.
@@ -85,6 +90,8 @@
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
 
 <header>
   <div class="wrap">
@@ -216,12 +223,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  // The video lives in this artifact's asset store; its URL is written here at publish time.
-  var VIDEO_URL = "/_blob/e7c6f7580a634aa3eaab435e43328c8f";
+  // pitch.mp4 sits beside this page, which is what scripts/make_pitch_video.py
+  // writes by default. The previous value was an artifact asset-store path
+  // (/_blob/...) that resolves only inside the published artifact, so a
+  // repository-hosted copy of this deck showed an empty player.
+  var VIDEO_URL = "pitch.mp4";
   (function attachFilm() {
     var v = document.getElementById('pitch'), n = document.getElementById('nofilm');
     if (!VIDEO_URL || VIDEO_URL === "ASSET_URL") return;
-    v.src = VIDEO_URL; v.hidden = false; n.hidden = true;
+    // The fallback stays up until the video actually loads. It used to be
+    // hidden the moment the src was set, so a 404 left a blank box with no
+    // explanation -- the one case the message exists for.
+    v.addEventListener('loadeddata', function () { v.hidden = false; n.hidden = true; });
+    v.addEventListener('error', function () {
+      v.hidden = true; n.hidden = false;
+      n.textContent = 'The film is not in this copy. Render it with ' +
+        '.venv/bin/python scripts/make_pitch_video.py (writes docs/pitch.mp4).';
+    });
+    v.src = VIDEO_URL;
   })();
   (function drawQR() {
     var host = document.getElementById('qr');
@@ -236,3 +255,5 @@
     else done('Select the address above');
   });
 </script>
+</body>
+</html>

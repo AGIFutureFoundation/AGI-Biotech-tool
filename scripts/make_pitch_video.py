@@ -36,22 +36,88 @@ ACCENT2 = (76, 201, 240)
 WARN = (255, 190, 11)
 BAD = (255, 93, 115)
 
-FONTS = {
-    "display": "/System/Library/Fonts/Supplemental/Georgia.ttf",
-    "display_b": "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
-    "mono": "/System/Library/Fonts/Menlo.ttc",
-    "body": "/System/Library/Fonts/Helvetica.ttc",
+# Candidates per role, most-wanted first, across macOS, common Linux packages
+# and Windows. The old table was macOS-only with a macOS fallback, so on any
+# other machine every lookup reached ImageFont.load_default() -- a bitmap face
+# that ignores the requested size. The 150px title then rendered a few pixels
+# tall on a 1920x1080 slide, and the render "succeeded".
+FONT_CANDIDATES = {
+    "display": [
+        "/System/Library/Fonts/Supplemental/Georgia.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+        "/usr/share/fonts/TTF/DejaVuSerif.ttf",
+        "C:/Windows/Fonts/georgia.ttf",
+    ],
+    "display_b": [
+        "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
+        "/usr/share/fonts/TTF/DejaVuSerif-Bold.ttf",
+        "C:/Windows/Fonts/georgiab.ttf",
+    ],
+    "mono": [
+        "/System/Library/Fonts/Menlo.ttc",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+        "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
+        "C:/Windows/Fonts/consola.ttf",
+    ],
+    "body": [
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+    ],
 }
+
+_FONT_CACHE = {}
+_WARNED = set()
 
 
 def font(kind, size):
-    path = FONTS[kind]
-    if not os.path.exists(path):
-        path = "/System/Library/Fonts/Helvetica.ttc"
-    try:
-        return ImageFont.truetype(path, size)
-    except OSError:
-        return ImageFont.load_default()
+    """A scalable face for `kind` at `size`, or a loud failure.
+
+    Falling back to load_default() silently is worse than not rendering: the
+    frames come out looking like a bug in the design rather than a missing
+    font, and nothing in the output says which it was.
+    """
+    key = (kind, size)
+    if key in _FONT_CACHE:
+        return _FONT_CACHE[key]
+
+    for path in FONT_CANDIDATES[kind]:
+        if not os.path.exists(path):
+            continue
+        try:
+            _FONT_CACHE[key] = ImageFont.truetype(path, size)
+            return _FONT_CACHE[key]
+        except OSError:
+            continue
+
+    # Nothing scalable for this role. Try any other role's fonts before giving
+    # up -- a serif where a mono was wanted still reads at the right size.
+    for other, paths in FONT_CANDIDATES.items():
+        if other == kind:
+            continue
+        for path in paths:
+            if os.path.exists(path):
+                try:
+                    f = ImageFont.truetype(path, size)
+                    if kind not in _WARNED:
+                        print(f"  note: no {kind} font found; using {os.path.basename(path)}")
+                        _WARNED.add(kind)
+                    _FONT_CACHE[key] = f
+                    return f
+                except OSError:
+                    continue
+
+    raise SystemExit(
+        f"No scalable font found for '{kind}'. Pillow's default face ignores the "
+        f"requested size, so a {size}px heading would render a few pixels tall on a "
+        f"{W}x{H} frame and the video would look broken rather than fail.\n"
+        f"Install one: apt-get install fonts-dejavu-core, or dnf install dejavu-fonts.")
 
 
 # The single source of truth for the numbers on screen. Edit here, and the slides follow.
