@@ -1,19 +1,26 @@
-"""Integration between biotech databases and molecular research pipeline.
+"""Biotech database results feeding the molecular research pipeline.
 
-Enables:
-- Query 29 biotech databases for compounds, targets, literature
-- Federate results across databases
-- Enrich molecular analysis with biological context
-- Track research provenance from query through analysis
+History: this module used to return the same hardcoded aspirin SMILES for every compound query, a fake
+PMID 12345678 by 'Smith J, Doe A' for every literature query, and an SOD1 structure for every target;
+get_database_stats() reported a '1.5B+' record total summed from capacity strings. All of that is gone.
+Everything below is backed by real requests in db_clients.py; when a service fails, the method returns
+fewer (or no) results and records the error in self.errors rather than raising or inventing data.
 """
 
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Tuple
+
+import db_clients as dbc
+
+
+def _now():
+    return datetime.now(timezone.utc).isoformat()
+
 
 @dataclass
 class CompoundSource:
-    """Compound sourced from a biotech database."""
+    """Compound record retrieved from a database."""
     database: str
     compound_id: str
     smiles: str
@@ -22,10 +29,13 @@ class CompoundSource:
     logp: Optional[float]
     source_url: str
     retrieved_date: str
+    inchikey: Optional[str] = None
+    max_phase: Optional[str] = None
+
 
 @dataclass
 class TargetSource:
-    """Target structure sourced from biotech database."""
+    """Target record retrieved from a database."""
     database: str
     target_id: str
     protein_name: str
@@ -34,10 +44,12 @@ class TargetSource:
     gene_name: str
     source_url: str
     retrieved_date: str
+    extra: Dict = field(default_factory=dict)
+
 
 @dataclass
 class LiteratureResult:
-    """Research paper from literature database."""
+    """Paper retrieved from a literature database."""
     database: str
     pubmed_id: Optional[str]
     title: str
@@ -47,594 +59,170 @@ class LiteratureResult:
     url: str
     relevance_score: float
 
+
+def _f(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
 class BiotechDatabaseFederator:
-    """Queries and federates results from 29 biotech databases."""
+    """Federates live queries across the databases db_clients supports."""
+
+    LIVE = {
+        'pubmed': ('PubMed', 'literature'), 'clinvar': ('ClinVar', 'genomics'),
+        'pubchem': ('PubChem', 'drug'), 'chembl': ('ChEMBL', 'drug'), 'open_targets': ('Open Targets', 'drug'),
+        'uniprot': ('UniProt', 'protein'), 'pdb': ('RCSB PDB', 'protein'), 'alphafold': ('AlphaFold DB', 'protein'),
+        'reactome': ('Reactome', 'pathway'), 'string': ('STRING', 'pathway'),
+        'clinicaltrials': ('ClinicalTrials.gov', 'clinical'),
+    }
 
     def __init__(self):
-        self.databases = self._initialize_databases()
+        self.databases = {k: {'name': n, 'category': c, 'live': True} for k, (n, c) in self.LIVE.items()}
         self.query_cache = {}
         self.result_history = []
+        self.errors = []
 
-    def _initialize_databases(self) -> Dict:
-        """Initialize all 29 biotech database connections."""
-        return {
-            # Literature (7)
-            'pubmed': {
-                'name': 'PubMed',
-                'records': '30M+',
-                'url': 'https://pubmed.ncbi.nlm.nih.gov',
-                'category': 'literature',
-                'mcp_endpoint': 'pubmed.mcp',
-            },
-            'arxiv': {
-                'name': 'arXiv',
-                'records': '2.4M',
-                'url': 'https://arxiv.org',
-                'category': 'literature',
-                'mcp_endpoint': 'arxiv.mcp',
-            },
-            'biorxiv': {
-                'name': 'bioRxiv',
-                'records': '200K+',
-                'url': 'https://biorxiv.org',
-                'category': 'literature',
-                'mcp_endpoint': 'biorxiv.mcp',
-            },
-            'medrxiv': {
-                'name': 'medRxiv',
-                'records': '100K+',
-                'url': 'https://medrxiv.org',
-                'category': 'literature',
-                'mcp_endpoint': 'medrxiv.mcp',
-            },
-            'semantic_scholar': {
-                'name': 'Semantic Scholar',
-                'records': '215M+',
-                'url': 'https://semanticscholar.org',
-                'category': 'literature',
-                'mcp_endpoint': 'semantic.mcp',
-            },
-            'crossref': {
-                'name': 'Crossref',
-                'records': '145M+',
-                'url': 'https://crossref.org',
-                'category': 'literature',
-                'mcp_endpoint': 'crossref.mcp',
-            },
-            'google_scholar': {
-                'name': 'Google Scholar',
-                'records': '500M+',
-                'url': 'https://scholar.google.com',
-                'category': 'literature',
-                'mcp_endpoint': 'scholar.mcp',
-            },
+    def _err(self, db, r):
+        if isinstance(r, dict) and r.get('error'):
+            self.errors.append({'database': db, 'error': r['error'], 'at': _now()})
 
-            # Protein (4)
-            'uniprot': {
-                'name': 'UniProt',
-                'records': '570K',
-                'url': 'https://uniprot.org',
-                'category': 'protein',
-                'mcp_endpoint': 'uniprot.mcp',
-            },
-            'pdb': {
-                'name': 'RCSB PDB',
-                'records': '200K',
-                'url': 'https://rcsb.org',
-                'category': 'protein',
-                'mcp_endpoint': 'pdb.mcp',
-            },
-            'alphafold': {
-                'name': 'AlphaFold Database',
-                'records': '200M',
-                'url': 'https://alphafold.ebi.ac.uk',
-                'category': 'protein',
-                'mcp_endpoint': 'alphafold.mcp',
-            },
-            'interpro': {
-                'name': 'InterPro',
-                'records': '40K+',
-                'url': 'https://interpro.ebi.ac.uk',
-                'category': 'protein',
-                'mcp_endpoint': 'interpro.mcp',
-            },
+    def _log(self, kind, query, results, key):
+        self.query_cache[key] = results
+        self.result_history.append({'query': query, 'type': kind, 'results': len(results), 'timestamp': _now()})
 
-            # Genomics (6)
-            'ensembl': {
-                'name': 'Ensembl',
-                'records': '3M+',
-                'url': 'https://ensembl.org',
-                'category': 'genomics',
-                'mcp_endpoint': 'ensembl.mcp',
-            },
-            'genbank': {
-                'name': 'GenBank',
-                'records': '500M+',
-                'url': 'https://ncbi.nlm.nih.gov/genbank',
-                'category': 'genomics',
-                'mcp_endpoint': 'genbank.mcp',
-            },
-            'clinvar': {
-                'name': 'ClinVar',
-                'records': '2M+',
-                'url': 'https://clinvar.ncbi.nlm.nih.gov',
-                'category': 'genomics',
-                'mcp_endpoint': 'clinvar.mcp',
-            },
-            'dbsnp': {
-                'name': 'dbSNP',
-                'records': '700M',
-                'url': 'https://dbsnp.ncbi.nlm.nih.gov',
-                'category': 'genomics',
-                'mcp_endpoint': 'dbsnp.mcp',
-            },
-            'gtex': {
-                'name': 'GTEx',
-                'records': '900M+',
-                'url': 'https://gtexportal.org',
-                'category': 'genomics',
-                'mcp_endpoint': 'gtex.mcp',
-            },
-            'refseq': {
-                'name': 'RefSeq',
-                'records': '5M+',
-                'url': 'https://ncbi.nlm.nih.gov/refseq',
-                'category': 'genomics',
-                'mcp_endpoint': 'refseq.mcp',
-            },
-
-            # Drug/Chemical (4)
-            'chembl': {
-                'name': 'ChEMBL',
-                'records': '2.5M',
-                'url': 'https://chembl.ebi.ac.uk',
-                'category': 'drug',
-                'mcp_endpoint': 'chembl.mcp',
-            },
-            'pubchem': {
-                'name': 'PubChem',
-                'records': '119M',
-                'url': 'https://pubchem.ncbi.nlm.nih.gov',
-                'category': 'drug',
-                'mcp_endpoint': 'pubchem.mcp',
-            },
-            'open_targets': {
-                'name': 'Open Targets',
-                'records': '10M+',
-                'url': 'https://opentargets.org',
-                'category': 'drug',
-                'mcp_endpoint': 'opentargets.mcp',
-            },
-            'surechem': {
-                'name': 'SureChEMBL',
-                'records': '17M',
-                'url': 'https://surechem.org',
-                'category': 'drug',
-                'mcp_endpoint': 'surechem.mcp',
-            },
-
-            # Pathway (6)
-            'geo': {
-                'name': 'GEO',
-                'records': '5M+',
-                'url': 'https://ncbi.nlm.nih.gov/geo',
-                'category': 'pathway',
-                'mcp_endpoint': 'geo.mcp',
-            },
-            'reactome': {
-                'name': 'Reactome',
-                'records': '13K',
-                'url': 'https://reactome.org',
-                'category': 'pathway',
-                'mcp_endpoint': 'reactome.mcp',
-            },
-            'kegg': {
-                'name': 'KEGG',
-                'records': '5000',
-                'url': 'https://kegg.jp',
-                'category': 'pathway',
-                'mcp_endpoint': 'kegg.mcp',
-            },
-            'string': {
-                'name': 'STRING',
-                'records': '24K',
-                'url': 'https://string-db.org',
-                'category': 'pathway',
-                'mcp_endpoint': 'string.mcp',
-            },
-            'biogrid': {
-                'name': 'BioGRID',
-                'records': '1.8M',
-                'url': 'https://thebiogrid.org',
-                'category': 'pathway',
-                'mcp_endpoint': 'biogrid.mcp',
-            },
-            'go': {
-                'name': 'Gene Ontology',
-                'records': '50K',
-                'url': 'https://geneontology.org',
-                'category': 'pathway',
-                'mcp_endpoint': 'go.mcp',
-            },
-
-            # Clinical (2)
-            'clinicaltrials': {
-                'name': 'ClinicalTrials.gov',
-                'records': '500K+',
-                'url': 'https://clinicaltrials.gov',
-                'category': 'clinical',
-                'mcp_endpoint': 'clinicaltrials.mcp',
-            },
-            'openfda': {
-                'name': 'OpenFDA',
-                'records': '10M+',
-                'url': 'https://open.fda.gov',
-                'category': 'clinical',
-                'mcp_endpoint': 'openfda.mcp',
-            },
-        }
-
-    def search_compounds(
-        self,
-        query: str,
-        target: Optional[str] = None,
-        databases: Optional[List[str]] = None,
-    ) -> List[CompoundSource]:
-        """Search for compounds across biotech databases.
-
-        Args:
-            query: Search query (chemical name, SMILES, etc)
-            target: Optional target protein
-            databases: Optional list of specific databases to search
-
-        Returns:
-            List of CompoundSource from all matching databases
-        """
-
-        if databases is None:
-            databases = [db for db in self.databases if self.databases[db]['category'] == 'drug']
-
+    def search_compounds(self, query: str, target: Optional[str] = None,
+                         databases: Optional[List[str]] = None) -> List[CompoundSource]:
+        """Compounds by name or SMILES from PubChem and ChEMBL."""
+        databases = databases or ['pubchem', 'chembl']
+        is_smiles = dbc.inchikey_of(query) is not None and not query.isalpha()
         results = []
-
-        for db_name in databases:
-            if db_name not in self.databases:
-                continue
-
-            db_info = self.databases[db_name]
-
-            # Mock search (in production, call MCP endpoint)
-            compounds = self._search_database(db_name, query, 'compound')
-
-            for comp in compounds:
-                source = CompoundSource(
-                    database=db_info['name'],
-                    compound_id=comp.get('id', 'unknown'),
-                    smiles=comp.get('smiles', ''),
-                    chemical_name=comp.get('name', query),
-                    mw=comp.get('mw', 0.0),
-                    logp=comp.get('logp'),
-                    source_url=f"{db_info['url']}/{comp.get('id', '')}",
-                    retrieved_date=datetime.utcnow().isoformat(),
-                )
-                results.append(source)
-
-        # Cache results
-        cache_key = f"compounds:{query}:{target}"
-        self.query_cache[cache_key] = results
-        self.result_history.append({
-            'query': query,
-            'type': 'compound',
-            'results': len(results),
-            'timestamp': datetime.utcnow().isoformat(),
-        })
-
+        if 'pubchem' in databases:
+            r = dbc.pubchem_identify(smiles=query if is_smiles else None, name=None if is_smiles else query,
+                                     synonyms=0, activity=False, similar=False)
+            self._err('PubChem', r)
+            if r.get('match') == 'exact':
+                results.append(CompoundSource('PubChem', f"CID{r['cid']}", r.get('smiles') or '', r.get('title') or query,
+                                              r.get('mw') or 0.0, _f(r.get('xlogp')), r['url'], _now(), r.get('inchikey')))
+        if 'chembl' in databases:
+            r = dbc.chembl_similar(query, 80, 5) if is_smiles else dbc.chembl_search(query, 5)
+            self._err('ChEMBL', r)
+            for m in r['molecules']:
+                results.append(CompoundSource('ChEMBL', m['chembl_id'], m.get('smiles') or '', m.get('name') or m['chembl_id'],
+                                              _f(m.get('mw')) or 0.0, _f(m.get('alogp')), m['url'], _now(),
+                                              m.get('inchikey'), m.get('max_phase')))
+        self._log('compound', query, results, f"compounds:{query}:{target}")
         return results
 
-    def search_targets(
-        self,
-        query: str,
-        databases: Optional[List[str]] = None,
-    ) -> List[TargetSource]:
-        """Search for protein targets.
-
-        Args:
-            query: Gene name, protein name, etc
-            databases: Optional specific databases
-
-        Returns:
-            List of TargetSource from all matching databases
-        """
-
-        if databases is None:
-            databases = [db for db in self.databases if self.databases[db]['category'] == 'protein']
-
+    def search_targets(self, query: str, databases: Optional[List[str]] = None) -> List[TargetSource]:
+        """Human gene -> UniProt entry, its PDB structures and AlphaFold model."""
+        databases = databases or ['uniprot', 'pdb', 'alphafold']
+        up = dbc.uniprot_gene(query, limit=1)
+        self._err('UniProt', up)
         results = []
-
-        for db_name in databases:
-            if db_name not in self.databases:
-                continue
-
-            db_info = self.databases[db_name]
-
-            # Mock search
-            targets = self._search_database(db_name, query, 'target')
-
-            for target in targets:
-                source = TargetSource(
-                    database=db_info['name'],
-                    target_id=target.get('id', ''),
-                    protein_name=target.get('protein_name', ''),
-                    pdb_id=target.get('pdb_id'),
-                    uniprot_id=target.get('uniprot_id'),
-                    gene_name=target.get('gene_name', query),
-                    source_url=f"{db_info['url']}/{target.get('id', '')}",
-                    retrieved_date=datetime.utcnow().isoformat(),
-                )
-                results.append(source)
-
-        cache_key = f"targets:{query}"
-        self.query_cache[cache_key] = results
-        self.result_history.append({
-            'query': query,
-            'type': 'target',
-            'results': len(results),
-            'timestamp': datetime.utcnow().isoformat(),
-        })
-
+        for e in up['entries']:
+            acc = e['accession']
+            if 'uniprot' in databases:
+                results.append(TargetSource('UniProt', acc, e['protein_name'] or '', None, acc, query, e['url'], _now(),
+                                            {'function': e['function'], 'length': e['length'],
+                                             'ensembl': e['ensembl_genes']}))
+            if 'pdb' in databases:
+                pdb = dbc.pdb_structures(acc, 5)
+                self._err('RCSB PDB', pdb)
+                for pid in pdb['ids']:
+                    x = dbc.pdb_entry(pid)
+                    results.append(TargetSource('RCSB PDB', pid, x.get('title') or '', pid, acc, query,
+                                                f"https://www.rcsb.org/structure/{pid}", _now(),
+                                                {'resolution': x.get('resolution'), 'method': x.get('method'),
+                                                 'total_structures': pdb['count']}))
+            if 'alphafold' in databases:
+                af = dbc.alphafold_model(acc)
+                self._err('AlphaFold DB', af)
+                if af.get('model'):
+                    results.append(TargetSource('AlphaFold DB', af['model'], e['protein_name'] or '', None, acc, query,
+                                                af['url'], _now(), {'mean_plddt': af['mean_plddt'], 'pdb_url': af['pdb_url']}))
+        self._log('target', query, results, f"targets:{query}")
         return results
 
-    def search_literature(
-        self,
-        query: str,
-        target: Optional[str] = None,
-        years: Optional[Tuple[int, int]] = None,
-    ) -> List[LiteratureResult]:
-        """Search literature databases.
-
-        Args:
-            query: Search query
-            target: Optional target protein
-            years: Optional year range
-
-        Returns:
-            List of papers from literature databases
-        """
-
-        databases = [db for db in self.databases if self.databases[db]['category'] == 'literature']
+    def search_literature(self, query: str, target: Optional[str] = None,
+                          years: Optional[Tuple[int, int]] = None, limit: int = 10) -> List[LiteratureResult]:
+        """PubMed search (the only literature source with a live client)."""
+        term = f"({query}) AND {target}" if target else query
+        r = dbc.pubmed_search(term, retmax=limit, mindate=years[0] if years else None,
+                              maxdate=years[1] if years else None)
+        self._err('PubMed', r)
+        abstracts = dbc.pubmed_abstracts([a['pmid'] for a in r['articles']])
         results = []
-
-        for db_name in databases:
-            if db_name not in self.databases:
-                continue
-
-            db_info = self.databases[db_name]
-
-            # Mock search
-            papers = self._search_database(db_name, query, 'paper')
-
-            for paper in papers:
-                result = LiteratureResult(
-                    database=db_info['name'],
-                    pubmed_id=paper.get('pubmed_id'),
-                    title=paper.get('title', ''),
-                    authors=paper.get('authors', []),
-                    abstract=paper.get('abstract', ''),
-                    publication_date=paper.get('date', ''),
-                    url=paper.get('url', ''),
-                    relevance_score=self._calculate_relevance(query, paper),
-                )
-                results.append(result)
-
-        # Sort by relevance
-        results.sort(key=lambda r: r.relevance_score, reverse=True)
-
-        cache_key = f"literature:{query}:{target}"
-        self.query_cache[cache_key] = results
-        self.result_history.append({
-            'query': query,
-            'type': 'literature',
-            'results': len(results),
-            'timestamp': datetime.utcnow().isoformat(),
-        })
-
+        for a in r['articles']:
+            paper = {'title': a['title'], 'abstract': abstracts.get(a['pmid'], ''), 'date': a['pubdate']}
+            results.append(LiteratureResult('PubMed', a['pmid'], a['title'], a['authors'], paper['abstract'],
+                                            a['pubdate'], a['url'], self._calculate_relevance(query, paper)))
+        results.sort(key=lambda x: x.relevance_score, reverse=True)
+        self._log('literature', query, results, f"literature:{query}:{target}")
         return results
-
-    def _search_database(self, db_name: str, query: str, result_type: str) -> List[Dict]:
-        """Mock search implementation (in production, calls MCP endpoint)."""
-
-        # Simulate database results
-        if result_type == 'compound':
-            if db_name == 'chembl':
-                return [
-                    {
-                        'id': 'CHEMBL1',
-                        'name': f'ChEMBL compound for {query}',
-                        'smiles': 'CC(=O)OC1=CC=CC=C1C(=O)O',
-                        'mw': 180.16,
-                        'logp': 1.19,
-                    }
-                ]
-            elif db_name == 'pubchem':
-                return [
-                    {
-                        'id': 'CID-123',
-                        'name': f'PubChem entry for {query}',
-                        'smiles': 'CC(=O)OC1=CC=CC=C1C(=O)O',
-                        'mw': 180.16,
-                    }
-                ]
-
-        elif result_type == 'target':
-            if db_name == 'uniprot':
-                return [
-                    {
-                        'id': 'P12345',
-                        'protein_name': f'Protein {query}',
-                        'gene_name': query,
-                        'uniprot_id': 'P12345',
-                    }
-                ]
-            elif db_name == 'pdb':
-                return [
-                    {
-                        'id': '4O1J',
-                        'protein_name': f'SOD1 complex',
-                        'pdb_id': '4O1J',
-                        'gene_name': 'SOD1',
-                    }
-                ]
-
-        elif result_type == 'paper':
-            return [
-                {
-                    'pubmed_id': '12345678',
-                    'title': f'Research on {query}',
-                    'authors': ['Smith J', 'Doe A'],
-                    'abstract': f'Study about {query} for drug discovery.',
-                    'date': '2024-01-15',
-                    'url': 'https://pubmed.ncbi.nlm.nih.gov/12345678',
-                }
-            ]
-
-        return []
 
     def _calculate_relevance(self, query: str, paper: Dict) -> float:
-        """Calculate relevance score for a paper."""
-
-        score = 0.0
-        query_lower = query.lower()
-
-        if query_lower in paper.get('title', '').lower():
-            score += 0.5
-
-        if query_lower in paper.get('abstract', '').lower():
-            score += 0.3
-
-        # Boost recent papers
-        import datetime
-        try:
-            pub_date = datetime.datetime.fromisoformat(paper.get('date', ''))
-            days_old = (datetime.datetime.now() - pub_date).days
-            if days_old < 365:
-                score += 0.2
-        except:
-            pass
-
-        return min(score, 1.0)
+        """Fraction of query words present in title (weight 0.6) and abstract (0.4)."""
+        words = [w for w in query.lower().replace('(', ' ').replace(')', ' ').split() if w not in ('and', 'or', 'not')]
+        if not words:
+            return 0.0
+        title, abstract = paper.get('title', '').lower(), paper.get('abstract', '').lower()
+        return round(0.6 * sum(w in title for w in words) / len(words)
+                     + 0.4 * sum(w in abstract for w in words) / len(words), 3)
 
     def get_database_stats(self) -> Dict:
-        """Get statistics on available databases."""
+        """Measured activity of this federator. Database sizes are not claimed."""
+        by_cat = {}
+        for d in self.databases.values():
+            by_cat.setdefault(d['category'], []).append(d['name'])
+        return {'total_databases': len(self.databases), 'by_category': by_cat,
+                'cached_queries': len(self.query_cache), 'search_history': len(self.result_history),
+                'errors': len(self.errors), 'http': dbc.status()}
 
-        stats = {
-            'total_databases': len(self.databases),
-            'total_records': '1.5B+',
-            'by_category': {},
-            'cached_queries': len(self.query_cache),
-            'search_history': len(self.result_history),
-        }
-
-        # Count by category
-        for db_name, db_info in self.databases.items():
-            category = db_info['category']
-            if category not in stats['by_category']:
-                stats['by_category'][category] = []
-            stats['by_category'][category].append(db_info['name'])
-
-        return stats
 
 class MolecularEnrichmentEngine:
-    """Enriches molecular research with biotech database context."""
+    """Enriches molecular research with live database context."""
 
     def __init__(self, federator: BiotechDatabaseFederator):
         self.federator = federator
 
-    def enrich_compound_analysis(
-        self,
-        compound_smiles: str,
-        compound_name: str,
-    ) -> Dict:
-        """Enrich compound analysis with database sources.
-
-        Args:
-            compound_smiles: SMILES string
-            compound_name: Chemical name
-
-        Returns:
-            Enriched compound data with literature and known properties
-        """
-
-        # Search for compound across databases
-        sources = self.federator.search_compounds(
-            compound_name,
-            databases=['chembl', 'pubchem'],
-        )
-
-        # Search for literature
-        literature = self.federator.search_literature(
-            f"{compound_name} drug discovery",
-        )
-
+    def enrich_compound_analysis(self, compound_smiles: str, compound_name: str = '') -> Dict:
+        """Identity (PubChem), bioactivity and mechanism (ChEMBL), literature (PubMed) for one structure."""
+        pc = dbc.pubchem_identify(smiles=compound_smiles, name=compound_name or None, synonyms=10)
+        self.federator._err('PubChem', pc)
+        name = pc.get('title') or compound_name
+        ch = dbc.chembl_molecule(inchikey=pc['inchikey']) if pc.get('inchikey') else None
+        acts, mech = ({'activities': []}, [])
+        if ch and ch.get('chembl_id'):
+            acts, mech = dbc.chembl_activities(ch['chembl_id'], 10), dbc.chembl_mechanisms(ch['chembl_id'])
+        literature = self.federator.search_literature(name, limit=5) if name else []
+        trials = dbc.clinical_trials(intervention=name, limit=5) if pc.get('match') == 'exact' and name else {'trials': []}
         return {
-            'compound_name': compound_name,
-            'smiles': compound_smiles,
-            'database_sources': [
-                {
-                    'database': s.database,
-                    'compound_id': s.compound_id,
-                    'mw': s.mw,
-                    'logp': s.logp,
-                    'url': s.source_url,
-                }
-                for s in sources[:3]
-            ],
-            'related_literature': [
-                {
-                    'title': lit.title,
-                    'database': lit.database,
-                    'relevance': lit.relevance_score,
-                    'url': lit.url,
-                }
-                for lit in literature[:5]
-            ],
+            'compound_name': name, 'smiles': compound_smiles, 'pubchem': pc, 'chembl': ch,
+            'mechanisms': mech, 'top_activities': acts['activities'], 'clinical_trials': trials['trials'],
+            'database_sources': [{'database': 'PubChem', 'compound_id': pc.get('cid'), 'mw': pc.get('mw'),
+                                  'logp': pc.get('xlogp'), 'url': pc.get('url')}] if pc.get('cid') else [],
+            'related_literature': [{'title': x.title, 'database': x.database, 'relevance': x.relevance_score,
+                                    'url': x.url} for x in literature],
         }
 
     def enrich_target_analysis(self, target_gene: str) -> Dict:
-        """Enrich target analysis with database sources.
-
-        Args:
-            target_gene: Gene name or protein name
-
-        Returns:
-            Enriched target data with structures and pathways
-        """
-
-        # Search for target
+        """Protein, structures, pathways, interactors, known drugs, pathogenic variants and literature for a gene."""
         targets = self.federator.search_targets(target_gene)
-
-        # Search for pathway data
-        pathway_lit = self.federator.search_literature(
-            f"{target_gene} pathway biology",
-        )
-
+        acc = next((t.uniprot_id for t in targets if t.database == 'UniProt'), None)
+        ens = next((t.extra.get('ensembl') for t in targets if t.database == 'UniProt'), None) or []
+        pathways = dbc.reactome_pathways(acc)['pathways'] if acc else []
+        drugs = dbc.opentargets_target_drugs(ens[0]) if ens else {'drugs': []}
+        lit = self.federator.search_literature(f"{target_gene} pathway", limit=5)
         return {
             'target': target_gene,
-            'protein_sources': [
-                {
-                    'database': t.database,
-                    'protein_name': t.protein_name,
-                    'pdb_id': t.pdb_id,
-                    'uniprot_id': t.uniprot_id,
-                    'url': t.source_url,
-                }
-                for t in targets[:3]
-            ],
-            'pathway_studies': [
-                {
-                    'title': lit.title,
-                    'database': lit.database,
-                    'relevance': lit.relevance_score,
-                    'url': lit.url,
-                }
-                for lit in pathway_lit[:5]
-            ],
+            'protein_sources': [{'database': t.database, 'protein_name': t.protein_name, 'pdb_id': t.pdb_id,
+                                 'uniprot_id': t.uniprot_id, 'url': t.source_url} for t in targets],
+            'pathways': pathways,
+            'interaction_partners': dbc.string_partners(target_gene, limit=10)['partners'],
+            'known_drugs': drugs['drugs'],
+            'pathogenic_variants': dbc.clinvar_variants(target_gene, retmax=5),
+            'pathway_studies': [{'title': x.title, 'database': x.database, 'relevance': x.relevance_score,
+                                 'url': x.url} for x in lit],
         }

@@ -5,16 +5,28 @@ import { parsePDB, parseMmCIF, parseMolblock, parsePDBFrames } from './structure
 import { MolView, REPS, COLORS, textSprite, dashedLine } from './render.js';
 import { MDEngine } from './md.js';
 import { ProteinGrid, vinaScore, findPockets, dockLigand, centroid } from './dock.js';
+import { refineAllFlexible } from './torsion.js';
+import { poseSummary } from './poses.js';
 import { analyze, smilesTo3D, loadRDKit, setServerCaps, depict, heavyAtomModel, fingerprint } from './chem.js';
 import { CompoundLibrary, importFile } from './compounds.js';
 import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek, trials, interpro, reactome,
   stringdb, gnomad, proteinAtlas, unichem, pdbe, europepmc, openfda, pharos, biothings, kegg, bindingdb } from './api.js';
 import { af3LocalJob, afServerJob, downloadJson, downloadText, readPrediction } from './af3.js';
 import { Collab } from './collab.js';
-import { XRManager, xrSupport, startSession } from './xr.js';
+import { XRManager, xrSupport, XR_REASONS, onXRDeviceChange } from './xr.js';
 import { Ledger } from './ledger.js';
+import { signIn, ensureMonad, watchWallet, shortAddress, hasWallet, NO_WALLET } from './wallet.js';
+import { buildTools, toolSchemas, AgentRuntime, AgentConsole, connectCommandChannel } from './agent.js';
+import { VoiceControl } from './voice.js';
+import { HandTracking } from './hands.js';
+import { computeStats, renderDashboard, buildReport } from './dashboard.js';
+import { EnvironmentManager, Locomotion, HDRI_PRESETS } from './environment.js';
+import { catalogue, search as searchAssets, debounce } from './assets.js';
+import { interactionFingerprint, pocketVariantOverlap, clusterSeries } from './analysis.js';
+import { tanimoto } from './chem.js';
 import { Recorder } from './recorder.js';
 import { yieldToEventLoop } from './util.js';
+import { mark, plain, note, num, tierOf, DOCK_TIER, SCORE_UNIT } from './provenance.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -26,7 +38,8 @@ const S = {
   grid: null, pockets: [], pocket: null, poses: [], md: null, mdRunning: false, caps: null,
   selection: [], measureMode: false, library: new CompoundLibrary(), compound: null, screening: false, stopFlag: false,
   backendJob: null, trajectory: null, missense: null, lastScore: null, ledger: new Ledger(), demo: null,
-  recorder: null, orbitSpeed: 0,
+  wallet: null, walletWatch: null,
+  recorder: null, orbitSpeed: 0, agent: null, voice: null, hands: null, dashboardOpen: false, env: null, walk: null,
 };
 
 // ---------------------------------------------------------------- scene
@@ -60,14 +73,32 @@ raycaster.params.Line.threshold = 0.02;
 const pointer = new THREE.Vector2();
 
 const xr = new XRManager(renderer, scene, workspace, camera);
+xr.describe = (hit) => { const p = pickAtom(hit); return p ? describeAtom(p.view, p.atom) : null; };
+xr.priority = () => (S.mdRunning && S.ligandView ? [S.ligandView.group] : []);
 
 function resize() {
   const v = $('#viewport');
-  renderer.setSize(v.clientWidth, v.clientHeight, false);
-  camera.aspect = v.clientWidth / Math.max(1, v.clientHeight);
+  const w = v.clientWidth, h = Math.max(1, v.clientHeight);
+  renderer.setSize(w, h, false);
+  // On narrower windows the right-hand panel floats over the viewport. Shift the projection centre into the part
+  // that is actually visible so the structure is not framed half behind the panel.
+  const vr = v.getBoundingClientRect(), rr = $('#right').getBoundingClientRect();
+  const covered = rr.width && rr.left < vr.right && rr.left > vr.left ? vr.right - rr.left : 0;
+  if (covered > 0 && covered < w * 0.6) {
+    camera.aspect = (w + covered) / h;
+    camera.setViewOffset(w + covered, h, covered, 0, w, h);
+  } else {
+    camera.aspect = w / h;
+    camera.clearViewOffset();
+  }
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
+addEventListener('orientationchange', () => setTimeout(resize, 120));
+visualViewport?.addEventListener('resize', resize);
+// A phone rotating, a keyboard opening or a pane being dragged all change the canvas without a window
+// resize event, so watch the element itself.
+new ResizeObserver(() => resize()).observe($('#viewport'));
 
 // ---------------------------------------------------------------- status helpers
 let toastTimer = null;
@@ -83,7 +114,7 @@ const logTo = (sel, m) => { const e = $(sel); e.textContent = `${m}\n${e.textCon
 function setProtein(st, meta = {}) {
   if (S.proteinView) { S.proteinView.dispose(); model.remove(S.proteinView.group); }
   stopMD();
-  S.protein = st; S.missense = null; S.pockets = []; S.pocket = null; S.poses = []; clearOverlay();
+  S.protein = st; S.proteinMeta = meta; S.missense = null; S.pockets = []; S.pocket = null; S.poses = []; clearOverlay();
   S.proteinView = new MolView(st, { style: { rep: 'cartoon+pocket', color: meta.alphafold ? 'plddt' : 'chain' } });
   model.add(S.proteinView.group);
   const c = st.center(Array.from(st.heavy));
@@ -101,7 +132,9 @@ function setProtein(st, meta = {}) {
 }
 
 // Frame the structure at a comfortable arm's-length size: about 60 cm across, 80 cm in front, at eye height.
-function fitView(diameter = 0.6) {
+// In a headset it is sized to ~40 cm (fits between two hands) and placed relative to the head by xr.recentre().
+function fitView(diameter = xr.active ? 0.4 : 0.6) {
+  if (xr.active) xr.recentre();
   if (!S.protein) return;
   const r = S.protein.radius(Array.from(S.protein.heavy)) || 20;
   workspace.scale.setScalar(Math.max(0.002, Math.min(0.05, diameter / (2 * r))));
@@ -296,16 +329,37 @@ async function doDock() {
       xr.panel.setStatus(`docking ${run + 1}/12`);
     },
   });
-  S.poses = poses;
+  // The MC search stops wherever its last accepted move landed, which is near a minimum rather than in
+  // it, and it samples torsions coarsely. This tightens each pose as a rigid body and then by dihedral,
+  // alternating until neither helps. Every stage accepts only strict improvements, so this cannot make a
+  // pose worse; torsion rotations change dihedrals alone, leaving bond lengths and angles untouched.
+  status('refining poses…');
+  const refined = poses.length ? refineAllFlexible(S.grid, S.ligand, poses) : poses;
+  S.poses = refined;
   $('#btnDock').disabled = false;
-  if (poses.length) applyPose(0);
+  if (refined.length) applyPose(0);
+  // Group the surviving poses into binding modes and ask whether the score actually chose between them.
+  // A ranked list invites the reading that row one is the answer; when two modes score within a hair of
+  // each other that reading is wrong, and this is where it gets said out loud.
+  const { modes, verdict } = refined.length
+    ? poseSummary(refined, S.ligand.n) : { modes: [], verdict: null };
+  S.poseModes = modes;
+  S.poseVerdict = verdict;
   renderPoses();
-  if (poses.length) {
+  if (refined.length) { try { analysePose(); } catch { /* analysis is a bonus, never a blocker */ } }
+  if (verdict && verdict.discriminates === false) toast(verdict.note, true);
+  if (refined.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
-      target: S.protein.name, site: S.pocket?.label || null, score: +poses[0].score.toFixed(2),
-      poses: poses.length, method: 'Monte Carlo, Vina-style score' }).then(renderLedger);
+      target: S.protein.name, site: S.pocket?.label || null, score: +refined[0].score.toFixed(2),
+      poses: refined.length, method: 'Monte Carlo search, Vina-style score, local rigid-body and torsional refinement',
+      refinedBy: +(refined[0].refinedBy || 0).toFixed(2),
+      bindingModes: modes.length, topModeGap: verdict?.gap ?? null, discriminates: verdict?.discriminates ?? null,
+      provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol'
+        + (verdict && verdict.discriminates === false ? ' · ranking is within the margin, not a preference' : ''),
+    }).then(renderLedger);
   }
-  toast(`${poses.length} poses · best ${fmt(poses[0]?.score)} kcal/mol · ${Math.round((performance.now() - t0) / 1000)} s`);
+  const gain = refined[0]?.refinedBy ? ` · refined ${refined[0].refinedBy.toFixed(2)}` : '';
+  toast(`${refined.length} poses · best ${plain(fmt(refined[0]?.score), DOCK_TIER)}${gain} · ${Math.round((performance.now() - t0) / 1000)} s`);
 }
 
 function applyPose(i) {
@@ -335,17 +389,18 @@ async function screenLibrary({ limit = 200, runs = 4, steps = 1800 } = {}) {
       c.dockScore = poses[0] ? +poses[0].score.toFixed(2) : null;
       c.dockTarget = S.protein.name;
     } catch { c.dockScore = null; }
-    status(`screening ${++done}/${list.length} · ${c.agiId || ''} ${c.dockScore ?? ''}`);
+    status(`screening ${++done}/${list.length} · ${c.agiId || ''} ${c.dockScore != null ? plain(c.dockScore, DOCK_TIER) : ''}`);
     renderLibrary();
   }
   S.screening = false;
   S.library.save();
   const ranked = list.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore);
-  toast(`Screen done. Best: ${ranked.slice(0, 3).map((c) => `${c.agiId} ${c.dockScore}`).join(', ')}`);
+  toast(`Screen done. Best (est.): ${ranked.slice(0, 3).map((c) => `${c.agiId} ${c.dockScore}`).join(', ')}`);
   $('#libSort').value = 'score'; renderLibrary();
   S.ledger.append('screen', { target: S.protein.name, compounds: ranked.length,
     best: ranked[0] ? `${ranked[0].agiId} ${ranked[0].dockScore}` : 'none',
-    ranking: ranked.slice(0, 10).map((c) => ({ id: c.agiId, score: c.dockScore })) }).then(renderLedger);
+    ranking: ranked.slice(0, 10).map((c) => ({ id: c.agiId, score: c.dockScore })),
+    provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
 }
 
 // ---------------------------------------------------------------- interactive MD
@@ -414,10 +469,34 @@ function pickAtom(hit) {
   return null;
 }
 
-function onPick(hit, worldPoint) {
+const RESIDUE_NAMES = { ALA: 'Alanine', ARG: 'Arginine', ASN: 'Asparagine', ASP: 'Aspartate', CYS: 'Cysteine', GLN: 'Glutamine',
+  GLU: 'Glutamate', GLY: 'Glycine', HIS: 'Histidine', ILE: 'Isoleucine', LEU: 'Leucine', LYS: 'Lysine', MET: 'Methionine',
+  PHE: 'Phenylalanine', PRO: 'Proline', SER: 'Serine', THR: 'Threonine', TRP: 'Tryptophan', TYR: 'Tyrosine', VAL: 'Valine',
+  HOH: 'Water', ZN: 'Zinc ion', CU: 'Copper ion', MG: 'Magnesium ion', CA: 'Calcium ion', FE: 'Iron ion', NA: 'Sodium ion', CL: 'Chloride ion' };
+const ELEMENT_NAMES = { H: 'hydrogen', C: 'carbon', N: 'nitrogen', O: 'oxygen', S: 'sulfur', P: 'phosphorus', F: 'fluorine',
+  CL: 'chlorine', BR: 'bromine', I: 'iodine', B: 'boron', SE: 'selenium', ZN: 'zinc', CU: 'copper', FE: 'iron', MG: 'magnesium' };
+const plddtBand = (b) => (b >= 90 ? 'very high' : b >= 70 ? 'confident' : b >= 50 ? 'low' : 'very low');
+
+// What a researcher sees when pointing at something: residue (or ligand) identity first, then the atom and its confidence.
+function describeAtom(view, i) {
+  const st = view.st, r = st.residues[st.atomRes[i]];
+  const sym = String(st.element[i] || '').toUpperCase(), elName = ELEMENT_NAMES[sym] || sym;
+  if (view === S.ligandView) {
+    // S.compound survives when a ligand comes from elsewhere (co-crystal, known drug), so only trust it if it built this one.
+    const c = S.compound && [S.compound.agiId, S.compound.label].includes(st.name) ? S.compound : {}, id = c.agiId || c.id;
+    const name = c.name || (c.label ? c.label.split(' — ')[0] : null) || id || st.name || 'Ligand';
+    return [name === id || !id ? name : `${name} (${id})`, `atom ${st.atomName[i]} · ${elName}`, c.notes || null].filter(Boolean);
+  }
+  const resName = RESIDUE_NAMES[r.resName] || r.resName;
+  const title = r.polymer ? `${resName} ${r.resSeq} · chain ${r.chain}` : `${resName}${r.resName !== resName ? ` (${r.resName})` : ''} · chain ${r.chain}`;
+  const b = st.bfac[i];
+  const conf = S.proteinMeta?.alphafold ? `pLDDT ${b.toFixed(0)} (${plddtBand(b)})` : b ? `B-factor ${b.toFixed(1)} Å²` : null;
+  return [title, `atom ${st.atomName[i]} · ${elName}`, conf].filter(Boolean);
+}
+
+function onPick(hit) {
   const p = pickAtom(hit);
   if (!p) return;
-  if (S.mdRunning && p.view === S.ligandView) { startSteer(worldPoint); return; }
   S.selection.push(p);
   if (S.selection.length > 3) S.selection = S.selection.slice(-1);
   renderSelection();
@@ -445,21 +524,67 @@ function renderSelection() {
     info += ` — angle ${ang.toFixed(1)}°`;
   }
   $('#selInfo').textContent = info;
+  if (xr.active && S.selection.length) xr.panel.setStatus(info.split('  ·  ').pop());
 }
 
+// The id the room locks on. A constant rather than a literal because the server
+// arbitrates per object name, and a typo at one call site would hand out a lock
+// nobody else is asking for -- which looks exactly like the lock working.
+const LIGAND_OBJECT = 'ligand';
+
 let steer = null;
-function startSteer(worldPoint) {
-  if (!S.md || !S.ligand) return;
+
+// Claim before moving, rather than moving and reconciling. Optimistic grabbing
+// is what produces the tug-of-war: both hands pull, both broadcast, and the
+// molecule stutters between them. One round trip (~1ms local, ~50ms remote)
+// before the ligand starts following your hand is not noticeable; a fight is.
+async function startSteer(worldPoint) {
+  if (!S.md || !S.ligand) return false;
+  if (S.collab?.connected && !(await S.collab.claim(LIGAND_OBJECT))) return false;
+
   const local = model.worldToLocal(worldPoint.clone());
   steer = { offset: local.clone().sub(new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n))) };
-  S.md.setSteer({ x: local.x - steer.offset.x, y: local.y - steer.offset.y, z: local.z - steer.offset.z }, 25);
+  applySteer(local, { share: true });
+  return true;
 }
+
+// Can we plausibly start a drag right now, decided synchronously?
+//
+// preventDefault() cannot wait for a round trip -- by the time a claim
+// resolves, the browser has already acted on the event. So the press is
+// committed on the cached lock state, which is right except in the moment
+// between someone else grabbing and our hearing about it, and startSteer's
+// real claim rolls the UI back on the rare occasion it is wrong.
+const mayGrabLigand = () => !S.collab?.connected || S.collab.canMove(LIGAND_OBJECT);
+
 function updateSteer(worldPoint) {
   if (!steer || !S.md) return;
-  const local = model.worldToLocal(worldPoint.clone());
-  S.md.setSteer({ x: local.x - steer.offset.x, y: local.y - steer.offset.y, z: local.z - steer.offset.z }, 25);
+  // Refresh the lease while the drag continues; collab throttles this to 1 Hz
+  // against a 5s lease, so a held molecule never lapses mid-drag.
+  S.collab?.claim(LIGAND_OBJECT, { refresh: true });
+  applySteer(model.worldToLocal(worldPoint.clone()), { share: true });
 }
-function endSteer() { steer = null; S.md?.setSteer(null); }
+
+function applySteer(local, { share = false } = {}) {
+  const target = { x: local.x - (steer?.offset.x || 0),
+                   y: local.y - (steer?.offset.y || 0),
+                   z: local.z - (steer?.offset.z || 0) };
+  S.md.setSteer(target, 25);
+  if (share && S.collab?.connected) {
+    S.collab.share({ kind: 'steer', object: LIGAND_OBJECT, p: [target.x, target.y, target.z] });
+  }
+  return target;
+}
+
+function endSteer() {
+  const wasSteering = !!steer;
+  steer = null;
+  S.md?.setSteer(null);
+  if (wasSteering && S.collab?.connected) {
+    S.collab.share({ kind: 'steer', object: LIGAND_OBJECT, p: null });
+    S.collab.release(LIGAND_OBJECT);
+  }
+}
 
 // ---------------------------------------------------------------- render loop
 let frames = 0, last = performance.now(), fps = 0;
@@ -478,8 +603,17 @@ renderer.setAnimationLoop((t, xrFrame) => {
       tr.i++;
     }
   }
+  const dt = Math.min(0.05, (t - (S.lastT || t)) / 1000); S.lastT = t;
+  S.env?.update(dt);
+  S.walk?.update(dt, xr.active);
+  // Distance culling follows the viewer, refreshed a few times a second rather than every frame.
+  if (S.env?.quality && S.env.quality !== 'full' && frames % 20 === 0) S.env.setQuality(S.env.quality);
   if (S.orbitSpeed) workspace.rotation.y += S.orbitSpeed;
-  if (xr.active) { xr.update(); S.collab?.tick(camera, xr.controllers); }
+  if (xr.active) {
+    xr.update();
+    if (S.hands && xrFrame) S.hands.update(xrFrame, renderer.xr.getReferenceSpace());
+    S.collab?.tick(camera, xr.controllers);
+  }
   else controls.update();
   renderer.render(scene, camera);
   frames++;
@@ -531,8 +665,10 @@ async function openTarget(t) {
   }
   renderDrugs(t);
   renderEvidence(t);
-  if (t.alphafold) loadAlphaFold(t.uniprot, { symbol: t.symbol }).catch((e) => toast(e.message, true));
-  else if (t.bestPdb) loadPdb(t.bestPdb, { uniprot: t.uniprot }).catch((e) => toast(e.message, true));
+  // Return the structure load so callers (the tool layer, the film, the demo) can wait for it.
+  if (t.alphafold) return loadAlphaFold(t.uniprot, { symbol: t.symbol }).catch((e) => toast(e.message, true));
+  if (t.bestPdb) return loadPdb(t.bestPdb, { uniprot: t.uniprot }).catch((e) => toast(e.message, true));
+  return null;
 }
 
 function renderStructureInfo(meta) {
@@ -662,11 +798,11 @@ function renderLigandCard(info = {}) {
 function renderScore(r) {
   if (!r) return;
   $('#dockResult').innerHTML = `<div class="props">
-    <span>score <b>${fmt(r.total)} kcal/mol</b></span><span>ligand eff. <b>${fmt(r.ligandEfficiency)}</b></span>
+    <span>score <b>${mark(fmt(r.total), DOCK_TIER)}</b></span><span>ligand eff. <b>${mark(fmt(r.ligandEfficiency), DOCK_TIER)}</b></span>
     <span>H-bonds <b>${r.hbonds.length}</b></span><span>contacts <b>${r.contactResidues.length} res</b></span>
     <span>clash <b>${fmt(r.terms.repulsion, 1)}</b></span><span>hydrophobic <b>${fmt(r.terms.hydrophobic, 1)}</b></span>
-  </div><div class="hint">Vina-style empirical score; lower is better. Approximate, for ranking.</div>`;
-  xr.panel.setStatus(`score ${fmt(r.total)} · ${r.hbonds.length} H-bonds`);
+  </div>${note(DOCK_TIER, 'Lower is better.')}`;
+  xr.panel.setStatus(`score ${fmt(r.total)} · ${r.hbonds.length} H-bonds`, DOCK_TIER);
 }
 
 function renderPockets() {
@@ -683,7 +819,7 @@ function renderPockets() {
 function renderPoses(active = -1) {
   const box = $('#poseList'); box.innerHTML = '';
   S.poses.forEach((p, i) => {
-    const it = el('div', 'item' + (i === active ? ' active' : ''), `<div class="t"><span class="n">Pose ${i + 1}</span><span class="s">${fmt(p.score)} kcal/mol</span></div>`);
+    const it = el('div', 'item' + (i === active ? ' active' : ''), `<div class="t"><span class="n">Pose ${i + 1}</span><span class="s">${mark(fmt(p.score), DOCK_TIER)}</span></div>`);
     it.onclick = () => applyPose(i);
     box.appendChild(it);
   });
@@ -694,8 +830,8 @@ function renderMdStats(sc) {
   const e = S.md.energy;
   $('#mdStats').innerHTML = `<span>time <b>${fmt(S.md.time, 1)} ps</b></span><span>T <b>${fmt(S.md.kineticTemperature(), 0)} K</b></span>
     <span>inter E <b>${fmt(e.inter, 1)}</b></span><span>ligand RMSD <b>${fmt(S.md.ligandRMSD())} Å</b></span>
-    <span>protein RMSF <b>${fmt(S.md.proteinRMSF())} Å</b></span><span>score <b>${fmt(sc?.total)}</b></span>`;
-  $('#mdBadge').textContent = `MD ${fmt(S.md.time, 1)} ps · ${fmt(S.md.kineticTemperature(), 0)} K · score ${fmt(sc?.total)}`;
+    <span>protein RMSF <b>${fmt(S.md.proteinRMSF())} Å</b></span><span>score <b>${mark(fmt(sc?.total), DOCK_TIER)}</b></span>`;
+  $('#mdBadge').textContent = `MD ${fmt(S.md.time, 1)} ps · ${fmt(S.md.kineticTemperature(), 0)} K · score ${plain(fmt(sc?.total), DOCK_TIER)}`;
 }
 
 let libFiltered = null;
@@ -707,14 +843,14 @@ function renderLibrary() {
     if (sort === 'mw') return (a.profile?.desc.mw || 1e9) - (b.profile?.desc.mw || 1e9);
     if (sort === 'clogp') return (a.profile?.desc.clogp ?? 1e9) - (b.profile?.desc.clogp ?? 1e9);
     if (sort === 'cns') return (b.profile?.rules.cnsMpo5 ?? -1) - (a.profile?.rules.cnsMpo5 ?? -1);
-    if (sort === 'score') return (a.dockScore ?? 1e9) - (b.dockScore ?? 1e9);
+    if (sort === 'score') return (num(a.dockScore) ?? 1e9) - (num(b.dockScore) ?? 1e9);
     return (a.agiId || 'zz').localeCompare(b.agiId || 'zz', undefined, { numeric: true });
   });
   $('#libStats').textContent = `${S.library.compounds.length} compounds${libFiltered ? ` · ${list.length} match` : ''}${S.library.rejects.length ? ` · ${S.library.rejects.length} need review` : ''}`;
   for (const c of list.slice(0, 300)) {
     const it = el('div', 'item' + (S.compound === c ? ' active' : ''));
     const info = el('div', '', `<div class="t"><span class="n">${c.agiId || '—'}</span>
-      <span class="s">${c.dockScore != null ? `${c.dockScore} kcal/mol` : c.profile ? `MW ${fmt(c.profile.desc.mw, 0)}` : ''}</span></div>
+      <span class="s">${num(c.dockScore) != null ? mark(fmt(num(c.dockScore)), tierOf(c, 'dockScore', DOCK_TIER)) : c.profile ? `MW ${fmt(c.profile.desc.mw, 0)}` : ''}</span></div>
       <div class="d">${(c.label || c.canonical).slice(0, 46)}</div>`);
     const thumb = el('div', '', '');
     it.append(thumb, info);
@@ -842,18 +978,15 @@ async function renderEvidence(t) {
   const box = $('#evidenceBox');
   if (!t || !t.uniprot) { box.textContent = 'Load a target to see its evidence.'; return; }
   box.innerHTML = '<div class="hint">gathering evidence…</div>';
-  const [dom, path, part, con, exp] = await Promise.all([
+  // gnomAD is not fetched here: its GraphQL endpoint sends no CORS headers, so the browser blocks it on every
+  // target load. It is still attempted from the Evidence tab's explicit "Gather evidence" button.
+  const [dom, path, part, exp] = await Promise.all([
     interpro.domains(t.uniprot).catch(() => []), reactome.pathways(t.uniprot).catch(() => []),
-    stringdb.partners(t.symbol).catch(() => []), gnomad.constraint(t.symbol).catch(() => null),
-    proteinAtlas.expression(t.symbol).catch(() => null),
+    stringdb.partners(t.symbol).catch(() => []), proteinAtlas.expression(t.symbol).catch(() => null),
   ]);
   const chip = (x) => `<span class="badge-sm">${x}</span>`;
   box.innerHTML = `
     <div style="margin-bottom:8px"><b>${t.symbol}</b> ${t.name}</div>
-    ${con ? `<div class="props" style="margin-bottom:8px">
-      <span>pLI <b>${fmt(con.pLI, 2)}</b></span><span>LOEUF <b>${fmt(con.loeuf, 2)}</b></span>
-      <span>missense Z <b>${fmt(con.misZ, 2)}</b></span><span>obs/exp LoF <b>${fmt(con.oeLof, 2)}</b></span></div>
-      <div class="hint" style="margin-bottom:8px">gnomAD constraint: pLI near 1 means loss of one copy is not tolerated.</div>` : ''}
     ${dom.length ? `<div style="margin-bottom:8px"><b>Domains</b><br>${dom.slice(0, 8).map((d) => chip(`${d.name}${d.locations[0] ? ` ${d.locations[0][0]}-${d.locations[0][1]}` : ''}`)).join(' ')}</div>` : ''}
     ${path.length ? `<div style="margin-bottom:8px"><b>Pathways</b> <span class="hint">Reactome</span><br>${path.slice(0, 6).map((p) => chip(p.name.slice(0, 38))).join(' ')}</div>` : ''}
     ${part.length ? `<div style="margin-bottom:8px"><b>Interaction partners</b> <span class="hint">STRING</span><br>${part.slice(0, 12).map((p) => `<span class="badge-sm" data-sym="${p.symbol}" style="cursor:pointer">${p.symbol}</span>`).join(' ')}</div>` : ''}
@@ -883,6 +1016,51 @@ async function reviewPatents() {
 }
 
 // ---------------------------------------------------------------- provenance ledger
+// --- wallet sign-in -------------------------------------------------------
+// The token lives in memory only. Putting it in localStorage would outlive the
+// tab and survive an account switch in the wallet, which is exactly the state
+// we go out of our way to end below.
+function renderWallet() {
+  const box = $('#walletStatus');
+  if (!box) return;
+  if (!S.wallet) {
+    box.textContent = hasWallet() ? 'Not signed in.' : NO_WALLET;
+    return;
+  }
+  box.innerHTML = `Signed in as <code>${shortAddress(S.wallet.address)}</code>`
+    + (S.wallet.interopVerified ? ''
+       : ' <span class="hint">· signature path not yet confirmed against a live wallet</span>');
+}
+
+async function walletSignIn() {
+  try {
+    await ensureMonad();
+    S.wallet = await signIn({});
+    renderWallet();
+    toast(`Signed in as ${shortAddress(S.wallet.address)}`);
+
+    S.walletWatch?.();
+    // A session token is bound to the address that signed for it, so an account
+    // or chain switch has to end the session rather than quietly leave the user
+    // acting as someone else.
+    S.walletWatch = watchWallet(({ reason }) => {
+      if (!S.wallet) return;
+      walletSignOut();
+      toast(reason === 'chainChanged' ? 'Chain changed; signed out.'
+                                      : 'Account changed; signed out.', true);
+    });
+  } catch (err) {
+    toast(err.message || String(err), true);
+  }
+}
+
+function walletSignOut() {
+  S.walletWatch?.();
+  S.walletWatch = null;
+  S.wallet = null;
+  renderWallet();
+}
+
 function renderLedger() {
   const head = $('#ledgerHead'), list = $('#ledgerList');
   if (!head) return;
@@ -1042,7 +1220,7 @@ function filmStoryboard(shots) {
       onEnter: async () => { setColor('ss'); filmFit(0.6); }, onFrame: spin(0.002) },
 
     { seconds: 7, caption: 'The drug is lifted out of the crystal and stops counting as part of the protein, so it cannot clash with itself.',
-      stats: { 'heavy atoms': S.ligand?.n, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`, 'H-bonds': 1 },
+      stats: { 'heavy atoms': S.ligand?.n, 'crystal score': plain(fmt(shots.crystalScore), DOCK_TIER), 'H-bonds': 1 },
       onFrame: spin(0.0018) },
 
     { seconds: 13, caption: 'Now docking it back in blind: ten Monte Carlo runs searching position, orientation and every rotatable bond.',
@@ -1053,7 +1231,7 @@ function filmStoryboard(shots) {
         S.ligand.pos.set(arr[k]); S.ligandView.refresh({ cartoon: false }); } },
 
     { seconds: 9, caption: 'The best pose lands within about one and a half angstroms of the experimental pose, and scores as well as the crystal.',
-      stats: { 'best score': `${fmt(shots.best.score)} kcal/mol`, 'crystal score': `${fmt(shots.crystalScore)} kcal/mol`,
+      stats: { 'best score': plain(fmt(shots.best.score), DOCK_TIER), 'crystal score': plain(fmt(shots.crystalScore), DOCK_TIER),
         'RMSD to crystal': `${fmt(shots.best.rmsd, 1)} A`, 'H-bonds': shots.best.hbonds },
       onEnter: async () => { if (shots.poses[0]) { S.ligand.pos.set(shots.poses[0].coords); S.ligandView.refresh(); scoreNow(); } },
       onFrame: spin(0.0016) },
@@ -1070,7 +1248,7 @@ function filmStoryboard(shots) {
       onFrame: (t, f) => { workspace.rotation.y += 0.004; if (S.md && f % 2 === 0) { S.md.step(8); S.ligandView.refresh({ cartoon: false }); } } },
 
     { seconds: 9, caption: 'Your own compounds import from PDF, spreadsheet or SDF. Screening docks every one against the site and ranks them.',
-      stats: Object.fromEntries(shots.ranked.map((c) => [c.agiId, `${c.dockScore} kcal/mol`])),
+      stats: Object.fromEntries(shots.ranked.map((c) => [c.agiId, plain(c.dockScore, DOCK_TIER)])),
       onEnter: async () => { stopMD(); }, onFrame: spin(0.0016) },
 
     { seconds: 9, caption: 'Every run is written into a SHA-256 hash chain. Alter one record and verification fails, so a result can be anchored on-chain.',
@@ -1081,7 +1259,31 @@ function filmStoryboard(shots) {
       stats: { 'AlphaFold 3': 'job export', OpenMM: '27 ns/day', Foldseek: 'fold search', 'shared rooms': 'multi-user' },
       onFrame: spin(0.002) },
 
-    { seconds: 5.5, fade: 'in', title: { main: 'biodao.blockchain', sub: '60 targets · 14 public databases · VR, AR and desktop', note: 'powered by AGI Corp', alpha: 0 },
+    { seconds: 9, caption: 'Every target carries citations that are re-resolved against live databases. A verifier re-checks each accession, structure, trial and quoted sentence, and fails on bad input.',
+      stats: { panels: 5, targets: 86, 'citation checks': 1264, failures: 0 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 9, caption: 'It caught a single word. A quote read "completion rates of planned assessments" where the paper says "for" — a real citation of a real study, wrong in one preposition.',
+      stats: { 'checked against': 'the abstract itself', 'what a skim catches': 'nothing', 'what the verifier caught': '1 word' },
+      onFrame: spin(0.0016) },
+
+    { seconds: 9, caption: 'Where a number is a placeholder rather than a measurement, it says so. The label follows the value into anything that formats it, including code that was never touched.',
+      stats: { marker: '[SYNTHETIC]', 'survives': 'arithmetic and formatting', 'shown in': 'UI, reports, headset' },
+      onFrame: spin(0.0018) },
+
+    { seconds: 10, caption: 'Repurposing works by joining a compound to its targets, then to other diseases those targets drive. Blinded, it rediscovers thalidomide for myeloma and sildenafil for pulmonary hypertension.',
+      stats: { 'known cases recovered': '5 of 7', 'thalidomide rank': 1, 'sildenafil rank': 3, 'misses explained': 2 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 8, caption: 'Compound sheets write substituents the way a chemist does, as OCH3 and CF3, which no parser accepts. Expanding that shorthand recovered most of a library that was being discarded.',
+      stats: { 'read natively': 692, 'recovered by repair': 3205, 'file formats': 16 },
+      onFrame: spin(0.0018) },
+
+    { seconds: 9, caption: 'A longevity track built around children: progeria, Werner, Cockayne, the telomere disorders. It records what failed to replicate as carefully as what held.',
+      stats: { targets: 18, 'progeroid arm': 9, 'claims that failed': 23 },
+      onFrame: spin(0.0016) },
+
+    { seconds: 5.5, fade: 'in', title: { main: 'biodao.blockchain', sub: '86 targets · 1,264 verified citations · VR, AR and desktop', note: 'powered by AGI Corp', alpha: 0 },
       onFrame: spin(0.0012) },
   ];
 }
@@ -1254,28 +1456,82 @@ async function importAf3(file) {
 }
 
 // ---------------------------------------------------------------- XR
-async function enterXR(mode) {
-  try {
-    xr.setPanelVisible(true);
-    await startSession(renderer, mode, () => { xr.setPanelVisible(false); scene.background = null; resize(); });
-    if (mode === 'immersive-ar') scene.background = null;
-    buildWristMenu();
-    toast('In headset: grip to move, two grips to scale, trigger to pick.');
-  } catch (e) { toast(`Could not start ${mode}: ${e.message}`, true); }
+const XR_BUTTONS = { 'immersive-vr': ['#btnVR', 'VR'], 'immersive-ar': ['#btnAR', 'AR'] };
+let xrSup = { vr: false, ar: false, reason: 'no-webxr' };
+
+// Buttons stay clickable when XR is unavailable so a click can explain why and what to do instead.
+async function refreshXRButtons() {
+  xrSup = await xrSupport();
+  for (const [mode, [sel, label]] of Object.entries(XR_BUTTONS)) {
+    const ok = mode === 'immersive-vr' ? xrSup.vr : xrSup.ar, b = $(sel);
+    b.disabled = false;
+    b.dataset.available = ok ? '1' : '';
+    b.classList.toggle('unavailable', !ok);
+    b.setAttribute('aria-disabled', String(!ok));
+    b.title = ok ? `Enter immersive ${label}` : xrUnavailableReason(mode);
+  }
+  const line = $('#xrStatusLine');
+  if (line) line.innerHTML = xrSup.vr || xrSup.ar
+    ? `Headset ready: <b>${[xrSup.vr && 'VR', xrSup.ar && 'AR'].filter(Boolean).join(' + ')}</b>. Press Enter ${xrSup.vr ? 'VR' : 'AR'} to step in.`
+    : 'No headset detected. <a href="#" id="xrWhy">Why?</a>';
+  $('#xrWhy')?.addEventListener('click', (e) => { e.preventDefault(); showXRHelp('immersive-vr'); });
 }
+
+function xrUnavailableReason(mode) {
+  if (xrSup.reason) return XR_REASONS[xrSup.reason];
+  return mode === 'immersive-ar' ? 'This headset or browser does not offer passthrough AR. Use Enter VR instead.' : 'This device does not offer immersive VR.';
+}
+
+function showXRHelp(mode) {
+  const box = $('#xrHelp');
+  $('#xrHelpReason').textContent = xrUnavailableReason(mode);
+  box.classList.remove('hidden');
+}
+
+async function enterXR(mode) {
+  if (xr.session) return xr.end();
+  if (!$(XR_BUTTONS[mode][0]).dataset.available) return showXRHelp(mode);
+  try {
+    // Everything before requestSession() is synchronous so the click's user activation is still valid.
+    buildWristMenu();
+    stageSceneForXR();
+    await xr.enter(mode);
+  } catch (e) {
+    toast(`Could not start ${XR_BUTTONS[mode][1]}: ${e.message}`, true);
+  }
+}
+
+xr.addEventListener('sessionstart', (e) => {
+  const { mode } = e.detail;
+  if (mode === 'immersive-ar') scene.background = null;
+  fitView(0.4);
+  $(XR_BUTTONS[mode][0]).textContent = `Exit ${XR_BUTTONS[mode][1]}`;
+  $('#hoverTip').classList.add('hidden');
+  xr.panel.setStatus(S.protein ? S.protein.name : 'no structure loaded');
+  status(`in ${XR_BUTTONS[mode][1]} (${e.detail.space} reference space)`);
+});
+xr.addEventListener('sessionend', () => {
+  for (const [sel, label] of Object.values(XR_BUTTONS)) $(sel).textContent = `Enter ${label}`;
+  endSteer();
+  resize(); fitView();
+  status('ready');
+});
+xr.addEventListener('visibility', (e) => { if (e.detail.state !== 'visible') endSteer(); });
 
 function buildWristMenu() {
   const repIdx = () => REPS.indexOf(S.proteinView?.style.rep || 'cartoon');
   const colIdx = () => COLORS.indexOf(S.proteinView?.style.color || 'chain');
   xr.panel.setButtons([
-    { label: 'MD', value: () => (S.mdRunning ? 'running' : 'stopped'), active: S.mdRunning, onClick: (b) => { toggleMD(); b.active = S.mdRunning; } },
-    { label: 'Dock', onClick: () => doDock() },
+    { label: 'Style', value: () => S.proteinView?.style.rep || '–', onClick: () => { const r = REPS[(repIdx() + 1) % REPS.length]; S.proteinView?.setStyle({ rep: r }); refreshPickTargets(); } },
+    { label: 'Colour', value: () => S.proteinView?.style.color || '–', onClick: () => { const c = COLORS[(colIdx() + 1) % COLORS.length]; S.proteinView?.setStyle({ color: c }); } },
+    { label: 'Recentre', onClick: () => fitView(0.4) },
+    { label: 'Clear selection', onClick: () => { S.selection = []; renderSelection(); xr.clearSelection(); } },
+    { label: 'Live MD', value: () => (S.mdRunning ? 'running' : 'stopped'), active: () => S.mdRunning, onClick: () => toggleMD() },
     { label: 'Pockets', onClick: () => doPockets() },
-    { label: 'Style', onClick: () => { const r = REPS[(repIdx() + 1) % REPS.length]; S.proteinView?.setStyle({ rep: r }); refreshPickTargets(); xr.panel.setStatus(r); } },
-    { label: 'Colour', onClick: () => { const c = COLORS[(colIdx() + 1) % COLORS.length]; S.proteinView?.setStyle({ color: c }); xr.panel.setStatus(c); } },
-    { label: 'Next cmpd', onClick: () => cycleCompound(1) },
-    { label: 'Prev cmpd', onClick: () => cycleCompound(-1) },
-    { label: 'Recentre', onClick: () => fitView() },
+    { label: 'Dock', onClick: () => doDock() },
+    { label: 'Next compound', onClick: () => cycleCompound(1) },
+    { label: 'Help', onClick: () => xr.showHelp(!xr.hint.sprite.visible) },
+    { label: 'Exit', onClick: () => xr.end() },
   ]);
 }
 
@@ -1287,33 +1543,13 @@ function cycleCompound(dir) {
   loadCompound(next);
 }
 
-// ---------------------------------------------------------------- desktop pointer
-const vp = $('#viewport');
-vp.addEventListener('pointerdown', (e) => {
-  if (xr.active || e.button !== 0) return;
-  const r = vp.getBoundingClientRect();
-  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(xr.pickTargets, true);
-  if (hits[0]) { onPick(hits[0], hits[0].point); if (steer) controls.enabled = false; }
-});
-vp.addEventListener('pointermove', (e) => {
-  if (!steer || xr.active) return;
-  const r = vp.getBoundingClientRect();
-  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  raycaster.setFromCamera(pointer, camera);
-  const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
-  model.localToWorld(c);
-  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), c);
-  const pt = new THREE.Vector3();
-  if (raycaster.ray.intersectPlane(plane, pt)) updateSteer(pt);
-});
-addEventListener('pointerup', () => { endSteer(); controls.enabled = true; });
-
-xr.addEventListener('pick', (e) => {
+// Steering the ligand through the pocket during live MD claims the press; everything else is tap-to-identify.
+const isLigandHit = (hit) => S.mdRunning && S.ligand && pickAtom(hit)?.view === S.ligandView;
+xr.addEventListener('pressstart', (e) => {
   const { hit } = e.detail;
-  if (hit) onPick(hit, hit.point);
+  if (hit && isLigandHit(hit) && mayGrabLigand()) { e.preventDefault(); startSteer(hit.point); }
 });
+xr.addEventListener('pick', (e) => onPick(e.detail.hit));
 xr.addEventListener('drag', (e) => {
   if (!steer) return;
   const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
@@ -1321,7 +1557,73 @@ xr.addEventListener('drag', (e) => {
   const pt = e.detail.ray.ray.at(e.detail.ray.ray.origin.distanceTo(c), new THREE.Vector3());
   updateSteer(pt);
 });
-xr.addEventListener('pickend', () => endSteer());
+xr.addEventListener('pressend', () => endSteer());
+
+// ---------------------------------------------------------------- desktop pointer
+// Click (press and release without dragging) identifies an atom; dragging orbits. Previously any press that began
+// on an atom selected it, so every attempt to rotate the molecule also changed the selection.
+const vp = $('#viewport');
+let pressAt = null, hoverQueued = false, lastMove = null;
+function rayFromEvent(e) {
+  const r = vp.getBoundingClientRect();
+  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  const pri = xr.priority();
+  return (pri.length && raycaster.intersectObjects(pri, true).find((h) => h.object.visible))
+    || raycaster.intersectObjects(xr.pickTargets, true).find((h) => h.object.visible) || null;
+}
+vp.addEventListener('pointerdown', (e) => {
+  if (xr.active || e.button !== 0 || e.target !== renderer.domElement) return;
+  pressAt = { x: e.clientX, y: e.clientY };
+  const hit = rayFromEvent(e);
+  if (hit && isLigandHit(hit) && mayGrabLigand()) {
+    controls.enabled = false; pressAt = null;
+    // If the claim is refused after all, give the camera back rather than
+    // leaving the user with a dead pointer and no explanation.
+    startSteer(hit.point).then((started) => { if (!started) controls.enabled = true; });
+  }
+});
+vp.addEventListener('pointermove', (e) => {
+  if (xr.active) return;
+  if (steer) {
+    const r = vp.getBoundingClientRect();
+    pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+    const c = new THREE.Vector3(...centroid(S.ligand.pos, S.ligand.n));
+    model.localToWorld(c);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), c);
+    const pt = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(plane, pt)) updateSteer(pt);
+    return;
+  }
+  // Hover tooltip, at most once per frame.
+  lastMove = e;
+  if (hoverQueued) return;
+  hoverQueued = true;
+  requestAnimationFrame(() => {
+    hoverQueued = false;
+    const ev = lastMove, tip = $('#hoverTip');
+    if (!ev || ev.buttons || ev.target !== renderer.domElement) { tip.classList.add('hidden'); return; }
+    const hit = rayFromEvent(ev), p = hit && pickAtom(hit);
+    if (!p) { tip.classList.add('hidden'); vp.style.cursor = ''; return; }
+    const [title, ...rest] = describeAtom(p.view, p.atom);
+    tip.innerHTML = `<b>${title}</b>${rest.map((x) => `<br><span>${x}</span>`).join('')}`;
+    const r = vp.getBoundingClientRect();
+    tip.style.left = `${Math.min(ev.clientX - r.left + 14, r.width - 240)}px`;
+    tip.style.top = `${ev.clientY - r.top + 14}px`;
+    tip.classList.remove('hidden');
+    vp.style.cursor = 'pointer';
+  });
+});
+vp.addEventListener('pointerleave', () => { lastMove = null; $('#hoverTip').classList.add('hidden'); });
+vp.addEventListener('pointerup', (e) => {
+  if (pressAt && !xr.active && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) < 5) {
+    const hit = rayFromEvent(e);
+    if (hit) onPick(hit);
+  }
+  pressAt = null;
+});
+addEventListener('pointerup', () => { endSteer(); controls.enabled = true; });
 
 // ---------------------------------------------------------------- wiring
 function wire() {
@@ -1390,6 +1692,8 @@ function wire() {
   $('#btnScreen').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary());
   $('#btnScreenQuick').onclick = () => (S.screening ? (S.stopFlag = true) : screenLibrary({ limit: 12, runs: 3, steps: 1200 }));
 
+  $('#btnFingerprint').onclick = () => analysePose();
+  $('#btnSelectivity').onclick = () => selectivityPanel().catch((e) => toast(e.message, true));
   $('#btnPockets').onclick = doPockets;
   $('#btnDock').onclick = doDock;
   $('#btnStopDock').onclick = () => { S.stopFlag = true; };
@@ -1427,6 +1731,24 @@ function wire() {
   $('#btnPanel').onclick = () => { $('#right').classList.toggle('collapsed'); $('#left').classList.toggle('collapsed'); setTimeout(resize, 60); };
   $('#btnEvidence').onclick = () => gatherEvidence().catch((e) => toast(e.message, true));
   $('#btnDemo').onclick = runDemo;
+  $('#btnDash').onclick = () => toggleDashboard();
+  $('#mobDash')?.addEventListener('click', () => toggleDashboard());
+  $('#btnGlasses')?.addEventListener('click', () => { location.search = '?mode=glasses'; });
+  $('#btnToolList')?.addEventListener('click', () => {
+    const schema = S.agent ? S.agent.tools.map((t) => `${t.name}(${Object.keys(t.parameters.properties || {}).join(', ')}) — ${t.description}`) : [];
+    S.console?.say('agent', `<b>${schema.length} tools</b><pre>${schema.join('\n')}</pre>`);
+  });
+  // Mobile: the panels become bottom sheets.
+  $$('#mobileBar button[data-sheet]').forEach((b) => {
+    b.onclick = () => {
+      const which = b.dataset.sheet;
+      const left = $('#left'), right = $('#right');
+      if (which === 'right') { right.classList.toggle('sheet-open'); left.classList.remove('sheet-open'); return; }
+      right.classList.remove('sheet-open');
+      $$('.tabs button').find((x) => x.dataset.tab === which)?.click();
+      left.classList.toggle('sheet-open', !left.classList.contains('sheet-open') || $$('.tabs button').find((x) => x.dataset.tab === which)?.classList.contains('active'));
+    };
+  });
   $('#btnPatents').onclick = reviewPatents;
   renderFoundations();
   $('#btnLedgerVerify').onclick = async () => {
@@ -1435,8 +1757,15 @@ function wire() {
   };
   $('#btnLedgerExport').onclick = () => downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`);
   $('#btnLedgerClear').onclick = () => { if (confirm('Clear the provenance ledger? This cannot be undone.')) { S.ledger.clear(); renderLedger(); } };
+  $('#btnWalletSignIn').onclick = walletSignIn;
+  $('#btnWalletOut').onclick = walletSignOut;
   $('#btnVR').onclick = () => enterXR('immersive-vr');
   $('#btnAR').onclick = () => enterXR('immersive-ar');
+  $('#xrHelpClose').onclick = () => $('#xrHelp').classList.add('hidden');
+  // The controls card is a per-viewer convenience; storage may be unavailable (private mode), so never depend on it.
+  const HELP_KEY = 'biodao-viewhelp-hidden';
+  try { if (localStorage.getItem(HELP_KEY)) $('#viewHelp').classList.add('hidden'); } catch {}
+  $('#viewHelpClose').onclick = () => { $('#viewHelp').classList.add('hidden'); try { localStorage.setItem(HELP_KEY, '1'); } catch {} };
 
   addEventListener('keydown', (e) => {
     if (e.target.matches('input, select, textarea')) return;
@@ -1444,13 +1773,15 @@ function wire() {
     if (e.key === 'd') doDock();
     if (e.key === 'p') doPockets();
     if (e.key === 'f') fitView();
+    if (e.key === 'Escape') $('#xrHelp').classList.add('hidden');
     if (e.key === 'n') cycleCompound(1);
   });
 }
 
-// Optional WebXR emulator: open the page with ?emulate=quest3 to try the headset UI on a desktop.
+// Optional WebXR emulator (Meta's IWER, pinned) for trying the headset interface on a desktop:
+//   ?emulate=quest3            controllers        ?emulate=quest3&input=hands   articulated hand tracking
 async function maybeEmulateXR() {
-  const p = new URLSearchParams(location.search).get('emulate');
+  const params = new URLSearchParams(location.search), p = params.get('emulate');
   if (!p) return false;
   try {
     const iwer = await import('https://cdn.jsdelivr.net/npm/iwer@2.4.0/+esm');
@@ -1458,10 +1789,433 @@ async function maybeEmulateXR() {
     device.installRuntime({ forceInstall: true });  // replace Chrome's empty native runtime
     device.controllers.right.position.set(0.25, 1.2, -0.3);
     device.controllers.left.position.set(-0.25, 1.2, -0.3);
+    if (params.get('input') === 'hands') device.primaryInputMode = 'hand';
     window.xrDevice = device;
     toast('WebXR emulator active — "Enter VR" now works in this browser');
     return true;
   } catch (e) { toast(`emulator failed: ${e.message}`, true); return false; }
+}
+
+// ---------------------------------------------------------------- assistant: tools, voice, hands
+// One adapter object is the whole surface the tools (and therefore the console, the voice layer and any
+// external agent) can touch. Keeping it explicit means a tool can never reach into app internals by accident.
+function buildAppAdapter() {
+  const round = (v) => (v == null || Number.isNaN(v) ? null : +(+v).toFixed(2));
+  return {
+    get state() { return S; },
+    round,
+    findTarget: (q) => {
+      const n = String(q || '').trim().toLowerCase().replace(/\s+/g, '');
+      return S.targets.find((t) => t.symbol.toLowerCase() === n)
+        || S.targets.find((t) => t.symbol.toLowerCase().startsWith(n))
+        || S.targets.find((t) => (t.name || '').toLowerCase().includes(n));
+    },
+    findCompound: (id) => {
+      const n = String(id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return S.library.compounds.find((c) => (c.agiId || '').toLowerCase().replace(/[^a-z0-9]/g, '') === n)
+        || S.library.compounds.find((c) => (c.agiId || '').toLowerCase().includes(n));
+    },
+    searchGene: (q) => uniprot.searchGene(q),
+    openTarget, loadPdb, loadAlphaFold, loadCompound, loadDrugByName, extractCocrystal,
+    doPockets, gatherEvidence, findSimilarFolds: () => findSimilarFolds(document.createElement('button')),
+    cycleCompound: (dir) => { cycleCompound(dir); return { ligand: S.compound?.agiId || S.ligand?.name || null }; },
+    loadSmiles: async (smiles) => { const st = await smilesTo3D(smiles, { name: 'query' }); await setLigand(st, { smiles }); },
+    doDock: async ({ runs, steps } = {}) => doDock({ runs, steps }),
+    screenLibrary: (args) => screenLibrary(args),
+    rankedLibrary: () => S.library.compounds.filter((c) => c.dockScore != null).sort((a, b) => a.dockScore - b.dockScore),
+    startMD: ({ rigidProtein } = {}) => { if (rigidProtein !== undefined) $('#freezeProtein').checked = !!rigidProtein; if (!S.mdRunning) startMD(); },
+    stopMD,
+    runBackendMD: async ({ steps, temperature } = {}) => {
+      if (steps) $('#mdSteps').value = steps;
+      if (temperature) $('#mdTemp').value = temperature;
+      await runBackendMD();
+      return { started: true, note: 'all-atom OpenMM run; the trajectory plays back when it finishes' };
+    },
+    knownDrugs: () => ({ target: S.target?.symbol || null,
+      drugs: [...document.querySelectorAll('#drugList .item')].slice(0, 15).map((el) => el.textContent.replace(/\s+/g, ' ').trim()) }),
+    setView: ({ representation, colour, reset }) => {
+      if (representation) { $('#repSelect').value = representation; $('#repSelect').dispatchEvent(new Event('change')); }
+      if (colour) { $('#colorSelect').value = colour; $('#colorSelect').dispatchEvent(new Event('change')); }
+      if (reset) fitView();
+      return { representation: S.proteinView?.style.rep, colour: S.proteinView?.style.color };
+    },
+    measure: () => ({ text: $('#selInfo').textContent }),
+    analysePose: () => {
+      const fp = analysePose();
+      if (!fp) throw new Error('load a target and a ligand first');
+      return { summary: fp.summary, counts: fp.counts,
+        residues: fp.residues.slice(0, 10).map((r) => ({ residue: r.label, types: r.types })) };
+    },
+    selectivity: (args) => selectivityPanel(args).then((rows) => ({ compared: rows })),
+    series: ({ cut } = {}) => {
+      const groups = clusterSeries(S.library.compounds, (c) => S.library.fpBytes(c), tanimoto, { cut: cut ?? 0.55 });
+      return { series: groups.length,
+        groups: groups.slice(0, 10).map((g) => ({ size: g.size, members: g.members.slice(0, 6).map((m) => m.agiId),
+          best: g.best ? { id: g.best.agiId, score: g.best.dockScore } : null })) };
+    },
+    librarySearch: async ({ text, smarts, maxMw, cnsOnly }) => {
+      let list = smarts ? await S.library.substructure(smarts) : S.library.search(text || '');
+      if (maxMw) list = list.filter((c) => (c.profile?.desc.mw ?? 1e9) <= maxMw);
+      if (cnsOnly) list = list.filter((c) => c.profile?.rules?.bbbLikely);
+      return { matches: list.length, compounds: list.slice(0, 20).map((c) => ({ id: c.agiId, smiles: c.canonical, mw: round(c.profile?.desc.mw), score: c.dockScore })) };
+    },
+    ledger: async (action) => {
+      if (action === 'export') { downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`); return { text: 'Ledger exported.' }; }
+      if (action === 'list') return { records: S.ledger.records.slice(-15).map((r) => ({ kind: r.kind, time: r.time, hash: r.hash.slice(0, 12) })) };
+      const v = await S.ledger.verify();
+      return { ...v, records: S.ledger.records.length, text: v.ok ? `Chain verified: ${v.length} records intact.` : `Chain broken at record ${v.brokenAt}: ${v.reason}` };
+    },
+    describe: () => {
+      const p = S.protein, sc = S.lastScore;
+      if (!p) return { text: 'Nothing is loaded yet. Ask me to load a target, such as SOD1.' };
+      const bits = [`${p.name}, ${p.residues.filter((r) => r.polymer).length} residues`];
+      if (S.target) bits.push(`the ${S.target.program} programme target ${S.target.symbol}, ${S.target.disease}`);
+      if (S.ligand) bits.push(`with ${S.ligand.name} in the site`);
+      if (sc) bits.push(`scoring ${round(sc.total)} kilocalories per mole with ${sc.hbonds.length} hydrogen bonds`);
+      if (S.pockets.length) bits.push(`${S.pockets.length} pockets detected`);
+      return { text: bits.join(', ') + '.', target: S.target?.symbol, structure: p.name, score: round(sc?.total) };
+    },
+  };
+}
+
+function setupAssistant() {
+  const adapter = buildAppAdapter();
+  const tools = buildTools(adapter);
+  const rt = new AgentRuntime(tools);
+  S.agent = rt;
+  rt.setVocabulary([...S.targets.map((t) => t.symbol), ...S.library.compounds.map((c) => c.agiId).filter(Boolean)]);
+
+  // Publish the schema so the MCP server can advertise the same tools.
+  fetch('/api/tools', { method: 'POST', body: JSON.stringify(toolSchemas(tools)) }).catch(() => {});
+  connectCommandChannel(rt, { onStatus: (st) => { const c = $('#agentStatus'); if (c) c.textContent = st === 'connected' ? 'agent channel open' : 'agent channel offline'; } });
+
+  // Voice: the same tools, spoken.
+  const voice = new VoiceControl({
+    onCommand: (parsed) => { if (parsed.intent !== 'unknown') S.console?.submit(parsed.transcript, 'voice'); },
+    onState: (st) => {
+      const b = S.console?.micButton;
+      if (b) b.classList.toggle('listening', st === 'listening');
+      const g = $('#glassesMic');
+      if (g) g.classList.toggle('listening', st === 'listening');
+    },
+  });
+  S.voice = voice;
+  rt.setVocabulary && voice.addVocabulary([...S.targets.map((t) => t.symbol), 'biodao']);
+
+  const consoleRoot = $('#agentConsole');
+  if (consoleRoot) {
+    S.console = new AgentConsole(consoleRoot, rt, { onSpeak: (line) => S.speakBack && voice.speak(line) });
+    const mic = S.console.micButton;
+    mic.disabled = !VoiceControl.supported;
+    mic.title = VoiceControl.supported ? 'Voice control' : 'This browser has no speech recognition (Safari and Vision Pro often lack it)';
+    mic.onclick = () => {
+      if (voice.listening) { voice.stop(); mic.classList.remove('on'); S.speakBack = false; }
+      else { voice.start(); mic.classList.add('on'); S.speakBack = true; toast('Listening. Try: load LRRK2, find pockets, dock, explain this'); }
+    };
+  }
+  return rt;
+}
+
+// Hand tracking replaces the controllers when a headset reports hands.
+function setupHands() {
+  if (S.hands) return S.hands;
+  const hands = new HandTracking(renderer, scene, { workspace });
+  S.hands = hands;
+  hands.addEventListener('tap', (e) => {
+    const p = e.detail.position;
+    if (!p) return;
+    raycaster.set(camera.getWorldPosition(new THREE.Vector3()), p.clone().sub(camera.getWorldPosition(new THREE.Vector3())).normalize());
+    const hit = raycaster.intersectObjects(xr.pickTargets, true)[0];
+    if (hit) onPick(hit, hit.point);
+  });
+  hands.addEventListener('point', (e) => {
+    if (!S.mdRunning) return;
+    const { origin, direction } = e.detail;
+    raycaster.set(origin, direction);
+    const hit = raycaster.intersectObject(S.ligandView?.group || new THREE.Group(), true)[0];
+    if (hit) updateSteer(hit.point);
+  });
+  hands.addEventListener('swipe', (e) => cycleCompound(e.detail.direction === 'right' ? 1 : -1));
+  hands.addEventListener('palmup', () => xr.setPanelVisible(true));
+  hands.addEventListener('palmdown', () => xr.setPanelVisible(false));
+  return hands;
+}
+
+// ---------------------------------------------------------------- pose analysis
+const INTERACTION_COLOURS = { hbond: '#8ef5c2', saltBridge: '#ffbe0b', piStacking: '#b388eb',
+  halogen: '#4cc9f0', hydrophobic: '#93a7bd' };
+
+function analysePose() {
+  if (!S.protein || !S.ligand) return toast('Load a target and a ligand first', true);
+  const fp = interactionFingerprint(S.protein, S.ligand);
+  S.fingerprint = fp;
+  const box = $('#fingerprintOut');
+  const chips = Object.entries(fp.counts).map(([k, n]) =>
+    `<span class="dash-chip" style="border-color:${INTERACTION_COLOURS[k]};color:${INTERACTION_COLOURS[k]}">${k.replace(/([A-Z])/g, ' $1').toLowerCase()} <b>${n}</b></span>`).join('');
+  const rows = fp.residues.slice(0, 12).map((r) => {
+    const types = Object.keys(r.types).map((t) => `<span style="color:${INTERACTION_COLOURS[t]}">•</span>`).join('');
+    return `<div class="bar-row" data-res="${r.residue}" style="grid-template-columns:70px 1fr 40px">
+      <span class="bar-label">${r.label}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${Math.min(100, r.total * 12)}%;background:${INTERACTION_COLOURS[Object.keys(r.types)[0]] || '#39d98a'}"></span></span>
+      <span class="bar-value">${types}</span></div>`;
+  }).join('');
+  box.innerHTML = `<div class="chips" style="margin-bottom:8px">${chips}</div>
+    <p class="hint" style="margin:0 0 8px">${fp.summary}</p><div class="bars">${rows}</div>
+    <p class="hint" style="margin-top:6px">Geometry only, on heavy atoms: a hydrogen bond here means donor and acceptor in range, not a proven one.</p>`;
+  box.querySelectorAll('[data-res]').forEach((el2) => {
+    el2.onclick = () => { S.proteinView.pocketResidues = new Set([+el2.dataset.res]); S.proteinView.build(); refreshPickTargets(); };
+  });
+
+  // Does this pocket sit where variation is poorly tolerated?
+  const overlap = S.missense && S.pocket ? pocketVariantOverlap(S.protein, S.pocket, S.missense) : null;
+  $('#variantOut').innerHTML = overlap
+    ? `<div class="block" style="margin:8px 0 0;padding:8px 10px"><b>Variant sensitivity</b><br>${overlap.summary}
+       <div class="chips" style="margin-top:6px">${overlap.residues.slice(0, 8).map((r) =>
+         `<span class="dash-chip" ${r.pathogenic ? 'style="color:var(--bad);border-color:#6b1f2c"' : ''}>${r.label} ${r.score.toFixed(2)}</span>`).join('')}</div></div>`
+    : (S.missense ? '' : '<span class="hint">Load an AlphaFold model to add variant sensitivity.</span>');
+
+  S.ledger.append('analysis', { target: S.protein.name, ligand: S.ligand.name, counts: fp.counts,
+    residues: fp.residues.slice(0, 10).map((r) => r.label), variantEnrichment: overlap?.enrichment ?? null }).then(renderLedger);
+  return fp;
+}
+
+// Dock the same compound against related targets: a cheap read on selectivity.
+async function selectivityPanel({ limit = 4, runs = 4, steps = 1200 } = {}) {
+  if (!S.ligand) return toast('Load a ligand first', true);
+  const ligandSmiles = S.compound?.canonical;
+  const here = S.target;
+  const others = S.targets
+    .filter((t) => t !== here && t.bestPdb && (here ? t.program === here.program : true))
+    .slice(0, limit);
+  if (!others.length) return toast('No related targets with structures to compare against', true);
+  const out = $('#selectivityOut');
+  out.innerHTML = '<div class="hint">docking against related targets…</div>';
+  const rows = [];
+  const startProtein = S.protein, startTarget = S.target;
+  const onHere = S.lastScore?.total;
+  for (const t of others) {
+    try {
+      status(`selectivity: ${t.symbol}`);
+      await loadPdb(t.bestPdb, { uniprot: t.uniprot, symbol: t.symbol });
+      await doPockets();
+      if (ligandSmiles) { const st = await smilesTo3D(ligandSmiles, { name: S.ligand.name }); await setLigand(st, { smiles: ligandSmiles }); }
+      const poses = await dockLigand(S.grid, S.ligand, S.pocket.center, { runs, steps, box: 8 });
+      rows.push({ symbol: t.symbol, disease: t.disease, score: poses[0] ? +poses[0].score.toFixed(2) : null });
+    } catch (e) { rows.push({ symbol: t.symbol, error: e.message }); }
+  }
+  rows.sort((a, b) => (a.score ?? 99) - (b.score ?? 99));
+  out.innerHTML = `<div class="hint">On ${startTarget?.symbol || startProtein?.name}: <b>${mark(fmt(onHere), DOCK_TIER)}</b></div>`
+    + rows.map((r) => `<div class="item"><div class="t"><span class="n">${r.symbol}</span>
+        <span class="s">${r.error ? 'failed' : mark(fmt(r.score), DOCK_TIER)}</span></div>
+        <div class="d">${esc(r.disease || r.error || '')}</div></div>`).join('')
+    + `<p class="hint">Same compound, same search settings, different sites. A compound that scores much better on
+       the intended target than on its relatives is the one worth pursuing.</p>${note(DOCK_TIER)}`;
+  S.ledger.append('selectivity', { ligand: S.ligand.name, onTarget: startTarget?.symbol, onTargetScore: onHere, others: rows }).then(renderLedger);
+  return rows;
+}
+
+function esc(s2) { return String(s2 ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
+// ---------------------------------------------------------------- environments
+async function setupScenes() {
+  const env = new EnvironmentManager(renderer, scene, { workspace, camera });
+  S.env = env;
+  S.walk = new Locomotion(camera, rig, { xr });
+
+  const sel = $('#hdriSelect');
+  HDRI_PRESETS.forEach((h) => sel.appendChild(new Option(h.label, h.id)));
+  sel.appendChild(new Option('none', 'none'));
+  sel.value = 'lab';
+  sel.onchange = async () => {
+    status(`lighting: ${sel.value}…`);
+    try { const r = await env.setLighting(sel.value); env.showBackground($('#hdriBg').checked); toast(`Lighting: ${r.lighting}`); }
+    catch (e) { toast(`Lighting failed: ${e.message}`, true); }
+  };
+  $('#hdriBg').onchange = (e) => env.showBackground(e.target.checked);
+
+  // The full Poly Haven catalogue is ~997 environments, all of which already
+  // work with setLighting() because it builds its URL from the slug. It is
+  // fetched lazily on first search rather than at boot: nobody should wait on a
+  // third-party API to open the workspace, and most sessions never touch this.
+  const hdriSearch = $('#hdriSearch'); const hdriStatus = $('#hdriStatus');
+  let hdriCatalogue = null; let hdriLoading = null;
+
+  const fillHdri = (entries, note) => {
+    const chosen = sel.value;
+    sel.innerHTML = '';
+    HDRI_PRESETS.forEach((h) => sel.appendChild(new Option(h.label, h.id)));
+    sel.appendChild(new Option('none', 'none'));
+    for (const a of entries) sel.appendChild(new Option(a.name, a.slug));
+    // Keep the user's selection if it survived the filter.
+    if ([...sel.options].some((o) => o.value === chosen)) sel.value = chosen;
+    hdriStatus.textContent = note;
+  };
+
+  const loadHdriCatalogue = async () => {
+    if (hdriCatalogue) return hdriCatalogue;
+    if (!hdriLoading) {
+      hdriStatus.textContent = 'Loading catalogue…';
+      hdriLoading = catalogue('hdris').then((got) => {
+        hdriCatalogue = got;
+        return got;
+      });
+    }
+    return hdriLoading;
+  };
+
+  hdriSearch.oninput = debounce(async () => {
+    const text = hdriSearch.value.trim();
+    const got = await loadHdriCatalogue();
+    if (!got.ok) { hdriStatus.textContent = got.error; return; }
+    if (!text) {
+      fillHdri([], `${got.assets.length} environments available. Type to search.`);
+      return;
+    }
+    const hits = searchAssets(got.assets, { text, limit: 200 });
+    fillHdri(hits, hits.length
+      ? `${hits.length} of ${got.assets.length} match "${text}" · CC0, Poly Haven`
+      : `Nothing matches "${text}". Built-in presets still listed above.`);
+  }, 250);
+  $('#sceneQuality').onchange = (e) => { const r = env.setQuality(e.target.value); toast(`Detail: ${r.level}`); };
+  $('#walkMode').onchange = (e) => { S.walk.setEnabled(e.target.checked); controls.enabled = !e.target.checked;
+    toast(e.target.checked ? 'Walk mode: W A S D, shift to sprint; thumbstick in a headset' : 'Orbit mode'); };
+  $('#sceneSmaller').onclick = () => showSceneStats(S.env.rescale(0.5));
+  $('#sceneBigger').onclick = () => showSceneStats(S.env.rescale(2));
+  $('#sceneRefit').onclick = () => { S.env.placeWorkspace(S.env.stats); fitView(); };
+  $('#btnSceneNone').onclick = () => { env.clear(); $('#sceneInfo').textContent = 'Empty space.'; fitView(); };
+  $('#btnSceneImport').onclick = () => $('#sceneFile').click();
+  $('#sceneFile').onchange = (e) => e.target.files[0] && loadScene(e.target.files[0]);
+  const drop = $('#sceneDrop');
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => e.dataTransfer.files[0] && loadScene(e.dataTransfer.files[0]));
+
+  try {
+    const { scenes } = await (await fetch('/api/scenes')).json();
+    S.scenes = scenes;
+    const list = $('#sceneList');
+    list.innerHTML = scenes.length ? '' : '<div class="hint">No scenes in assets/scenes. Drop a .glb below, or copy files into that folder.</div>';
+    for (const sc of scenes) {
+      const it = el('div', 'item', `<div class="t"><span class="n">${sc.label}</span><span class="s">${sc.mb} MB</span></div>`);
+      it.onclick = () => loadScene(sc.url, sc.label);
+      list.appendChild(it);
+    }
+  } catch { /* the server lists scenes; without it, import still works */ }
+  await env.setLighting('lab').catch(() => {});
+  return env;
+}
+
+function showSceneStats(r) {
+  if (!r) return;
+  const info = $('#sceneInfo');
+  info.innerHTML = `<b>${S.env.current?.name || 'scene'}</b><br>${r.meshes} meshes · ${(r.triangles / 1000).toFixed(0)}k triangles
+    · ${r.textures} textures · ${r.size.x}×${r.size.z} m${r.autoScaled ? ` (auto-scaled ${r.scale}×)` : ''}
+    ${r.heavy ? '<br><span style="color:var(--warn)">Heavy scene: switch detail to lite before entering VR.</span>' : ''}`;
+}
+
+// Cycle the available backdrops from inside VR, where there are no panels to click.
+async function cycleScene(dir = 1) {
+  const list = [{ label: 'Empty space', url: null }, ...(S.scenes || [])];
+  const current = S.env?.current?.name || 'Empty space';
+  let i = list.findIndex((x) => x.label === current);
+  if (i < 0) i = 0;
+  const next = list[(i + dir + list.length) % list.length];
+  if (!next.url) { S.env.clear(); toast('Backdrop: empty space'); xr.panel.setStatus('backdrop: empty'); return { backdrop: 'none' }; }
+  xr.panel.setStatus(`loading ${next.label}…`);
+  await loadScene(next.url, next.label);
+  xr.panel.setStatus(`backdrop: ${next.label}`);
+  return { backdrop: next.label };
+}
+
+// In a headset the scene is a backdrop, not a place to walk: drop distant detail and keep the molecule
+// at arm's length in front of the viewer.
+function stageSceneForXR() {
+  if (!S.env?.current) return;
+  S.env.setQuality('lite');
+  S.env.placeWorkspace(S.env.stats);
+  fitView(0.45);
+}
+
+async function loadScene(source, name) {
+  const info = $('#sceneInfo');
+  info.textContent = 'loading scene…';
+  try {
+    const r = await S.env.load(source, { name, onProgress: (f) => { info.textContent = `loading ${Math.round(f * 100)}%`; } });
+    showSceneStats(r);
+    fitView();
+    if (r.heavy) { $('#sceneQuality').value = 'medium'; S.env.setQuality('medium'); }
+    S.ledger.append('scene', { name: r.name, meshes: r.meshes, triangles: r.triangles }).then(renderLedger);
+    toast(`${r.name} loaded`);
+  } catch (e) { info.textContent = e.message; toast(e.message, true); }
+}
+
+// ---------------------------------------------------------------- dashboard
+function toggleDashboard(force) {
+  const open = force ?? !S.dashboardOpen;
+  S.dashboardOpen = open;
+  let root = $('#dashRoot');
+  if (!root) {
+    root = el('div', 'dash');
+    root.id = 'dashRoot';
+    $('#viewport').appendChild(root);
+  }
+  root.style.display = open ? 'block' : 'none';
+  $('#btnDash')?.classList.toggle('on', open);
+  if (open) refreshDashboard();
+}
+
+function refreshDashboard() {
+  const root = $('#dashRoot');
+  if (!root || !S.dashboardOpen) return;
+  const data = computeStats(S);
+  renderDashboard(root, data, {
+    onOpenTarget: (programme) => { S.program = programme; renderPrograms(); renderTargets(); toggleDashboard(false);
+      $$('.tabs button').find((b) => b.dataset.tab === 'targets')?.click(); },
+    onOpenCompound: (id) => { const c = S.library.compounds.find((x) => x.agiId === id); if (c) { toggleDashboard(false); loadCompound(c); } },
+    onRun: (what) => {
+      const map = { find_pockets: () => doPockets(), dock: () => doDock(), screen: () => screenLibrary({ limit: 12, runs: 3, steps: 1200 }),
+        evidence: () => gatherEvidence(), folds: () => findSimilarFolds(document.createElement('button')),
+        ledger_verify: async () => { const v = await S.ledger.verify(); toast(v.ok ? `Chain verified: ${v.length} records` : `Chain broken at ${v.brokenAt}`, !v.ok); refreshDashboard(); },
+        ledger_export: () => downloadJson(S.ledger.export(), `biodao-ledger-${Date.now()}.json`),
+        report: () => downloadText(buildReport(S, data), `biodao-report-${new Date().toISOString().slice(0, 10)}.txt`) };
+      const fn = map[what];
+      if (fn) { if (what !== 'report' && what !== 'ledger_export') toggleDashboard(false); fn(); }
+    },
+  });
+}
+
+// ---------------------------------------------------------------- glasses companion
+// Ray-Ban Meta and similar glasses have no WebXR browser, so the useful shape is voice in, speech and
+// large type out, on the phone paired with them. This is that view.
+function setupGlassesMode() {
+  document.body.classList.add('glasses');
+  const panel = el('div', 'glasses-panel');
+  panel.innerHTML = `<div class="said" id="gSaid">Say what you need. For example: what do we know about LRRK2.</div>
+    <div class="answer" id="gAnswer">biodao.blockchain</div><div class="detail" id="gDetail">voice companion</div>`;
+  $('#viewport').appendChild(panel);
+  const mic = el('button', 'glasses-mic primary', '🎙');
+  mic.id = 'glassesMic';
+  $('#viewport').appendChild(mic);
+  S.speakBack = true;
+  const voice = S.voice;
+  mic.onclick = () => (voice.listening ? voice.stop() : voice.start());
+  if (voice) {
+    voice.addEventListener('command', async (e) => {
+      const parsed = e.detail;
+      $('#gSaid').textContent = parsed.transcript;
+      try {
+        const out = await S.agent.run(parsed.transcript, { source: 'glasses' });
+        const line = out.tool ? AgentRuntime.summarise(out.tool, out.result) : out.help;
+        $('#gAnswer').textContent = line;
+        $('#gDetail').textContent = out.tool ? out.tool.replace(/_/g, ' ') : 'not understood';
+        voice.speak(line);
+      } catch (err) {
+        $('#gAnswer').textContent = err.message;
+        voice.speak(`That failed. ${err.message}`);
+      }
+    });
+    voice.start();
+  }
 }
 
 // ---------------------------------------------------------------- boot
@@ -1471,11 +2225,33 @@ async function boot() {
   resize();
   S.collab = new Collab(scene, workspace);
   S.collab.addEventListener('peer', (e) => { $('#peerList').textContent = `${e.detail.count} other participant(s) in the room.`; });
+  S.collab.addEventListener('left', (e) => { $('#peerList').textContent = e.detail.count
+    ? `${e.detail.count} other participant(s) in the room.` : 'Nobody else in the room.'; });
+
+  // Refused a grab: say who has it. "Nothing happened" is the worst possible
+  // feedback here, because the natural response is to pull harder.
+  S.collab.addEventListener('refused', (e) => {
+    toast(`${e.detail.holder} is holding that right now.`, true);
+  });
+
+  S.collab.addEventListener('grab', (e) => {
+    if (e.detail.mine) return;
+    toast(e.detail.holder
+      ? `${e.detail.name || 'Someone'} picked up the ligand.`
+      : 'The ligand is free again.');
+  });
+
   S.collab.addEventListener('state', (e) => {
     const st = e.detail;
     if (st.kind === 'protein' && st.pdb) loadPdb(st.pdb).catch(() => {});
     else if (st.kind === 'protein' && st.uniprot) loadAlphaFold(st.uniprot).catch(() => {});
     if (st.kind === 'ligand' && st.smiles) smilesTo3D(st.smiles, { name: st.name }).then((s) => setLigand(s, { smiles: st.smiles }));
+
+    // Someone else is moving the ligand: follow it. Guarded on not holding it
+    // ourselves, so a message that crosses our own grab cannot yank it back.
+    if (st.kind === 'steer' && S.md && !S.collab.held.has(st.object)) {
+      S.md.setSteer(st.p ? { x: st.p[0], y: st.p[1], z: st.p[2] } : null, 25);
+    }
   });
 
   S.caps = await server.health();
@@ -1484,9 +2260,8 @@ async function boot() {
   chip.textContent = S.caps ? `server: ${['rdkit', 'openmm', 'pypdf'].filter((k) => S.caps[k]).join(' + ') || 'basic'}` : 'server: browser only';
   chip.className = 'chip ' + (S.caps ? 'ok' : 'off');
 
-  const sup = await xrSupport();
-  $('#btnVR').disabled = !sup.vr; $('#btnAR').disabled = !sup.ar;
-  if (!sup.vr) $('#btnVR').title = 'Open this page in a headset browser (Quest, Vision Pro) or a WebXR emulator.';
+  await refreshXRButtons();
+  onXRDeviceChange(refreshXRButtons);
 
   try {
     const r = await fetch('data/targets.json');
@@ -1497,11 +2272,20 @@ async function boot() {
 
   S.ledger.actor = localStorage.getItem('biodao-actor') || 'researcher';
   renderLedger();
+  renderWallet();
   S.library.addEventListener('change', renderLibrary);
   await S.library.load();
   renderLibrary();
 
   loadRDKit().then(() => status('ready')).catch(() => toast('RDKit.js failed to load; chemistry features are offline', true));
+
+  setupAssistant();
+  setupHands();
+  setupScenes().catch((e) => console.warn('scenes', e));
+  const params = new URLSearchParams(location.search);
+  if (params.get('mode') === 'glasses') setupGlassesMode();
+  if (params.get('view') === 'dashboard') toggleDashboard(true);
+  S.ledger.addEventListener('append', () => refreshDashboard());
 
   const t = S.targets.find((x) => x.symbol === 'SOD1');
   if (t) openTarget(t);
@@ -1517,159 +2301,3 @@ async function boot() {
 boot();
 Object.assign(S, { scene, camera, renderer, workspace, model, overlay, xr, controls });
 window.AGI = S; // handy for the console
-
-// ================================================================
-// Phase 2: Immersive Voice Control & Master Agent Integration
-// ================================================================
-
-import { ImmersiveXRInterface } from './immersive-xr.js';
-
-let immersiveInterface = null;
-
-async function initializeImmersiveXR() {
-  /**Initialize voice control and master agent in VR.*/
-  if (!navigator.xr) return;  // XR not supported
-  
-  immersiveInterface = new ImmersiveXRInterface(renderer, scene, workspace);
-  console.log('✅ Immersive XR initialized with voice control');
-}
-
-async function sendVoiceCommand(transcript) {
-  /**Process voice input through master agent.*/
-  if (!transcript.trim()) return;
-  
-  try {
-    const response = await fetch('/api/voice-command', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify({ transcript }),
-    });
-    
-    const result = await response.json();
-    
-    // Display response in immersive interface
-    if (immersiveInterface) {
-      immersiveInterface.processMasterAgentResponse(result);
-    }
-    
-    // Log to UI
-    toast(`🎤 Command: ${transcript}`);
-    
-    // Execute action
-    if (result.action) {
-      await executeAgentAction(result.action);
-    }
-    
-  } catch (error) {
-    console.error('Voice command error:', error);
-    toast('Voice command failed', true);
-  }
-}
-
-async function executeAgentAction(action) {
-  /**Execute the action dictated by master agent.*/
-  const type = action.type;
-  
-  if (type === 'dock_campaign') {
-    await doDock({ runs: 8, steps: 2000 });
-  } else if (type === 'analysis_campaign') {
-    // Trigger analyst agent
-    const response = await fetch('/api/agents/analyze/hotspots', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ compounds: S.dock.poses }),
-    });
-    const result = await response.json();
-    toast(`Found hotspots: ${result.hotspot_motifs.join(', ')}`);
-  } else if (type === 'run_md') {
-    startMD();
-    setTimeout(() => stopMD(), (action.duration.split(' ')[0] * 1000));
-  } else if (type === 'generate_report') {
-    const response = await fetch(`/api/reports/camp_001/generate`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ project_id: 'proj_001', target: S.protein?.name }),
-    });
-    const report = await response.json();
-    downloadReport(report.markdown, 'screening_report.md');
-  } else if (type === 'generate_paper') {
-    const response = await fetch('/api/papers/generate?format=latex', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ disease: 'ALS', target: S.protein?.name }),
-    });
-    const paper = await response.text();
-    downloadReport(paper, 'research_paper.tex');
-  }
-}
-
-// Wire up voice button in VR headset
-function setupVoiceButton() {
-  /**Enable voice input via VR controller or microphone button.*/
-  const voiceButton = document.createElement('button');
-  voiceButton.id = 'btn-voice-control';
-  voiceButton.textContent = '🎤 Voice';
-  voiceButton.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    padding: 10px 20px;
-    background: #39d98a;
-    color: #0a0f18;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    z-index: 1000;
-  `;
-  
-  let isListening = false;
-  
-  voiceButton.onclick = () => {
-    if (!immersiveInterface) {
-      toast('XR not available', true);
-      return;
-    }
-    
-    if (isListening) {
-      // Stop and process
-      const transcript = immersiveInterface.stopVoiceSession();
-      if (transcript) {
-        sendVoiceCommand(transcript);
-      }
-      voiceButton.textContent = '🎤 Voice';
-      voiceButton.style.background = '#39d98a';
-      isListening = false;
-    } else {
-      // Start listening
-      immersiveInterface.startVoiceSession();
-      voiceButton.textContent = '⏹️ Stop';
-      voiceButton.style.background = '#ff6b6b';
-      isListening = true;
-    }
-  };
-  
-  document.body.appendChild(voiceButton);
-}
-
-// Initialize immersive XR on scene load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeImmersiveXR();
-    setupVoiceButton();
-  });
-} else {
-  initializeImmersiveXR();
-  setupVoiceButton();
-}
-
-// Animation loop update for agent avatars
-const originalAnimateLoop = () => {
-  if (immersiveInterface) {
-    immersiveInterface.animate();
-  }
-};

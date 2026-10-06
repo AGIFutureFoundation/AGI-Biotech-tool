@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>biodao build log</title>
+<style>
+  /* Layout: a running log. Status rail on the left, evidence plates on the right.
+     Dark-first, matching the workspace and the whitepaper. */
+  :root {
+    --ink: #e6eef8; --ink-dim: #8ea3bb; --ink-faint: #5d718a;
+    --bg: #070b11; --bg-raised: #0d1420; --bg-plate: #111a27; --line: #1d2a3a;
+    --accent: #39d98a; --accent-2: #4cc9f0; --warn: #ffbe0b; --bad: #ff5d73;
+    --display: "Fraunces", Georgia, serif;
+    --body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+      --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+      --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+    --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+    --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.6; }
+  .wrap { max-width: 820px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
+  h1 { font-family: var(--display); font-size: clamp(2rem, 5.5vw, 3rem); letter-spacing: -0.02em; margin: 0;
+       text-wrap: balance; }
+  h2 { font-family: var(--display); font-size: 1.4rem; margin: 0 0 0.7rem; }
+  h3 { font-size: 0.98rem; margin: 0 0 0.3rem; font-weight: 600; }
+  p { margin: 0 0 0.9rem; color: var(--ink-dim); }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: 0.7rem; }
+  header { border-bottom: 1px solid var(--line); padding-block: clamp(36px, 7vw, 64px) 28px;
+    background: radial-gradient(900px 340px at 15% -20%, rgba(57,217,138,0.10), transparent 60%), var(--bg); }
+  .mark { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 0.8rem;
+          color: var(--ink-dim); margin-bottom: 1.2rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+  section { padding-block: 32px; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+  .tag { font-family: var(--mono); font-size: 0.72rem; border: 1px solid var(--line); border-radius: 999px;
+         padding: 4px 11px; color: var(--ink-dim); }
+  .tag.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .tag.off { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+
+  .iter { display: grid; grid-template-columns: 96px 1fr; gap: 18px; padding: 18px 0;
+          border-bottom: 1px solid var(--line); }
+  .iter:last-child { border-bottom: 0; }
+  .iter .when { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-faint); padding-top: 3px; }
+  @media (max-width: 560px) { .iter { grid-template-columns: 1fr; gap: 6px; } }
+  .checks { list-style: none; padding: 0; margin: 10px 0 0; }
+  .checks li { padding-left: 22px; position: relative; font-size: 0.92rem; margin-bottom: 5px; color: var(--ink-dim); }
+  .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); }
+  .checks li.no::before { content: "×"; color: var(--bad); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-plate); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+       color: var(--ink-faint); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--accent); } .fail { color: var(--bad); }
+
+  .plate { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 10px; padding: 15px 17px;
+           min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  .blocked { border-left: 3px solid var(--warn); padding-left: 15px; }
+  .blocked li { color: var(--ink-dim); font-size: 0.93rem; margin-bottom: 0.5rem; }
+  code { font-family: var(--mono); font-size: 0.85em; color: var(--accent-2); }
+  footer { padding-block: 28px; color: var(--ink-faint); font-size: 0.82rem; }
+  .contact { font-family: var(--mono); color: var(--ink); }
+</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<header>
+  <div class="wrap">
+    <div class="mark"><span class="dot"></span> BIODAO.BLOCKCHAIN · BUILD LOG</div>
+    <h1>What changed, and what is proven</h1>
+    <p style="margin-top:1rem;max-width:62ch">A running record of the 20-minute build loop. Each entry says what
+      was done, which command verified it, and what stayed unproven. Claims that were not measured in that
+      iteration are not repeated as if they were.</p>
+    <div class="meta">
+      <span class="tag">iteration 20</span>
+      <span class="tag on">208 JavaScript tests passing</span>
+      <span class="tag off">benchmark figure corrected</span>
+      <span class="tag on">1438 Python tests passing</span>
+      <span class="tag on">110 s and 120 s films published</span>
+      <span class="tag off">server blocked by sandbox</span>
+      <span class="tag off">network blocked</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 20</div>
+      <div>
+        <h3>Working on the bottleneck, for the first time</h3>
+        <p>The first iteration of this loop aimed at a bottleneck the measurements actually identify. The
+          benchmark records nine of eleven cases as reachable and four of six failures as <em>ranking</em>
+          failures — the search produced a good pose and the score put something wrong above it. So this is a
+          rescoring pass, not a search change. <code>js/rescore.js</code> adds three terms vinaScore lacks,
+          each a known blind spot and each matching a recorded failure.</p>
+        <ul class="checks">
+          <li><strong>Buried unsatisfied polar:</strong> desolvating a donor with no partner costs energy and
+            vinaScore charges nothing — CDK5 and GSK-3β are kinase sites full of places to exploit that</li>
+          <li><strong>Metal coordination:</strong> there is no metal term at all, and carbonic anhydrase II is
+            a recorded scoring failure where celecoxib puts a sulfonamide nitrogen on the catalytic zinc</li>
+          <li><strong>Internal clash:</strong> the gap iteration 8 noted, where a conformer folded through
+            itself is free</li>
+          <li>The test that matters: a two-site receptor where vinaScore prefers a greasy decoy at −1.684
+            over the zinc-coordinating native at −0.583, and rescoring reverses it. The test asserts the
+            fixture <em>starts</em> inverted, so it cannot silently stop proving anything</li>
+          <li>Zero weights reduce rescoring to vinaScore exactly — the property a reviewer checks first</li>
+          <li>A real bug found by probing first: a zinc 4 Å away was excusing a completely unsatisfied
+            oxygen. Coordination now requires coordination distance</li>
+          <li>Mutation-checked: zeroing the metal weight breaks the inversion test. 208 JavaScript tests and
+            1438 Python tests passing</li>
+          <li class="no"><strong>The weights are not calibrated</strong> and every result says so. Fitting
+            them means running the benchmark, which needs the network</li>
+          <li class="no"><strong>Deliberately not wired into the dock path.</strong> Rescoring with invented
+            weights would move rankings for reasons nobody checked — worse than not rescoring. Calibration
+            first, wiring second</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 19</div>
+      <div>
+        <h3>The figure I had been publishing was the wrong one</h3>
+        <p>Auditing the three unguarded surfaces did not find a stale sentence. It found that the benchmark
+          had been widened to <strong>eleven cases before this build loop began</strong>, and that five
+          surfaces I maintain had gone on citing the four-case set at 2 of 4 for ten iterations. Not invented,
+          not dishonest — superseded, and never checked against the code that produces it.</p>
+        <ul class="checks">
+          <li><code>CASES.length</code> is 11, verified offline. The recorded run is 5 of 11 succeeding,
+            9 of 11 reachable</li>
+          <li class="no">Iterations 17 and 18 built a guard that <em>enforced</em> the stale figure, and 18
+            sharpened its precision against word forms and quotation marks. Precision applied to an
+            unverified premise is the appearance of care, not care</li>
+          <li class="no">The eleven-case record carries a diagnosis I was working against: four of six
+            failures are <em>scoring</em> failures where the pose was found and ranked below something wrong —
+            0.54 Å below 6.82 Å in one case. Perfect ranking would take 45% to 82% with no change to the
+            search. Iterations 7, 8 and 10 went into the search</li>
+          <li>Four surfaces now lead with 5 of 11, name all six failures, and separate scoring from sampling
+            failures — that distinction is the whole value of the measurement</li>
+          <li>The four-case figure is retired in public, not overwritten: a dated correction in the investor
+            brief and a section on the docking page saying what it was and why it is withdrawn</li>
+          <li>The guard now imports <code>CASES</code> from the eval instead of trusting a number written
+            beside the prose — the check that would have caught this at iteration 9</li>
+          <li>Mutation-checked both ways. The inflation case took three attempts: my first exemption was
+            scoped to the line, so "8 of 11 succeed. 9 of 11 are reachable." exempted its own inflated half —
+            iteration 18's hole in a new costume</li>
+          <li>195 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">I cannot re-measure 5 of 11; the benchmark needs the RCSB. It is cited as recorded by
+            another session's run, not as verified here</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 18</div>
+      <div>
+        <h3>The guard had a hole big enough to walk through</h3>
+        <p>Extending the claims guard to the investor brief found no dishonesty in the brief — it already
+          published its failures and said the figure is not good enough to predict affinity. It found two
+          holes in the guard instead, and the second one had been passing green the whole time.</p>
+        <ul class="checks">
+          <li>The brief spells its numbers out, and the benchmark check matched only digits — so "Three of
+            four within 2 Å" would have passed in the document where it costs most. Now both forms, and the
+            check is proved against eight known-good and known-bad strings</li>
+          <li><strong>The worse one:</strong> the exemption for a quoted phrase allowed a quote anywhere
+            earlier on the line. In HTML every <code>style="…"</code> attribute carries quotes, so it
+            exempted nearly every line of every HTML document under guard — close to vacuous on the surfaces
+            that matter most</li>
+          <li>A mutation test found it: rewriting the brief's figure did <em>not</em> fail the suite. The
+            quote must now sit immediately before the phrase, with a test whose only job is to prove the
+            exemption cannot be used as a loophole</li>
+          <li>New check: any surface quoting the pass rate must name the cases that fail. <strong>It caught a
+            real instance on its first run</strong> — the Testing page stated "2 of 4 within 2 Å" with no
+            mention of Thrombin or BCL-X<sub>L</sub>. Both are now named, with RMSDs and why they fail</li>
+          <li>The brief's vague "offline tests" now reads 1,438 Python and 193 JavaScript tests, re-measured
+            by the guard</li>
+          <li>Counts are now written by reading the filesystem, not typed — hand-editing them cost three
+            rounds of correction across two iterations</li>
+          <li class="no">The deck stays out of the guard until the other session's changes land</li>
+          <li class="no">Three further surfaces were not audited — pitch.html, whitepaper.html and WIKI.md.
+            A stale claim could still be sitting in any of them; a known gap, not a clean bill of health</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 17</div>
+      <div>
+        <h3>The whitepaper had stopped being true</h3>
+        <p>The whitepaper's Appendix A lists every figure beside the command that produces it, and says: do
+          not trust it, run the commands; any figure that is not reproducible should be treated as deleted.
+          That rule had quietly stopped holding. It claimed 763 tests passing and 2,034 lines of test code
+          against an actual 1,438 and 9,374, and never mentioned the JavaScript suites. Nobody had lied — the
+          document was written once and the repository kept moving, which is what prose cannot notice.</p>
+        <ul class="checks">
+          <li>Both suite results corrected, with the measurement date, and the five Python failures stated
+            alongside the passes with the reason they fail rather than a cleaner number</li>
+          <li>Every countable appendix row re-measured: test lines, Python lines, module and file counts</li>
+          <li>New section lists <em>what the tests found</em>, not only that they pass — the planarity
+            gradient error, the dropped insertion codes, "load lark two", the loop that could not terminate</li>
+          <li><code>tests/claims.test.mjs</code> re-measures the figures from the filesystem and fails when
+            claim and reality disagree. The JavaScript total is checked against cases declared: 190 and 190</li>
+          <li>The Python line must carry its failures with its passes, so the passing count cannot stand alone</li>
+          <li>Not asserted: the exact Python collection count, which moved 1,499 → 1,496 within the hour as
+            the concurrent session added tests. Pinning it would fail for unrelated reasons; the document
+            states when it measured instead</li>
+          <li>Four first-draft assertions were mine, not the document's — including a false positive on a line
+            that quotes the forbidden phrase in order to describe this very check</li>
+          <li>Mutation-checked: reverting the module figure to 22 fails with the measured value named.
+            190 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The deck and investor brief are not yet guarded — the other session has the deck open
+            in the working tree, and a guard that fails on someone else's in-flight edit is a bad guard</li>
+          <li class="no">The citation and database rows were left as they stand, dated: re-measuring them
+            needs the network</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 16</div>
+      <div>
+        <h3>What happens when a source does not answer</h3>
+        <p>The Data Sources page claims a failed lookup is reported as failed and never filled with a
+          plausible number — the second published claim in two iterations with nothing behind it. It is
+          checkable offline, because what is under test is how the module behaves when a request <em>fails</em>,
+          and a stubbed <code>fetch</code> fails on demand more reliably than a real one.</p>
+        <ul class="checks">
+          <li><strong>A POST is never replayed through the read-only proxy.</strong> Re-sending a request body
+            because the first attempt looked like a CORS failure is a silent duplicate submission — pinned
+            down by two cases, for a thrown failure and an HTTP status</li>
+          <li>404 and 503 throw, naming the host that failed and the status, so a failure cannot read as
+            "this protein has no data"</li>
+          <li>"No hits" stays distinguishable from "could not ask" — both representable, and not alike</li>
+          <li>One proxy retry for the URL originally wanted, not a loop; no retry after an abort, so a
+            timeout is not served twice</li>
+          <li>Failures evicted from the cache, so one flaky moment does not poison a source for the session</li>
+          <li>PDB-to-mmCIF fallback that still fails when neither exists, rather than handing back empty text
+            that would parse to a zero-atom structure</li>
+          <li>Found while testing: the fallback catches <em>any</em> GET failure, not only a CORS refusal, so
+            a 502 is retried through the proxy too — one lookup can cost two requests. Now a test and a wiki note</li>
+          <li>Mutation-checked: removing the body guard fails both POST cases. 179 JavaScript tests and
+            1438 Python tests passing</li>
+          <li class="no">The providers against live services. These prove the module handles failure honestly;
+            they say nothing about whether an endpoint still returns the shape expected. Response-shape drift
+            at a public API is the likeliest way this layer breaks and cannot be caught from here</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 15</div>
+      <div>
+        <h3>Tamper detection that is actually tested</h3>
+        <p>The ledger is the project's central honesty mechanism. Every traceability claim rests on one
+          property — alter a record and verification fails — which the wiki asserted, the whitepaper asserted,
+          and nothing checked. A tamper-evident log whose tamper detection is untested is decoration. So the
+          tests tamper: edit a score, delete the caveat, reorder, splice, renumber, forge the header.</p>
+        <ul class="checks">
+          <li>Each caught at the right index with the right reason. Deleting the "not kcal/mol" caveat is
+            caught like any other edit — it is a hashed field, not a note on a page</li>
+          <li>The careful forger's move — edit a payload <em>and</em> re-hash to cover it — still fails at the
+            <em>following</em> record, whose link now dangles</li>
+          <li>New <code>js/ledger-verify.js</code>: the export format promised a root hash you could "later
+            verify" and there was nothing to verify it with. It now checks a document on its own, plus the
+            claimed head and length against the records actually carried</li>
+          <li><strong>The honest limit, now documented:</strong> removing records from the <em>end</em> leaves
+            a chain that verifies perfectly. That is a property of hash chains, it was nowhere in the docs,
+            and it is now the only "no" in the wiki's detection table</li>
+          <li>An external head hash closes it; without one, every result says in as many words that
+            end-removal would not show</li>
+          <li>Proven not assumed: an export survives a JSON round trip and still verifies, and the standalone
+            verifier agrees with the live one — the guard against the two canonical forms drifting apart</li>
+          <li>Mutation-checked: removing the re-hash comparison fails two cases. 161 JavaScript tests and
+            1438 Python tests passing</li>
+          <li class="no">Anchoring a head hash anywhere external, which is the only thing that makes
+            truncation detectable in practice. Needs a network and a counterparty</li>
+          <li class="no">The ledger proves provenance, not correctness. A tamper-evident record of an
+            unvalidated docking score is an unvalidated docking score</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 14</div>
+      <div>
+        <h3>The stage upstream of everything</h3>
+        <p>The structure parsers were the last untested stage, and the only one upstream of pocket detection.
+          A column misread there does not announce itself — it arrives at the other end as a slightly wrong
+          answer that looks like a slightly wrong score. Fixtures were hand-written from the PDB format
+          specification rather than from the implementation, so the expectations come from the format.</p>
+        <ul class="checks">
+          <li><strong>Found and fixed: PDB insertion codes were dropped.</strong> ALA 100 and ALA 100A
+            collapsed into one residue, which silently kept only the second C-alpha it saw</li>
+          <li>Antibody CDR loops are numbered 100, 100A, 100B — so half an inserted loop rode on the wrong
+            elastic-network anchor, residue counts came out short, pocket labels named one residue for two</li>
+          <li>Now read from column 27 in PDB and <code>pdbx_PDB_ins_code</code> in mmCIF, so both formats
+            group residues identically, with a ready label of the form <code>ALA100A</code></li>
+          <li>Coordinates packed with no separating space, <code>-123.456-123.456</code>, still parse as three
+            numbers — proof the parser is column-based, not splitting on whitespace</li>
+          <li>An atom named CA is carbon in a residue and calcium as an ion, decided by which column the
+            letters start in, which is the real PDB convention</li>
+          <li>altLoc, multi-model, HETATM standard residues promoted to polymer, waters and ions, CONECT
+            honoured where distance perception would not bond, junk input parsed to an empty structure</li>
+          <li>Mutation-checked: reverting the residue key fails both insertion-code tests</li>
+          <li>The JS-to-Python scoring cross-check on real crystallographic geometry still passes, so the
+            regrouping shifted no score. 140 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The parsers against real RCSB files, where the awkward cases live — multi-character
+            chain IDs, hybrid-36 serials past 99999, structures with over 62 chains. Those need the network</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 13</div>
+      <div>
+        <h3>Landing the fix, and measuring that it barely matters</h3>
+        <p>The exact planarity term is now in <code>js/md.js</code>, the superseded implementation removed
+          rather than left unused, and the test that recorded the defect replaced by the test that proves the
+          fix. Then the question iteration 12 left open — does it change any result a user sees? — was
+          measured rather than assumed, and the answer is <strong>almost none</strong>.</p>
+        <ul class="checks">
+          <li><code>ligandForces</code> as a whole is gradient-exact to under 1e-6 at every pyramidalisation
+            tested; the same check failed at 6.26e-2 before the swap</li>
+          <li>Momentum still conserved to 1e-9; the old in-place implementation asserted gone, not just unused</li>
+          <li>Mutation-checked: reinstating the old term inline fails the new test, and md.js was restored to
+            exactly the intended 5-insertion, 13-deletion swap</li>
+          <li>Measured impact: minimising a two-sp2-centre fragment from three distortions, residual
+            out-of-plane is at most 0.001 Å either way, energies agree to 0.001, geometries differ by
+            0.002–0.006 Å RMSD. Both terms flatten the centre; they disagree only about the force on the way,
+            and FIRE's line search absorbed it</li>
+          <li>123 JavaScript tests, 1438 Python tests, and the JS-to-Python scoring cross-check all passing</li>
+          <li class="no">So: the fix is correct and removes a latent hazard, and it is not a result anyone
+            would notice. Both halves belong in the record</li>
+          <li class="no">Energy conservation over a long trajectory is where an inexact force would show most.
+            The thermostat dominates at these timescales, so measuring it means the OpenMM comparison — which
+            needs the server</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 12</div>
+      <div>
+        <h3>The force must be the gradient, and in one place it was not</h3>
+        <p>A force field has one property worth more than the others: the force must be the negative gradient
+          of its energy. When it fails, nothing in the output says so — the molecule just behaves slightly
+          oddly in a way that reads as physics being hard. A central finite difference in double precision at
+          three step sizes makes the convergence visible rather than assumed: 3.18e-5 at h=1e-3, 3.18e-7 at
+          1e-4, 2.27e-9 at 1e-5. Bonds, angles and repulsion are exact. <strong>The planarity term was
+          not.</strong></p>
+        <ul class="checks">
+          <li>Found: <code>js/md.js</code> holds its plane normal fixed, so the force misses the normal's own
+            motion — 19% off its energy gradient at 0.3 Å of pyramidalisation, worst where a minimiser lives</li>
+          <li>Nearly missed: the first check read 3e-10 because that geometry's errors cancelled. Pyramidalising
+            the centre alone exposed it</li>
+          <li><code>js/planarity.js</code> is the corrected term, gradient-exact to 1e-7 and momentum-conserving
+            to 1e-12, held as a new file because another session is working in md.js</li>
+          <li>The defect is asserted as a bounded fact, so the number cannot drift unnoticed</li>
+          <li>Newton's third law to 1e-9; exact spring and repulsion energies; the law-of-cosines 1-3 distance</li>
+          <li>400 steps with no NaN and both bonds intact; a frozen protein that moves by not one float</li>
+          <li>The steric guard bounds its shift to 0.25 Å and skips coincident atoms instead of dividing by zero</li>
+          <li>121 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Whether the fix changes any result a user sees. It should matter most to conformer
+            relaxation, but measuring that means the OpenMM comparison, which needs the server</li>
+          <li class="no">Implicit solvent and short timescales stay the honest limits of the dynamics regardless</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 11</div>
+      <div>
+        <h3>The one stage of the chain nobody was testing</h3>
+        <p><code>findPockets</code> is the first stage of the docking chain and had no JavaScript test. It
+          matters more than its position suggests: if it ranks a surface dent above a buried cavity, the
+          search, the refinement, the scoring and the analysis all run correctly against the wrong site, and
+          nothing in the output says so. Receptors were built so the cavity is known by construction —
+          Fibonacci-sphere shells, a solid ball with no interior, a dimple pressed into a plate.</p>
+        <ul class="checks">
+          <li>No defect found: every behaviour put to it was correct, so the value here is the guard, not a fix</li>
+          <li>Cavity located to 0.5 Å, sized 900–1200 Å<sup>3</sup> against a predicted ~1000, buriedness above 0.95</li>
+          <li>Nearest wall atom over 6 Å and under 10 from the centre — demonstrably inside the shell</li>
+          <li>A convex solid reports no pocket; a dimple 25 Å away does not register at all, let alone outrank</li>
+          <li>Excluding a cap of wall drops buriedness 0.986 → 0.837 and retreats the centre from the opening</li>
+          <li>Stable across grid spacings 1.0 / 1.25 / 1.5; volume spread under 15 percent</li>
+          <li>Mutation-checked: loosening the buriedness threshold to 3 of 26 fails six of twelve cases</li>
+          <li>100 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Real crystallographic cavities. Synthetic shells prove the algorithm does what it
+            claims; they do not prove its thresholds suit real protein surfaces, which are rougher and
+            rarely sealed</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 10</div>
+      <div>
+        <h3>Saying out loud when the score did not choose</h3>
+        <p>The two complexes the benchmark gets wrong are a long flexible ligand in a shallow groove, where
+          many placements score within a hair of each other and the search returns whichever won by a rounding
+          error — and a sorted table reads as a verdict. <code>js/poses.js</code> groups the surviving poses
+          into binding modes, compares the top two, and when the gap does not clear a margin says so:
+          <em>the next-best sits N Å away and only M behind, so this ranking is not a preference.</em> The
+          numbers go into the provenance record next to the score, so the caveat travels into any export.</p>
+        <ul class="checks">
+          <li>Three synthetic knots at known separations cluster into exactly three modes, populations 3/2/1</li>
+          <li>Modes sorted best first, each led by its own best member; spread and RMSD hand-checked</li>
+          <li>A cutoff past every separation gives one mode; under the wobble, one mode per pose</li>
+          <li>A 0.8 gap discriminates, a 0.1 gap does not, and a gap exactly at the margin counts</li>
+          <li>One mode returns null, not true — the absence of a rival is not evidence the score chose</li>
+          <li>Every verdict carries its uncalibrated-margin disclaimer, and the disclaimer is itself asserted</li>
+          <li>Clustering never mutates the caller's array; 88 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The margin's value. Calibrating it needs the benchmark, which needs the network — now
+            an explicit queue item rather than a convention left to harden into a fact</li>
+          <li class="no">Nothing about the scoring function changed, and the benchmark was not re-measured:
+            2 of 4 within 2 Å, median 2.54 Å stands</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 9</div>
+      <div>
+        <h3>The wiki, with a test that reads it</h3>
+        <p><code>docs/wiki/</code> is nine pages, one file per GitHub wiki page, pushable or pasteable, with a
+          sidebar and a publishing recipe. Home leads with the re-docking failure rather than the feature list,
+          and Known Limits is its own page linked from the front page rather than a section at the bottom of a
+          long document. Counts were read out of the code, not recalled: 19 intents, 22 tools, 21 database hosts.</p>
+        <ul class="checks">
+          <li>Prose is not compiled, so <code>tests/wiki.test.mjs</code> is the compiler: 13 cases, 74 JavaScript tests in all</li>
+          <li>Every internal link resolves; the sidebar and the page set agree both ways; no orphan pages</li>
+          <li>No page gives the docking score an energy unit except to disclaim it</li>
+          <li>Any line claiming "4 of 4 within 2 Å", or a median other than 2.54 Å, fails the suite</li>
+          <li>Home, the docking page and the testing page must each say the figure was carried forward</li>
+          <li>The intent count is compared against the module, so a new intent cannot ship undocumented</li>
+          <li>Guards mutation-checked, not assumed: an inflated table and a misspelled link each fail, then reverted</li>
+          <li class="no">Not pushed — <code>git push</code> to the wiki repository needs a valid GitHub token</li>
+          <li class="no">Two wiki figures are marked carried-forward because they cannot be re-measured here</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 8</div>
+      <div>
+        <h3>The torsions the search only sampled coarsely</h3>
+        <p>Iteration 7 tightened a pose as a rigid body. A ligand with rotatable bonds has more freedom than
+          that. <code>js/torsion.js</code> rotates the atoms on one side of a bond about that bond's own axis,
+          pattern-searches every rotatable bond with a shrinking angular step, and alternates rigid-body and
+          torsional passes until a full pass of both stops helping. The geometry checks are exact and make no
+          reference to the scoring function, which is the point of them.</p>
+        <ul class="checks">
+          <li>Every bond length holds to 1e-4 Å and every bond angle to 1e-4 rad through a rotation</li>
+          <li>The spanning dihedral moves by precisely the angle asked for; the two flanking it move by nothing</li>
+          <li>Hinge atoms and the whole fixed side do not move; a rotation composed with its inverse is the identity</li>
+          <li>A six-carbon sp3 chain yields exactly the three rotatable bonds the geometry implies</li>
+          <li>Never worse than its input, byte-identical determinism, budget respected, rigid ligand costs one call</li>
+          <li>Bug found by the test: the pass loop seeded its best at infinity and so could never stop on pass one</li>
+          <li>61 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Whether this improves the 4-case benchmark — needs structures from the RCSB, and the
+            network is blocked. The published figure stays what was measured: 2 of 4 within 2 Å, median 2.54 Å</li>
+          <li class="no">No internal-strain term: the score sees protein-ligand contacts only, so this polishes
+            a conformer rather than generating one</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 7</div>
+      <div>
+        <h3>A docked pose that actually sits in its minimum</h3>
+        <p>The Monte Carlo search ends wherever its last accepted move landed, which is near a minimum rather
+          than in it. <code>js/refine.js</code> adds a pattern search over the six rigid-body degrees of
+          freedom with a shrinking step that accepts only strict improvements, so a refined pose can never
+          score worse than its input. Poses are now refined and re-sorted before they are shown, and the
+          provenance ledger records the gain next to the score.</p>
+        <ul class="checks">
+          <li>Eight cases on a synthetic carbon cup with a seat known by construction; 47 JavaScript tests in all</li>
+          <li>From four different displacements the score never worsens and the reported gain is never negative</li>
+          <li>A pose knocked 2.3 Å off the seat comes back closer to it than it started</li>
+          <li>Deterministic to the byte, input array never mutated, evaluation budget respected</li>
+          <li>Rotations pivot on the ligand centroid: with translation disabled the centroid holds to 1e-3 Å</li>
+          <li><code>refineAll</code> re-sorts, because refinement can reorder a ranking</li>
+          <li class="no">Whether this improves the 4-case benchmark — that needs structures from the RCSB, and
+            the network is blocked. The published figure stays what was measured: 2 of 4 within 2 Å, median 2.54 Å</li>
+          <li class="no">It does not change the scoring function or move torsions. A pose in the wrong pocket
+            is still in the wrong pocket</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 6</div>
+      <div>
+        <h3>The tool registry and the voice-to-renderer seam</h3>
+        <p>Seventeen cases over <code>js/agent.js</code> against a stub workspace that records calls, so every
+          tool runs with no browser and no network. All three JavaScript suites together: 39 passing.</p>
+        <ul class="checks">
+          <li>Every tool has a valid object schema and declares each property it requires; no duplicate names</li>
+          <li>The published MCP schema carries name, description and parameters, and never leaks the function</li>
+          <li>The seam that matters: "colour by confidence" arrives as <code>plddt</code>, "show cartoon" as <code>cartoon+pocket</code></li>
+          <li>An unrecognised sentence offers help and executes nothing; an unknown tool name is refused</li>
+          <li>Failures are recorded and re-thrown rather than swallowed; events carry the calling source</li>
+          <li>One wrong expectation was mine, not the code: the dock units string had been tightened to disclaim kcal/mol</li>
+          <li class="no">The tools against a live workspace — needs a port and a browser</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 5</div>
+      <div>
+        <h3>Investor brief, 120-second film, vertical social cut</h3>
+        <p>A nine-slide 120 s cut leading with what is newly proven, plus a purpose-built vertical teaser,
+          published as an investor brief page. New module, so it does not collide with the walkthrough film
+          another session has open.</p>
+        <ul class="checks">
+          <li>ffprobe: 120.0 s at 1920×1080; vertical 27.5 s at 1080×1920</li>
+          <li>Shares one figures table with the walkthrough, so the two films cannot disagree</li>
+          <li>Frames inspected; a caption touching its plate border was shortened before shipping</li>
+          <li>Letterboxed social crops tried and discarded — unreadable on a phone; vertical rebuilt natively</li>
+          <li class="no">Narration still silent: voice credits exhausted, local speech blocked</li>
+          <li class="no">Artifact store refused a 12.8 MB upload twice; the page carries a 4 MB 720p copy</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 4</div>
+      <div>
+        <h3>The spoken-command parser under test</h3>
+        <p>Fifteen offline cases over <code>parseCommand</code>, which is pure and needs no microphone.
+          Run with <code>node --test tests/voice.test.mjs</code>.</p>
+        <ul class="checks">
+          <li>Thirteen plain commands reach the intent meant; targets load with or without articles</li>
+          <li>A four-character code reads as a structure, not a gene</li>
+          <li>An unintelligible colour returns null rather than a guess</li>
+          <li>Silence, "um" and unrelated speech return unknown and never act</li>
+          <li>Every published example parses to its own intent, so help text cannot go stale</li>
+          <li>Bug fixed: "load LRRK2" arrives as "load lark two" and matched nothing; a spoken trailing digit now resolves</li>
+          <li class="no">Real speech input — no microphone or Web Speech API offline</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 3</div>
+      <div>
+        <h3>Interaction analysis under test</h3>
+        <p>Seven offline cases on synthetic geometry: a five-residue protein and a probe ligand placed so each
+          interaction class has exactly one planted hit. Run with <code>node --test tests/analysis.test.mjs</code>.</p>
+        <ul class="checks">
+          <li>Stacking with PHE at 3.7 Å, hydrogen bond at 2.9 Å, salt bridge at 2.9 Å, hydrophobic contact at 3.8 Å; a residue 30 Å away never appears</li>
+          <li>Ring detector accepts a flat unsaturated ring, rejects puckered and saturated ones</li>
+          <li>Variant-overlap arithmetic and series clustering checked against hand-computed values</li>
+          <li>Bug found and fixed: a flat detail cap let hydrophobic contacts crowd out the one stacking record</li>
+          <li class="no">Same thresholds on real complexes — needs the network</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 2</div>
+      <div>
+        <h3>Pitch video and deck, rendered offline</h3>
+        <p>Ten designed slides drawn with Pillow, reference drugs depicted with RDKit, assembled by ffmpeg into a
+          110.0 s H.264 cut; no browser, no network. Published as a deck page with the film attached as an asset.
+          Loop rescoped to a bounded 90 minutes with a self-stop.</p>
+        <ul class="checks">
+          <li>ffprobe: 110.0 s, 1920×1080, H.264, 15.3 MB</li>
+          <li>Two slides inspected as frames; a footer collision fixed before shipping</li>
+          <li>Figures on the slides read from the same table the whitepaper uses</li>
+          <li class="no">Narration — the requested voice failed on "out of credits"; local speech is blocked by the sandbox, so the cut is silent and the script waits</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 1</div>
+      <div>
+        <h3>Protocol layer under test</h3>
+        <p>Eleven offline cases over the x402, NANDA and OML code paths, run with
+          <code>pytest tests/test_agent_protocols.py</code>.</p>
+        <ul class="checks">
+          <li>Result signatures verify; tampering and swapped signatures are both rejected</li>
+          <li>Identity is stable — a second instance loads the stored key rather than minting one</li>
+          <li>AgentFacts is signed and carries the benchmark caveat inside the discovery document</li>
+          <li>The 402 challenge names price, asset, scheme, network, and says it settles nothing</li>
+          <li>Test-mode payment accepts once, reports <code>settled: false</code>, refuses a replay</li>
+          <li>A fingerprint challenge never contains its own answer</li>
+          <li class="no">Settlement — nothing is wired to a facilitator</li>
+          <li class="no">Ed25519 signing — the package cannot install here, so the HMAC path ran</li>
+          <li class="no">Every HTTP route — no port can be bound in this sandbox</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Standing figures</div>
+    <h2>Carried forward, not re-measured</h2>
+    <p>These come from the last run that could reach the network. They are repeated here unchanged and will be
+      re-measured the moment the sandbox allows <code>node evals/redock.mjs</code> to fetch structures again.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
+        <tbody>
+          <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
+          <tr><td>GSK-3β · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
+          <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
+          <tr><td>β-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
+          <tr><td>BCL-X<sub>L</sub> · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
+          <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px"><strong>5 of 11 succeed; 9 of 11 are reachable.</strong> Four of the six
+      failures are <em>scoring</em> failures: the search found a pose within 2 Å and the ranking put something
+      wrong above it. Perfect ranking over poses already produced would take the benchmark from 45% to 82%
+      with no change to the search, so the next work belongs in the energy terms.</p>
+    <p style="margin-top:10px"><strong>Correction, iteration 19.</strong> This section previously carried a
+      four-case table at 2 of 4 within 2 Å, median 2.54 Å. <code>evals/redock.mjs</code> was widened to eleven
+      cases before this build loop began, and those four are four of the eleven; this page and four others had
+      continued citing the superseded set. The earlier timeline entries below are left exactly as written —
+      a log that gets rewritten is not a log — so they still show the old figure as it stood at the time.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Blocked</div>
+    <h2>What this session cannot do</h2>
+    <ul class="blocked">
+      <li><strong>No listening port.</strong> The sandbox refuses to bind, so the server, the browser workspace,
+        the MCP round trip and the video render cannot run. Fix:
+        <code>sandbox.network.allowLocalBinding: true</code>.</li>
+      <li><strong>No outbound network</strong> to pypi.org or the structure databases, so no live evals and no
+        Ed25519 install.</li>
+      <li><strong>No mail.</strong> No mail connector is authorized, so reports are published here to forward
+        rather than sent on a timer.</li>
+      <li><strong>GitHub push needs credentials.</strong> The remote is set; the stored token is invalid.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    biodao.blockchain — powered by AGI Corp · AGI Future Foundation ·
+    <span class="contact">x@agifuturefoundation.org</span>
+  </div>
+</footer>
+</body>
+</html>

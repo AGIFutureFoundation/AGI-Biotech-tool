@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 260" width="1000" height="260" aria-label="5 of 11 cases succeed, 9 of 11 are reachable, out of 11 total.">
+<rect width="1000" height="260" fill="#0d141f"/>
+<text x="314" y="66" fill="#e8f1ff" font-size="15" text-anchor="end">Succeeds today</text>
+<rect x="330" y="44" width="560" height="32" fill="#111a27" rx="4"/>
+<rect x="330" y="44" width="255" height="32" fill="#39d98a" rx="4"/>
+<text x="597" y="66" fill="#e8f1ff" font-size="16" font-family="monospace">5/11</text>
+<text x="314" y="130" fill="#e8f1ff" font-size="15" text-anchor="end">Reachable — pose generated, ranked or not</text>
+<rect x="330" y="108" width="560" height="32" fill="#111a27" rx="4"/>
+<rect x="330" y="108" width="458" height="32" fill="#4cc9f0" rx="4"/>
+<text x="800" y="130" fill="#e8f1ff" font-size="16" font-family="monospace">9/11</text>
+<text x="314" y="194" fill="#e8f1ff" font-size="15" text-anchor="end">Total cases</text>
+<rect x="330" y="172" width="560" height="32" fill="#111a27" rx="4"/>
+<rect x="330" y="172" width="560" height="32" fill="#1e2b3c" rx="4"/>
+<text x="902" y="194" fill="#e8f1ff" font-size="16" font-family="monospace">11/11</text>
+<text x="330" y="238" fill="#93a7bd" font-size="14">The gap between the first two bars is what the scoring function costs — not the search.</text>
+</svg>

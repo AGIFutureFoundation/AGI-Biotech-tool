@@ -3,3 +3,24 @@
 __pycache__/
 *.pyc
 .DS_Store
+assets/scenes/
+
+# Never commit a real environment file; the repo is public.
+.env
+.env.*
+!.env.example
+
+# Rendered walkthroughs. The app renders these itself (see docs/DEMO.md);
+# a 210 MB master in git made the repo unpushable to GitHub, which caps a
+# single file at 100 MB. They are build output, not source.
+docs/*.mp4
+# ...except the 14 MB shareable cut, which is well under GitHub's 100 MB
+# per-file cap and is what the whitepaper and wiki embed. The 210 MB
+# master is what made this repository unpushable and stays out.
+!docs/biodao-walkthrough.mp4
+!docs/walkthrough-share.mp4
+.keys/
+!docs/pitch.mp4
+!docs/investor.mp4
+!docs/investor-web.mp4
+!docs/investor-vertical.mp4

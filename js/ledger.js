@@ -76,8 +76,9 @@ export class Ledger extends EventTarget {
   static describe(rec) {
     const p = rec.payload || {};
     switch (rec.kind) {
-      case 'dock': return `${p.compound} → ${p.target} · ${p.score} kcal/mol`;
-      case 'screen': return `screened ${p.compounds} compounds → ${p.target} · best ${p.best}`;
+      // Dock scores come from the in-browser Vina-like function: an unvalidated estimate, never kcal/mol.
+      case 'dock': return `${p.compound} → ${p.target} · score ${p.score} (est.)`;
+      case 'screen': return `screened ${p.compounds} compounds → ${p.target} · best ${p.best} (est.)`;
       case 'md': return `${p.engine} dynamics · ${p.target} · ${p.ps} ps`;
       case 'import': return `imported ${p.count} compounds from ${p.source}`;
       case 'af3': return `AlphaFold 3 job · ${p.target}${p.ligand ? ' + ' + p.ligand : ''}`;

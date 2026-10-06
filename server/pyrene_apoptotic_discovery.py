@@ -7,12 +7,46 @@ Specialized module for:
 - Pediatric safety optimization
 - High-value target discovery
 - Dynamic molecular adaptation
+
+POTENCY NOW HAS TWO MODES, and every compound says which one produced it:
+
+  * structural (real): pass a scorer -- ``PyreneSeries3Generator(
+    structural_scorer=PyreneVinaScorer())`` -- and each compound is assembled
+    into an actual molecule (server/pyrene_structures.py), given an MMFF 3D
+    conformer, docked by seeded Monte Carlo into a real PDB pocket and scored
+    with the AutoDock Vina functional form ported from js/dock.js. The result
+    is ``vina_like_score``: a UNITLESS relative ranking, lower is better. It is
+    not kcal/mol and not a binding free energy. If it cannot be produced -- no
+    curated receptor for the target, no network and no cached PDB, an
+    unassemblable warhead pair, a failed embed -- generation RAISES. It never
+    falls back to the constants, because a silent fallback would be
+    indistinguishable from a real score.
+
+  * heuristic (default, synthetic): with no scorer, potency is still -8.5 minus
+    hand-set per-warhead constants clamped at -11.5. That number is on no
+    scale at all; it stays a SyntheticValue (prints "[SYNTHETIC]").
+
+STUB NOTICE: safety, selectivity, accessibility and the "MD" batch remain
+heuristics over hand-set warhead constants, emitted as SyntheticValue in
+records whose `provenance` field says so. Warhead enumeration and mechanism
+mapping are real logic.
 """
 
 from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-import json
+
+from synthetic_provenance import SyntheticValue, provenance, stamp
+
+# Name for the structural score, kept in one place so nothing downstream has to
+# invent a label (and so nothing can quietly write "kcal/mol" next to it).
+STRUCTURAL_MODEL = (
+    "vina_like_score: unitless relative ranking from the AutoDock Vina "
+    "functional form (Trott & Olson 2010) ported from js/dock.js, computed on a "
+    "docked 3D conformer against a real PDB receptor. Lower is better. NOT "
+    "kcal/mol, NOT a binding free energy, not comparable across receptors.")
+HEURISTIC_MODEL = provenance(
+    "no docking ran; potency is -8.5 minus hand-set warhead constants, on no scale.")
 
 @dataclass
 class PyreneSeries:
@@ -22,9 +56,9 @@ class PyreneSeries:
     base_structure: str  # SMILES
     rings: int  # Number of aromatic rings
     warheads: List[str]  # Available warhead modifications
-    binding_affinity_range: Tuple[float, float]  # kcal/mol
+    binding_affinity_range: Tuple[float, float]  # hand-set design target, kcal/mol-like scale; not measured
     apoptotic_mechanism: str
-    pediatric_safety: float  # 0-1 score
+    pediatric_safety: float  # hand-set 0-1 design assumption; not measured
     target_class: str
 
 class ApoptosisType(Enum):
@@ -57,16 +91,39 @@ class PyreneCompound:
     apoptotic_mechanism: ApoptosisType
     target_protein: str
     target_indication: str
-    pediatric_safety_score: float  # 0-1
-    predicted_potency: float  # -12 to -6 kcal/mol
-    synthetic_accessibility: float  # 0-1 (easy to hard)
-    selectivity_score: float  # 0-1 (off-target toxicity)
+    pediatric_safety_score: float  # SyntheticValue, 0-1 heuristic over hand-set warhead constants
+    predicted_potency: float  # see `binding_model`: real vina_like_score, or a SyntheticValue constant
+    synthetic_accessibility: float  # SyntheticValue, 0-1 (easy to hard) heuristic
+    selectivity_score: float  # SyntheticValue, 0.6-1.0 heuristic
     combination_partners: List[str]  # Known drugs to combine with
+    # Structural scoring, populated only when a scorer was supplied.
+    vina_like_score: Optional[float] = None  # unitless ranking; None when unscored
+    smiles: Optional[str] = None             # the molecule that was actually scored
+    binding_record: Optional[Dict] = None    # terms, receptor, pose settings
+    binding_model: str = HEURISTIC_MODEL     # which of the two modes produced potency
+    provenance: str = provenance(
+        "no docking, MD or safety model was run; scores are heuristics over hand-set warhead constants.",
+        "pediatric_safety_score", "predicted_potency", "synthetic_accessibility", "selectivity_score")
+
+    @property
+    def potency_is_computed(self) -> bool:
+        """True when `predicted_potency` came from a structure, not a constant."""
+        return self.vina_like_score is not None
 
 class PyreneSeries3Generator:
-    """Generates Series 3 pyrene compounds with apoptotic design."""
+    """Generates Series 3 pyrene compounds with apoptotic design.
 
-    def __init__(self):
+    Args:
+        structural_scorer: a ``pyrene_docking.PyreneVinaScorer`` (or anything with
+            the same ``score_warheads`` interface). Supplied, every compound is
+            assembled, docked and scored from its real 3D structure, and any
+            compound that cannot be scored raises. Omitted, potency falls back to
+            the hand-set constants -- which is a labelled, opt-out default, not a
+            silent rescue after a failure.
+    """
+
+    def __init__(self, structural_scorer=None):
+        self.structural_scorer = structural_scorer
         self.series_definitions = self._initialize_series()
         self.warhead_library = self._initialize_warheads()
         self.apoptosis_mechanisms = self._initialize_apoptosis()
@@ -113,7 +170,7 @@ class PyreneSeries3Generator:
                 'type': WarheadType.ELECTROPHILE,
                 'smarts': 'C=CC(=O)N',
                 'targets': ['cysteine', 'lysine'],
-                'potency_boost': 1.5,  # -1.5 kcal/mol improvement
+                'potency_boost': 1.5,  # hand-set heuristic weight, not a measured shift
                 'selectivity_risk': 0.2,
                 'pediatric_safety': 0.88,
             },
@@ -315,6 +372,8 @@ class PyreneSeries3Generator:
         target_indication: str,
         num_compounds: int = 20,
         apoptotic_mechanism: Optional[ApoptosisType] = None,
+        offset: int = 0,
+        prefer: Optional[List[str]] = None,
     ) -> List[PyreneCompound]:
         """Generate Series 3 pyrene compounds with optimizations.
 
@@ -323,6 +382,10 @@ class PyreneSeries3Generator:
             target_indication: e.g., 'pediatric_lymphoma'
             num_compounds: Number of compounds to generate
             apoptotic_mechanism: Specific apoptotic pathway
+            offset: Start position in the pair enumeration. Successive evolution
+                cycles pass a rising offset so each explores unseen chemistry.
+            prefer: Warheads to prioritize ahead of the target defaults, used to
+                bias generation toward warheads found in earlier top performers.
 
         Returns:
             List of designed PyreneCompound objects
@@ -331,18 +394,25 @@ class PyreneSeries3Generator:
         compounds = []
         series_def = self.series_definitions['series_3']
 
-        for i in range(num_compounds):
-            # Select warheads based on target
-            warhead_1 = self._select_warhead_for_target(target_protein, 1)
-            warhead_2 = self._select_warhead_for_target(target_protein, 2)
-
+        for i, (warhead_1, warhead_2) in enumerate(
+            self._warhead_pairs(target_protein, num_compounds, offset, prefer)
+        ):
             # Determine apoptotic mechanism
             mechanism = apoptotic_mechanism or self._select_mechanism(target_protein)
 
-            # Calculate predicted properties
-            predicted_potency = self._calculate_binding_energy(
-                warhead_1, warhead_2, target_protein
-            )
+            compound_id = f"AGI-PYRENE3-{offset+i+1:04d}"
+
+            # Potency: a real structure-derived score when a scorer is attached,
+            # the hand-set constant otherwise. `structural` is None in the
+            # second case, which is what marks the compound as unscored.
+            structural = self._structural_score(
+                warhead_1, warhead_2, target_protein, compound_id)
+            if structural is None:
+                predicted_potency = self._calculate_binding_energy(
+                    warhead_1, warhead_2, target_protein
+                )
+            else:
+                predicted_potency = structural["score"]
 
             pediatric_safety = self._calculate_pediatric_safety(
                 warhead_1, warhead_2, target_indication
@@ -362,7 +432,7 @@ class PyreneSeries3Generator:
             )
 
             compound = PyreneCompound(
-                compound_id=f"AGI-PYRENE3-{i+1:04d}",
+                compound_id=compound_id,
                 series='series_3',
                 base_pyrene=series_def.base_structure,
                 warhead_1=warhead_1,
@@ -379,6 +449,11 @@ class PyreneSeries3Generator:
                 synthetic_accessibility=synthetic_accessibility,
                 selectivity_score=selectivity,
                 combination_partners=partners,
+                vina_like_score=None if structural is None else structural["score"],
+                smiles=None if structural is None else structural["smiles"],
+                binding_record=None if structural is None else structural["record"],
+                binding_model=HEURISTIC_MODEL if structural is None else STRUCTURAL_MODEL,
+                provenance=self._compound_provenance(structural),
             )
 
             compounds.append(compound)
@@ -386,10 +461,9 @@ class PyreneSeries3Generator:
 
         return compounds
 
-    def _select_warhead_for_target(self, target: str, position: int) -> str:
-        """Select optimal warhead for target protein."""
+    def _target_preferences(self, target: str) -> List[str]:
+        """Warheads with a mechanistic rationale for this target."""
 
-        # Target-specific warhead selection
         warhead_preferences = {
             'BCL2': ['acrylamide', 'vinylsulfonamide'],  # Cysteine-reactive
             'FAS': ['hydroxamate', 'cyanoketone'],  # Metal coordination
@@ -397,12 +471,32 @@ class PyreneSeries3Generator:
             'caspase-3': ['cyanoketone', 'vinylsulfonamide'],  # Active site
         }
 
-        preferred = warhead_preferences.get(target, list(self.warhead_library.keys())[:3])
+        return warhead_preferences.get(target, list(self.warhead_library.keys())[:3])
 
-        if position == 1:
-            return preferred[0]
-        else:
-            return preferred[1] if len(preferred) > 1 else preferred[0]
+    def _warhead_pairs(
+        self,
+        target: str,
+        count: int,
+        offset: int = 0,
+        prefer: Optional[List[str]] = None,
+    ) -> List[Tuple[str, str]]:
+        """Enumerate distinct warhead pairs, target-preferred combinations first.
+
+        Deterministic so a given request reproduces the same library, but it walks
+        the full combinatorial space instead of returning one pair repeatedly.
+        """
+
+        preferred = list(prefer or []) + [
+            w for w in self._target_preferences(target) if w not in (prefer or [])
+        ]
+        ordered = preferred + [w for w in self.warhead_library if w not in preferred]
+
+        pairs = [(a, b) for a in ordered for b in ordered if a != b]
+        # Stable sort keeps `ordered` priority inside each tier: both-preferred,
+        # then one-preferred, then neither.
+        pairs.sort(key=lambda p: (p[0] not in preferred) + (p[1] not in preferred))
+
+        return [pairs[(offset + i) % len(pairs)] for i in range(count)]
 
     def _select_mechanism(self, target: str) -> ApoptosisType:
         """Select apoptotic mechanism for target."""
@@ -419,27 +513,70 @@ class PyreneSeries3Generator:
 
         return mechanism_map.get(target, ApoptosisType.INTRINSIC)
 
+    def _structural_score(
+        self,
+        warhead_1: str,
+        warhead_2: Optional[str],
+        target: str,
+        compound_id: str,
+    ) -> Optional[Dict]:
+        """Assemble, dock and score the compound. None only when no scorer is set.
+
+        Any *failure* with a scorer set propagates. That is deliberate: the one
+        thing this module must never do again is emit a number that looks like a
+        binding energy but came from a lookup table, and a fallback here would
+        reintroduce exactly that, silently.
+        """
+
+        scorer = self.structural_scorer
+        if scorer is None:
+            return None
+
+        result = scorer.score_warheads(warhead_1, warhead_2, target, name=compound_id)
+        return {
+            "score": float(result.vina_like_score),
+            "smiles": result.smiles,
+            "record": result.as_record(),
+        }
+
+    @staticmethod
+    def _compound_provenance(structural: Optional[Dict]) -> str:
+        if structural is None:
+            return provenance(
+                "no docking, MD or safety model was run; scores are heuristics over "
+                "hand-set warhead constants.",
+                "pediatric_safety_score", "predicted_potency",
+                "synthetic_accessibility", "selectivity_score")
+        # Potency is computed now; everything else here is still a constant, so
+        # the marker has to stay on those fields and only those.
+        return (
+            "COMPUTED predicted_potency/vina_like_score: " + STRUCTURAL_MODEL + " "
+            + provenance(
+                "no safety, selectivity or accessibility model was run.",
+                "pediatric_safety_score", "synthetic_accessibility", "selectivity_score"))
+
     def _calculate_binding_energy(
         self,
         warhead_1: str,
         warhead_2: str,
         target: str,
     ) -> float:
-        """Calculate predicted binding energy."""
+        """Placeholder potency: -8.5 minus hand-set warhead constants, clamped
+        at -11.5. No docking; the number is not kcal/mol.
 
-        base_energy = -8.5  # Series 3 baseline
+        Reachable only when no ``structural_scorer`` was supplied. It is NOT a
+        fallback: a scorer that fails raises instead of landing here.
+        """
 
-        # Warhead boost
-        energy = base_energy
+        energy = -8.5
         energy -= self.warhead_library[warhead_1]['potency_boost']
         if warhead_2:
             energy -= self.warhead_library[warhead_2]['potency_boost'] * 0.6
 
-        # Target-specific adjustment
         if 'BCL' in target:
-            energy -= 0.5  # BCL proteins are good binders
+            energy -= 0.5
 
-        return max(energy, -11.5)  # Cap at realistic maximum
+        return SyntheticValue(max(energy, -11.5))
 
     def _calculate_pediatric_safety(
         self,
@@ -447,7 +584,7 @@ class PyreneSeries3Generator:
         warhead_2: str,
         indication: str,
     ) -> float:
-        """Calculate pediatric safety score (0-1)."""
+        """Heuristic 0-1 safety score over hand-set warhead constants; no model."""
 
         safety = 0.9  # Start high
 
@@ -463,7 +600,7 @@ class PyreneSeries3Generator:
         if 'cancer' in indication.lower():
             safety *= 0.95  # Slightly lower for cancer
 
-        return min(safety, 1.0)
+        return SyntheticValue(min(safety, 1.0))
 
     def _calculate_selectivity(
         self,
@@ -471,7 +608,12 @@ class PyreneSeries3Generator:
         warhead_2: str,
         target: str,
     ) -> float:
-        """Calculate selectivity score (0-1, lower is better for toxicity)."""
+        """Selectivity score, higher is better: 1.0 minus accumulated off-target risk.
+
+        Consumers rank on this ascending (the composite score weights it +0.20).
+        Note the floor below clamps the real range to 0.6-1.0, not 0-1, so the
+        documented "selectivity >= 0.80" gate is weaker than it reads.
+        """
 
         selectivity = 1.0
 
@@ -480,7 +622,7 @@ class PyreneSeries3Generator:
         if warhead_2:
             selectivity -= self.warhead_library[warhead_2]['selectivity_risk'] * 0.5
 
-        return max(selectivity, 0.6)
+        return SyntheticValue(max(selectivity, 0.6))
 
     def _estimate_synthetic_accessibility(
         self,
@@ -501,7 +643,7 @@ class PyreneSeries3Generator:
         if warhead_2 and warhead_2 in easy_warheads:
             accessibility -= 0.05
 
-        return max(accessibility, 0.3)
+        return SyntheticValue(max(accessibility, 0.3))
 
     def _find_synergy_partners(
         self,
@@ -548,16 +690,8 @@ class PyreneSeries3Generator:
         target_structure: str,
         duration_ns: int = 100,
     ) -> Dict:
-        """Run MD simulations on compounds to refine design.
-
-        Args:
-            compounds: Generated pyrene compounds
-            target_structure: PDB ID or file path
-            duration_ns: Simulation duration
-
-        Returns:
-            MD results with refined predictions
-        """
+        """MD STUB: no simulation runs and `target_structure` is never opened.
+        Stability is a warhead-type heuristic; every number is synthetic."""
 
         results = {
             'compounds_simulated': len(compounds),
@@ -566,22 +700,21 @@ class PyreneSeries3Generator:
         }
 
         for compound in compounds:
-            # Simulate binding
             stability = self._calculate_md_stability(compound)
             refined_affinity = compound.predicted_potency - stability * 0.5
 
-            results['refined_compounds'].append({
+            results['refined_compounds'].append(stamp({
                 'compound_id': compound.compound_id,
                 'original_affinity': compound.predicted_potency,
                 'refined_affinity': refined_affinity,
                 'stability_score': stability,
                 'recommended': refined_affinity < -9.0,
-            })
+            }, "no MD was run.", "recommended"))
 
-        return results
+        return stamp(results, "no MD was run; duration_ns is the request, not a simulation.")
 
     def _calculate_md_stability(self, compound: PyreneCompound) -> float:
-        """Calculate MD stability from warhead properties."""
+        """Warhead-type heuristic standing in for MD stability."""
 
         # More electrophilic warheads = higher stability
         stability = 0.5
@@ -595,23 +728,37 @@ class PyreneSeries3Generator:
                 elif wtype == WarheadType.HYDROPHOBIC:
                     stability += 0.1
 
-        return min(stability, 1.0)
+        return SyntheticValue(min(stability, 1.0))
 
     def get_compound_summary(self, compound: PyreneCompound) -> Dict:
-        """Get detailed summary of a designed compound."""
+        """Summary of a designed compound; heuristic scores are marked synthetic.
 
-        return {
+        The potency line names its own model, so a reader never has to guess
+        whether the number came from a structure or from a lookup table -- and
+        the structural one carries no units, because it has none.
+        """
+
+        if compound.potency_is_computed:
+            potency = (f"{compound.vina_like_score:.2f} "
+                       "(vina_like_score, unitless ranking; not kcal/mol)")
+        else:
+            potency = f"{compound.predicted_potency:.2f} (heuristic, not kcal/mol)"
+
+        return stamp({
             'compound_id': compound.compound_id,
+            'potency': potency,
+            'binding_model': compound.binding_model,
+            'smiles': compound.smiles,
             'series': compound.series,
             'target': compound.target_protein,
             'indication': compound.target_indication,
             'apoptotic_mechanism': compound.apoptotic_mechanism.value,
             'warheads': [compound.warhead_1, compound.warhead_2],
             'warhead_types': [t.value for t in compound.warhead_types],
-            'predicted_potency': f"{compound.predicted_potency:.2f} kcal/mol",
+            'predicted_potency': potency,
             'pediatric_safety': f"{compound.pediatric_safety_score:.2%}",
             'selectivity': f"{compound.selectivity_score:.2%}",
             'synthetic_difficulty': f"{compound.synthetic_accessibility:.1f}/1.0",
             'synergy_partners': compound.combination_partners,
             'next_step': 'Molecular Dynamics validation',
-        }
+        }, "heuristic scores over hand-set warhead constants; no docking or safety model was run.")

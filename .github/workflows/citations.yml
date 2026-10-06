@@ -1,0 +1,80 @@
+# Live citation re-resolution -- deliberately NOT part of the default CI gate.
+#
+# `make citations` runs scripts/verify_panel_citations.py, which re-resolves
+# every identifier a disease panel cites against NCBI, RCSB, ChEMBL, PubChem
+# and ClinicalTrials.gov. A single run is ~210 HTTPS requests. Running that on
+# every push and pull request would be wrong twice over:
+#
+#   1. It would be rude. NCBI E-utilities and the RCSB search API both
+#      throttle unauthenticated clients, and a busy day of pushes would mean
+#      thousands of calls from one IP range against services that ask you not
+#      to do that.
+#   2. It would be flaky, and the script says so by design: "A network error
+#      is a failure too: a citation that cannot be checked has not been
+#      verified." That is exactly right for a weekly audit and exactly wrong
+#      for a merge gate, because an upstream 503 would redden a build that has
+#      nothing to do with the change under review. A red build that everyone
+#      learns to ignore is worse than no build.
+#
+# The real signal here is slow-moving anyway -- a PDB entry being superseded or
+# a ChEMBL count shifting is a thing that happens over weeks, not per commit --
+# so weekly catches it while it is still fresh. The structural half of the
+# check (that evidence records exist and are shaped correctly) already runs on
+# every push, offline, as tests/test_disease_panel_citations.py inside
+# `make verify`.
+name: Citations (live)
+
+on:
+  schedule:
+    # Mondays 06:17 UTC. Off the hour on purpose: scheduled runs cluster at
+    # :00 and GitHub delays them under load.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      panel:
+        description: 'Panel key in DISEASE_PANELS'
+        required: false
+        default: 'StJude'
+
+permissions:
+  contents: read
+
+jobs:
+  citations:
+    name: make citations
+    runs-on: ubuntu-latest
+    # Generous: db_clients throttles itself between calls, so ~210 requests
+    # take real wall-clock time.
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Create .venv and install requirements
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r requirements.txt
+
+      # No caching of the db_clients response cache between runs, on purpose.
+      # The cache defaults to a 7-day TTL and the point of this job is to ask
+      # the live services; restoring last week's answers would make it verify
+      # its own memory.
+      - name: make citations
+        if: github.event_name == 'schedule'
+        run: make citations
+
+      # Via env, not direct ${{ }} interpolation into the shell: an input
+      # spliced into a run: block is a script-injection hole even when only
+      # write-access users can trigger it.
+      - name: make citations (manual, chosen panel)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PANEL: ${{ inputs.panel }}
+        run: .venv/bin/python scripts/verify_panel_citations.py "$PANEL"

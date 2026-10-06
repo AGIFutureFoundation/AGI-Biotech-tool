@@ -1,0 +1,18 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/main/SECURITY.md
+    about: >-
+      Do not open a public issue. Email x@agifuturefoundation.org with SECURITY in the subject.
+      Note that the missing password check in server/auth.py and the JWT_SECRET default are
+      already documented there and are out of scope.
+  - name: Setup and troubleshooting
+    url: https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/main/SUPPORT.md
+    about: >-
+      Wrong interpreter, server not running, a public database being down — the three usual
+      causes, and where else to look before filing.
+  - name: How far to trust the numbers
+    url: https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/main/README.md
+    about: >-
+      Docking scores, interactive dynamics, pocket detection and the drug-likeness scores are
+      heuristics with documented limits. Read that section before reporting a result as wrong.

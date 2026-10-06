@@ -1,0 +1,57 @@
+name: Feature request
+description: Something the workspace should do and does not.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check `README.md` first — it describes what exists today and, in "How far to trust the
+        numbers", the deliberate limits. Some things are missing on purpose: ligand
+        parameterisation for the OpenMM backend needs GAFF or OpenFF, the CNS score omits the pKa
+        term because pKa is not computed here, and AlphaFold 3 has no public API, so the app only
+        writes job files and reads results back.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you are trying to do
+      description: The task, not the solution. What are you unable to get out of the tool today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How anyone would know it works
+      description: >-
+        If this produces a scientific value, what would a check on it look like — an invariant, a
+        reference implementation to compare against, a published number to reproduce? A feature
+        whose output cannot be checked is hard to accept here. If it cannot be made true, it can
+        still be useful as an explicitly labelled heuristic; say which you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: New dependencies or external services
+      description: >-
+        Anything that would need a new package, an account, an API key, or a host added to the
+        server's proxy allowlist. The project's default is that everything runs locally with no
+        accounts and no keys, so these need discussing rather than assuming.
+
+  - type: dropdown
+    id: offer
+    attributes:
+      label: Would you be willing to implement it?
+      options:
+        - "Yes"
+        - "Maybe, with guidance"
+        - "No — suggesting it only"

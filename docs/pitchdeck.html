@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>biodao pitch deck</title>
+<style>
+  /* Layout: the film first, then the deck as a vertical run of 16:9 slides, then the ask.
+     Dark-first to match the workspace, the whitepaper and the video itself. */
+  :root {
+    --ink: #e6eef8; --ink-dim: #8ea3bb; --ink-faint: #5d718a;
+    --bg: #070b11; --bg-raised: #0d1420; --bg-plate: #111a27; --line: #1d2a3a;
+    --accent: #39d98a; --accent-2: #4cc9f0; --warn: #ffbe0b; --bad: #ff5d73;
+    --display: "Fraunces", Georgia, serif;
+    --body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+      --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+      --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+    --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+    --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.55; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
+  h1, h2 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; line-height: 1.12; }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2.3rem); }
+  p { margin: 0 0 0.8rem; color: var(--ink-dim); }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: 0.6rem; }
+  header { padding-block: clamp(36px, 7vw, 64px) 20px; }
+  .mark { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 0.8rem;
+          color: var(--ink-dim); margin-bottom: 1.1rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+
+  .film { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+          margin-top: 24px; }
+  .film video { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; background: #000; }
+  .film .cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 12px 16px;
+               font-family: var(--mono); font-size: 0.76rem; color: var(--ink-faint); border-top: 1px solid var(--line); }
+  .film .cap b { color: var(--ink-dim); font-weight: 500; }
+  .nofilm { padding: 28px 20px; text-align: center; color: var(--ink-dim); font-size: 0.95rem; }
+
+  .deck { display: grid; gap: 18px; padding-block: 36px; }
+  .slide { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 14px; padding: clamp(20px, 4vw, 40px);
+           min-width: 0; display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .slide .n { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .slide ul { margin: 0; padding-left: 20px; }
+  .slide li { color: var(--ink-dim); margin-bottom: 0.35rem; }
+  .slide strong { color: var(--ink); font-weight: 600; }
+  .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+  .col { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .col h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 600; }
+  .col p { margin: 0; font-size: 0.9rem; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+       color: var(--ink-faint); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--accent); } .fail { color: var(--bad); }
+
+  .big { font-family: var(--mono); font-size: 2.1rem; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+  .big small { display: block; font-family: var(--body); font-size: 0.8rem; color: var(--ink-faint); margin-top: 7px; }
+
+  .cta { display: grid; grid-template-columns: 1fr 180px; gap: 24px; align-items: start; background: var(--bg-raised);
+         border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 40px; }
+  @media (max-width: 680px) { .cta { grid-template-columns: 1fr; } }
+  #qr { width: 168px; height: 168px; background: #fff; border-radius: 10px; padding: 10px; }
+  #qr canvas, #qr img { width: 100%; height: 100%; display: block; }
+  .qr-cap { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-faint); text-align: center; margin-top: 8px; }
+  .contact { font-family: var(--mono); font-size: 1rem; color: var(--ink); }
+  a { color: var(--accent-2); }
+  button { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+           padding: 9px 14px; font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  footer { padding-block: 24px 40px; color: var(--ink-faint); font-size: 0.82rem; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mark"><span class="dot"></span> AGI FUTURE FOUNDATION · PITCH DECK</div>
+    <h1>biodao.blockchain</h1>
+    <p style="margin-top:0.8rem;max-width:62ch;color:var(--ink)">A molecular research workspace a scientist operates by
+      hand in a headset, and another agent operates over a protocol. Watch the 110-second cut, then read the slides.</p>
+
+    <div class="film">
+      <video id="pitch" controls playsinline preload="metadata" poster="" hidden></video>
+      <div class="nofilm" id="nofilm">The film is being attached. If this message stays, the video asset has not been
+        uploaded to this page yet.</div>
+      <div class="cap">
+        <span><b>110 s</b> · 1920×1080 · H.264</span>
+        <span>silent cut · narration script ready for the chosen voice</span>
+        <span>rendered offline from the same figures as the slides</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="deck">
+
+    <section class="slide">
+      <div class="n">01 · THE PROBLEM</div>
+      <h2>Discovery software assumes a human is driving</h2>
+      <p>A chemist moves between a structure viewer, a docking program, six database websites and a spreadsheet.
+        Each hand-off loses context, and none of it records why a decision was made. The thing most likely to do that
+        work next is an agent, and almost no scientific software can be called by one.</p>
+    </section>
+
+    <section class="slide">
+      <div class="n">02 · THE PRODUCT</div>
+      <h2>One workspace, three ways in</h2>
+      <div class="cols">
+        <div class="col"><h3>By hand</h3><p>A 3D workspace in a browser or a headset. Pick up a protein, drop a compound in its pocket, pull it about while the physics runs.</p></div>
+        <div class="col"><h3>By voice</h3><p>"Load LRRK2." "Find pockets." "Dock it." The answer is spoken back, which is what works on glasses with no display.</p></div>
+        <div class="col"><h3>By agent</h3><p>Every panel action is a typed tool. An MCP client lists them and drives a live session, the same buttons a researcher presses.</p></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="n">03 · EVIDENCE</div>
+      <h2>What the numbers actually say</h2>
+      <p>Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. Under 2 Å is the usual bar. Eleven cases; the six failures are below, with what the scorer ranked first against the best pose the search produced.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
+          <tbody>
+            <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
+            <tr><td>GSK-3&beta; · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
+            <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
+            <tr><td>&beta;-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
+            <tr><td>BCL-XL · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
+            <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>5 of 11 within 2 Å; 9 of 11 reachable.</strong> Four of the six failures are ranking failures, not
+        search failures — the pose was found and scored below a worse one. Good enough to triage a library; not good
+        enough to predict affinity. Published, because serious customers run their own controls.</p>
+    </section>
+
+    <section class="slide">
+      <div class="n">04 · MEASURED</div>
+      <h2>Performance that holds up in a headset</h2>
+      <div class="cols">
+        <div class="col"><div class="big">27<small>ns/day all-atom dynamics, consumer GPU</small></div></div>
+        <div class="col"><div class="big">7.4 ms<small>per frame, 8,778-atom flexible protein</small></div></div>
+        <div class="col"><div class="big">14<small>public databases, no account, no key</small></div></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="n">05 · ARCHITECTURE</div>
+      <h2>Built so another agent can be the customer</h2>
+      <ul>
+        <li><strong>Tool layer.</strong> 22 operations with JSON schemas; one registry serves console, voice and MCP.</li>
+        <li><strong>x402 payments.</strong> Metered tools answer an unpaid call with a spec-shaped HTTP 402 challenge. Settlement not yet wired.</li>
+        <li><strong>NANDA discovery.</strong> A signed AgentFacts document at a well-known URL, limits included.</li>
+        <li><strong>OML-style fingerprints.</strong> Secret challenge/response pairs; every result signed.</li>
+        <li><strong>Provenance chain.</strong> SHA-256 over every run; alter one record and verification names it.</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <div class="n">06 · ROADMAP</div>
+      <h2>What exists, and what comes next</h2>
+      <ul>
+        <li><strong>Done.</strong> Workspace and data spine; agent surface with voice, hands and MCP.</li>
+        <li><strong>4 weeks.</strong> Scoring that passes its own benchmark, published with every release.</li>
+        <li><strong>6 weeks.</strong> Hands and voice tested on Quest 3 and Vision Pro; shared rooms with object ownership.</li>
+        <li><strong>Quarter.</strong> x402 settlement, AgentFacts on a public index, hosted and on-premises deployment.</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <div class="n">07 · HONEST LIMITS</div>
+      <h2>What this is not, yet</h2>
+      <ul>
+        <li>Docking is triage, not prediction.</li>
+        <li>Interactive physics is coarse by design; the OpenMM backend is the one to quote.</li>
+        <li>Payments do not settle. A hash chain is not a blockchain.</li>
+        <li>Ray-Ban Meta glasses cannot render this; the voice companion is the substitute.</li>
+        <li>Hand tracking is untested on hardware.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="cta" id="ask">
+    <div>
+      <div class="eyebrow">The ask</div>
+      <h2>Three kinds of partner</h2>
+      <p style="margin-top:0.6rem">Disease foundations with a target and no computational team. Pharma groups who want
+        this behind their firewall. Engineers who want to work on the scoring function.</p>
+      <p><span class="contact">x@agifuturefoundation.org</span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" id="copy">Copy email</button>
+        <a href="https://claude.ai/artifact/WgXdZwp2e72ubxU6fDWUhZ" style="align-self:center">Whitepaper and intake form →</a>
+      </div>
+    </div>
+    <div>
+      <div id="qr" aria-label="QR code linking to this deck"></div>
+      <div class="qr-cap">Scan to open and share</div>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap">biodao.blockchain — powered by AGI Corp · AGI Future Foundation. Figures come from runs of the
+  shipped code, not projections.</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // pitch.mp4 sits beside this page, which is what scripts/make_pitch_video.py
+  // writes by default. The previous value was an artifact asset-store path
+  // (/_blob/...) that resolves only inside the published artifact, so a
+  // repository-hosted copy of this deck showed an empty player.
+  var VIDEO_URL = "pitch.mp4";
+  (function attachFilm() {
+    var v = document.getElementById('pitch'), n = document.getElementById('nofilm');
+    if (!VIDEO_URL || VIDEO_URL === "ASSET_URL") return;
+    // The fallback stays up until the video actually loads. It used to be
+    // hidden the moment the src was set, so a 404 left a blank box with no
+    // explanation -- the one case the message exists for.
+    v.addEventListener('loadeddata', function () { v.hidden = false; n.hidden = true; });
+    v.addEventListener('error', function () {
+      v.hidden = true; n.hidden = false;
+      n.textContent = 'The film is not in this copy. Render it with ' +
+        '.venv/bin/python scripts/make_pitch_video.py (writes docs/pitch.mp4).';
+    });
+    v.src = VIDEO_URL;
+  })();
+  (function drawQR() {
+    var host = document.getElementById('qr');
+    if (!host || typeof QRCode === 'undefined') return;
+    try { new QRCode(host, { text: location.href, width: 300, height: 300, colorDark: '#07110c', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M }); } catch (e) { host.remove(); }
+  })();
+  document.getElementById('copy').addEventListener('click', function () {
+    var b = this, addr = 'x@agifuturefoundation.org';
+    var done = function (t) { b.textContent = t; setTimeout(function () { b.textContent = 'Copy email'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(addr).then(function () { done('Copied'); }, function () { done('Select the address above'); });
+    else done('Select the address above');
+  });
+</script>
+</body>
+</html>

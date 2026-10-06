@@ -14,11 +14,15 @@ export class Structure {
     this.element = new Array(n); this.atomName = new Array(n); this.resName = new Array(n);
     this.chain = new Array(n); this.resSeq = new Int32Array(n); this.bfac = new Float32Array(n);
     this.het = new Uint8Array(n); this.charge = new Int8Array(n);
+    // PDB insertion codes. Antibody CDR loops are numbered 100, 100A, 100B, so without this the
+    // residues collapse together and a merged residue keeps only the last C-alpha it saw.
+    this.iCode = new Array(n);
     atoms.forEach((a, i) => {
       this.pos[i * 3] = a.x; this.pos[i * 3 + 1] = a.y; this.pos[i * 3 + 2] = a.z;
       this.element[i] = a.element; this.atomName[i] = a.name || a.element; this.resName[i] = a.resName || 'LIG';
       this.chain[i] = a.chain || 'A'; this.resSeq[i] = a.resSeq || 1; this.bfac[i] = a.b || 0;
       this.het[i] = a.het ? 1 : 0; this.charge[i] = a.charge || 0;
+      this.iCode[i] = a.iCode || '';
     });
     this.helices = opts.helices || []; this.sheets = opts.sheets || [];
     this.bonds = opts.bonds || null; // flat [i,j,order,...]
@@ -44,10 +48,11 @@ export class Structure {
     this.residues = [];
     let cur = null;
     for (let i = 0; i < this.n; i++) {
-      const key = this.chain[i] + ':' + this.resSeq[i] + ':' + this.resName[i];
+      const key = this.chain[i] + ':' + this.resSeq[i] + this.iCode[i] + ':' + this.resName[i];
       if (!cur || cur.key !== key) {
         const rn = this.resName[i];
-        cur = { key, chain: this.chain[i], resSeq: this.resSeq[i], resName: rn, start: i, end: i, ca: -1,
+        cur = { key, chain: this.chain[i], resSeq: this.resSeq[i], iCode: this.iCode[i], resName: rn,
+          label: rn + this.resSeq[i] + this.iCode[i], start: i, end: i, ca: -1,
           polymer: !!AA3[rn] || NUC.has(rn), water: WATER.has(rn), ion: IONS.has(rn), idx: this.residues.length };
         this.residues.push(cur);
       }
@@ -264,6 +269,7 @@ export function parsePDB(text, opts = {}) {
       const element = normEl(line.slice(76, 78), line.slice(12, 14));
       serialMap.set(+line.slice(6, 11), atoms.length);
       atoms.push({ name, resName: line.slice(17, 20).trim(), chain: (line[21] || 'A').trim() || 'A', resSeq: +line.slice(22, 26),
+        iCode: (line[26] || ' ').trim(),
         x: +line.slice(30, 38), y: +line.slice(38, 46), z: +line.slice(46, 54), b: +line.slice(60, 66) || 0, element, het: rec === 'HETATM' });
     } else if (rec === 'CONECT') {
       const a = +line.slice(6, 11);
@@ -329,6 +335,7 @@ export function parseMmCIF(text, opts = {}) {
       const ch = ix('auth_asym_id') >= 0 ? ix('auth_asym_id') : ix('label_asym_id');
       const rs = ix('auth_seq_id') >= 0 ? ix('auth_seq_id') : ix('label_seq_id');
       const x = ix('Cartn_x'), y = ix('Cartn_y'), z = ix('Cartn_z'), b = ix('B_iso_or_equiv'), mdl = ix('pdbx_PDB_model_num'), alt = ix('label_alt_id');
+      const ic = ix('pdbx_PDB_ins_code'); // same residues, same grouping, whichever format they arrived in
       let firstModel = null; let seqCounter = 0; let lastKey = '';
       for (const r of rows) {
         if (mdl >= 0) { if (firstModel === null) firstModel = r[mdl]; if (r[mdl] !== firstModel) break; }
@@ -338,7 +345,8 @@ export function parseMmCIF(text, opts = {}) {
         if (Number.isNaN(seq)) { if (key !== lastKey) seqCounter++; seq = seqCounter; } // ligands in AF3 output use '.'
         lastKey = key;
         const rname = r[rn].replace(/"/g, '');
-        atoms.push({ name: r[an].replace(/"/g, ''), resName: rname, chain: r[ch], resSeq: seq, x: +r[x], y: +r[y], z: +r[z],
+        const icode = ic >= 0 && r[ic] !== '.' && r[ic] !== '?' ? r[ic].trim() : '';
+        atoms.push({ name: r[an].replace(/"/g, ''), resName: rname, chain: r[ch], resSeq: seq, iCode: icode, x: +r[x], y: +r[y], z: +r[z],
           b: b >= 0 ? +r[b] : 0, element: (r[ts] || '').toUpperCase(), het: g >= 0 ? r[g] === 'HETATM' && !AA3[rname] : !AA3[rname] });
       }
     } else if (cat === '_struct_conf') {

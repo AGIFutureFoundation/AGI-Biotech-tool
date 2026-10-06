@@ -9,6 +9,7 @@ Streams:
 """
 import asyncio
 import json
+import synthetic_provenance as sp
 from typing import Dict, Set, Callable
 from datetime import datetime
 import logging
@@ -197,8 +198,12 @@ class VRDataFrame:
         return frame
 
     def to_json(self) -> str:
-        """Serialize to JSON for WebSocket transmission."""
-        return json.dumps({
+        """Serialize to JSON for WebSocket transmission.
+
+        sp.dumps keeps the SYNTHETIC marker: a streamed frame carries live
+        result values, and json.dumps would write placeholders as plain floats.
+        """
+        return sp.dumps({
             'frame_type': self.frame_type,
             'timestamp': self.timestamp,
             'data': self.data,

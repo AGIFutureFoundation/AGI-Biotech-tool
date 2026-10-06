@@ -1,0 +1,118 @@
+# Default gate. Everything here is offline and deterministic; anything that
+# touches a live external service lives in citations.yml instead, on a schedule.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# A superseded run's answer is worthless. Note this does NOT dedupe the
+# push run against the pull_request run for the same commit -- their refs
+# differ -- which is the accepted cost of also covering direct pushes to
+# feature branches, where most of this repo's work currently lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    # make verify = pytest suite + the per-module import test + the JS
+    # reachability check. One job, because they share an install that costs
+    # more to build than all three checks cost to run.
+    name: make verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 3.12 only, deliberately no matrix. This is a deployed application
+      # pinned to one interpreter, not a library that has to support a range:
+      # the Makefile hardcodes .venv/bin/python, nothing declares a
+      # python_requires span, and rdkit/openmm ship wheels per minor version,
+      # so a matrix would multiply runtime and wheel-availability flakiness to
+      # produce a failure nobody would act on. Revisit if this repo ever
+      # becomes something other people pip-install.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      # The Makefile's single entry point is PY := .venv/bin/python, so CI has
+      # to build that exact path rather than use the runner's bare python.
+      - name: Create .venv and install requirements
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r requirements.txt
+
+      # Load-bearing, not decorative. Several server modules wrap their
+      # third-party imports in try/except and degrade quietly, so a venv that
+      # silently lost rdkit still produces a green `make verify` that proves
+      # nothing. Fail loudly here instead.
+      - name: Assert the interpreter under test is the real one
+        run: |
+          .venv/bin/python - <<'PY'
+          import sys
+          assert sys.version_info[:2] == (3, 12), sys.version
+          import rdkit, pytest, jwt, pypdf, openpyxl, docx, bs4, lxml, requests
+          print("python  :", sys.version)
+          print("rdkit   :", rdkit.__version__)
+          print("pytest  :", pytest.__version__)
+          PY
+          # openmm/pdbfixer are reported, not asserted: they gate optional MD
+          # endpoints, and server.py already probes them at import time.
+          .venv/bin/python -c "import openmm; print('openmm  :', openmm.__version__)" \
+            || echo "openmm  : NOT INSTALLED (MD endpoints will report 501)"
+          .venv/bin/python -c "import pdbfixer; print('pdbfixer: present')" \
+            || echo "pdbfixer: NOT INSTALLED (MD endpoints will report 501)"
+
+      - name: make verify
+        run: make verify
+
+  js-syntax:
+    # js/ is loaded straight into the browser as ES modules -- no bundler, no
+    # transpiler, no type checker -- so a syntax error ships. `node --check`
+    # is the cheapest thing that catches it.
+    name: node --check js/
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Parse every browser module
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(js/*.js)
+          # A glob that matches nothing would otherwise make this job pass
+          # vacuously -- the same failure mode tests/test_module_imports.py
+          # guards against on the Python side.
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no files matched js/*.js -- this check would be vacuous"
+            exit 1
+          fi
+          # The .mjs copy is the whole trick, and it is not cosmetic.
+          # `node --check foo.js` on a file containing `import`/`export`
+          # parses as CommonJS, fails, falls into module-syntax detection and
+          # then exits 0 WITHOUT reporting the error -- verified on Node
+          # v24.15: a deliberately broken js/util.js still passed. Checking
+          # the same bytes as .mjs forces the ESM parser and reports real
+          # SyntaxErrors. Do not "simplify" this back to node --check js/*.js;
+          # that version is green no matter what these files contain.
+          tmp="$(mktemp -d)"
+          for f in "${files[@]}"; do
+            m="$tmp/$(basename "$f" .js).mjs"
+            cp "$f" "$m"
+            node --check "$m"
+          done
+          echo "parsed ${#files[@]} modules as ES modules"

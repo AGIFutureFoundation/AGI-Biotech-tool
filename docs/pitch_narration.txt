@@ -1,0 +1,17 @@
+biodao.blockchain, from the AGI Future Foundation. A molecular research workspace that a scientist can operate by hand in a headset, and that another agent can operate over a protocol, with every result signed, costed, and traceable.
+
+Discovery software assumes a human is driving. A chemist moves between a structure viewer, a docking program, six database websites and a spreadsheet, and nothing records why a decision was made. The thing most likely to do that work next is an agent, and almost no scientific software can be called by one.
+
+So we built one workspace with three ways in. By hand: pick up a protein, drop a compound into its pocket, and pull it about while the physics runs. By voice: load LRRK2, find pockets, dock it. By agent: every action is a typed tool that an MCP client can call.
+
+Your compound library imports from PDF, is profiled for drug-likeness, and is ranked against the target.
+
+Here is what the numbers actually say. Re-docking recovers the crystal pose in two of four cases, with a median of two and a half angstroms. That is good enough to triage a library. It is not good enough to predict affinity. We publish that number, because serious customers run their own controls.
+
+Twenty-seven nanoseconds a day of all-atom dynamics on a consumer GPU. Fourteen public databases, with no account and no key.
+
+Underneath: an x402 payment challenge for metered tools, a signed NANDA agent facts document for discovery, OML-style fingerprints so a result can be verified later, and a hash chain over every run.
+
+The roadmap: scoring that passes its own benchmark, hardware testing on Quest and Vision Pro, settlement and a public registry, then deployment for teams.
+
+We are looking for disease foundations with a target and no computational team, pharma groups who want this behind their firewall, and engineers who want to work on the scoring function. Write to x at agifuturefoundation dot org.
