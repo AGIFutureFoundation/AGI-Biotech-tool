@@ -17,6 +17,42 @@ well-understood, thoroughly unexciting data structure.
 What it is genuinely good for: proving to yourself, or to a reviewer six months later, that the figure in
 the slide is the figure the tool produced, and that the chain between them has not been edited.
 
+## What it detects, and the one thing it does not
+
+Tested, in `tests/ledger.test.mjs`, by actually tampering:
+
+| Tampering | Caught? |
+| --- | --- |
+| Editing a score in a record | yes, at that record |
+| Deleting the "not kcal/mol" caveat from a record | yes — the caveat is a hashed field, not a note |
+| Re-hashing an edited record to cover the edit | yes, at the *next* record, whose link now dangles |
+| Reordering two records | yes |
+| Splicing a record out of the middle | yes |
+| Forging the header's `head` or `length` | yes |
+| Renumbering a record's index | yes |
+| **Removing records from the end** | **no** |
+
+That last row is a property of hash chains, not a bug: the remaining prefix is a valid chain in its own
+right. The only remedy is an external reference — a head hash written somewhere the ledger's author does not
+control, at a time you can establish. `verifyExport(doc, { expectedHead })` in `js/ledger-verify.js` takes
+that hash and closes the hole; called without it, every result it returns says in as many words that records
+removed from the end would not show. An "ok" that quietly means "ok except for the part I cannot check" is
+worse than no check at all.
+
+## Verifying an export someone sent you
+
+`js/ledger-verify.js` checks an exported document on its own — no workspace, no browser storage, no network:
+
+```js
+import { verifyExport, describeResult } from './js/ledger-verify.js';
+const result = await verifyExport(JSON.parse(await file.text()), { expectedHead: anchoredHash });
+console.log(describeResult(result));
+```
+
+It re-hashes every record, checks every link and index, and cross-checks the document's claimed head and
+length against the records it actually carries — a header that disagrees with its own body is the first
+thing a careless forgery gets wrong.
+
 ## What a record holds
 
 A dock record, for example:
@@ -55,7 +91,11 @@ mechanically rather than by good intentions.
 
 ## Verifying this page
 
-The chain's integrity and its tamper-detection are covered in the Python suite. See [Testing](Testing).
+```bash
+node --test tests/ledger.test.mjs
+```
+
+Twenty-one cases. See [Testing](Testing).
 
 Note that the ledger records a *score*, and [Docking and Scoring](Docking-and-Scoring) explains why that
 score is not an affinity. A tamper-evident record of an unvalidated number is still an unvalidated number;

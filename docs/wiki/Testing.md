@@ -16,7 +16,7 @@ they are reported here rather than filtered out of the count.
 
 ## The JavaScript suites
 
-All ten run with `node --test`, no browser, no network, no server.
+All eleven run with `node --test`, no browser, no network, no server.
 
 | Suite | Cases | What it proves |
 | --- | --- | --- |
@@ -28,6 +28,7 @@ All ten run with `node --test`, no browser, no network, no server.
 | `tests/poses.test.mjs` | 14 | Binding-mode clustering, and whether the score discriminated between modes |
 | `tests/pockets.test.mjs` | 12 | Pocket detection on hollow shells, a solid ball, and a surface dimple |
 | `tests/structure.test.mjs` | 17 | The PDB and mmCIF parsers, column by column, and bond perception |
+| `tests/ledger.test.mjs` | 21 | The provenance hash chain, by actually tampering with it |
 | `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |
 

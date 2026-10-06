@@ -30,6 +30,7 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
       minimisation lands: negligible — 0.002 to 0.006 A RMSD, energies agreeing to 0.001. The fix is correct
       and removes a latent hazard; it is not a result anyone would notice.
 - [x] Structure parsers under test, and insertion codes fixed (iter 14)
+- [x] Provenance ledger under test by actual tampering, plus a standalone export verifier (iter 15)
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -538,3 +539,72 @@ Still unproven / blocked: the parsers against real files from the RCSB, which is
 live — multi-character chain IDs, hybrid-36 serial numbers past 99999, and structures with more than 62
 chains. Those need the network. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A
 stands. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 15 — tamper detection that is actually tested
+
+Both open queue items still need the network or a package install. The pick: `js/ledger.js` was untested,
+and it is the project's central honesty mechanism. Every traceability claim rests on one property — if a
+record is altered, verification fails — and the wiki asserted it, the whitepaper asserted it, and nothing
+checked it. A tamper-evident log whose tamper detection is untested is decoration.
+
+Done: `tests/ledger.test.mjs`, twenty-one cases that actually tamper, and `js/ledger-verify.js`, which fills
+a gap the export format implied but never provided.
+
+**The gap.** `js/ledger.js` promises an export "whose root hash you can anchor on-chain, in a DAO proposal,
+or in a lab notebook, and later verify". There was nothing to verify it with: `Ledger.verify()` is a method
+on a live Ledger that loads from localStorage, so checking a file someone emailed you meant reconstructing a
+workspace around it. `verifyExport(doc, { expectedHead })` takes the document alone — no Ledger, no browser
+storage, no network — and additionally checks two things the live method structurally cannot, because a live
+Ledger computes them rather than reading them: that the claimed `head` is the hash the chain actually ends
+on, and that the claimed `length` matches the records carried. A header disagreeing with its own body is the
+first thing a careless forgery gets wrong.
+
+**The honest limit, now stated rather than implied.** Removing records from the *end* of a chain leaves a
+chain that verifies perfectly, because the remaining prefix is a valid chain in its own right. This is a
+property of hash chains, not a defect, and it was nowhere in the documentation. It is now a row in the
+detection table on the wiki — the only "no" in that table — and the sole remedy, an external head hash, is
+a parameter that closes it. Called without one, every result the verifier returns says in as many words that
+records removed from the end would not show. An "ok" that quietly means "ok except for the part I cannot
+check" is worse than no check at all.
+
+Verified offline (`node --test tests/*.test.mjs`, 161 passed; `node --check js/ledger-verify.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed):
+- Tampering caught, each at the right index with the right reason: editing a score; **deleting the
+  "not kcal/mol" caveat**, which is detected like any other edit because the caveat is a hashed field and
+  not a note on a page; reordering two records; splicing one out of the middle; renumbering an index;
+  forging the header's head or length.
+- The careful forger's move — editing a payload *and* re-hashing the record to cover it — still fails, at
+  the **following** record, whose link now dangles. That is the chain doing the one job it exists for.
+- Truncation verifies clean, asserted as a fact so nobody later writes documentation claiming otherwise;
+  and against an anchored head the missing record shows, with the reason naming end-removal.
+- An export survives a JSON round trip and still verifies. This matters more than it looks: the canonical
+  string hashes the payload with `JSON.stringify`, so a round trip that reordered keys would make an
+  untouched record fail. It does not, and that is now proven rather than assumed.
+- The standalone verifier agrees with the live one on a real chain. `js/ledger.js` keeps `canonical()`
+  private, so this is the cross-check: if the two disagreed about what string gets hashed, every hash would
+  mismatch and the test would fail. It is the guard against the two drifting apart.
+- Malformed documents — null, a number, a string, an empty object, a records field that is not an array, a
+  record with no hash — are rejected with a stated reason rather than throwing.
+- Every result reports its own limits, and the human summary distinguishes an anchored pass from an
+  unanchored one instead of printing the same reassuring line for both.
+- Empty ledger at genesis; clear returns to genesis; appending after a clear starts a fresh chain; append
+  emits an event carrying the record so the UI cannot fall out of step.
+- The UI line a person reads marks a dock score `(est.)` and carries no energy unit — the third place that
+  has to agree the number is not kcal/mol, after the record and the wiki. An unknown record kind falls back
+  to its name rather than rendering "undefined".
+
+Mutation-checked: removing the re-hash comparison from `Ledger.verify()` fails two cases, including the one
+that checks the estimate caveat cannot be stripped. `js/ledger.js` was restored, confirmed by an empty
+`git diff`.
+
+One observation worth recording rather than ignoring: one Python run reported 1435 passed where two
+consecutive clean runs before and after reported 1438, with 1499 collected throughout. The other session was
+mid-write in `scripts/make_pitch_video.py` — 90 lines changed in the working tree — during that reading, so
+the dip was transient and in its area, not a regression from this work.
+
+Still unproven / blocked: anchoring a head hash anywhere external, which is the only thing that makes
+truncation detectable in practice. That needs a network and a counterparty, so the parameter exists and is
+tested while the practice does not yet. The ledger also still proves provenance and not correctness — a
+tamper-evident record of an unvalidated docking score is an unvalidated docking score. The 4-case benchmark
+was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python failures remain in
+`tests/test_server_lifecycle.py`; all five bind a local port.
