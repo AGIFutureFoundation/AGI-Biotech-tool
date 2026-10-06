@@ -93,10 +93,10 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 6</span>
-      <span class="tag on">50 offline tests passing</span>
-      <span class="tag on">110 s film published</span>
-      <span class="tag on">11 offline tests passing</span>
+      <span class="tag">iteration 7</span>
+      <span class="tag on">47 JavaScript tests passing</span>
+      <span class="tag on">1438 Python tests passing</span>
+      <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
       <span class="tag off">network blocked</span>
     </div>
@@ -106,6 +106,29 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 7</div>
+      <div>
+        <h3>A docked pose that actually sits in its minimum</h3>
+        <p>The Monte Carlo search ends wherever its last accepted move landed, which is near a minimum rather
+          than in it. <code>js/refine.js</code> adds a pattern search over the six rigid-body degrees of
+          freedom with a shrinking step that accepts only strict improvements, so a refined pose can never
+          score worse than its input. Poses are now refined and re-sorted before they are shown, and the
+          provenance ledger records the gain next to the score.</p>
+        <ul class="checks">
+          <li>Eight cases on a synthetic carbon cup with a seat known by construction; 47 JavaScript tests in all</li>
+          <li>From four different displacements the score never worsens and the reported gain is never negative</li>
+          <li>A pose knocked 2.3 Å off the seat comes back closer to it than it started</li>
+          <li>Deterministic to the byte, input array never mutated, evaluation budget respected</li>
+          <li>Rotations pivot on the ligand centroid: with translation disabled the centroid holds to 1e-3 Å</li>
+          <li><code>refineAll</code> re-sorts, because refinement can reorder a ranking</li>
+          <li class="no">Whether this improves the 4-case benchmark — that needs structures from the RCSB, and
+            the network is blocked. The published figure stays what was measured: 2 of 4 within 2 Å, median 2.54 Å</li>
+          <li class="no">It does not change the scoring function or move torsions. A pose in the wrong pocket
+            is still in the wrong pocket</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 6</div>
       <div>
