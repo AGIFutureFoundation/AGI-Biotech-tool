@@ -86,7 +86,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 1</span>
+      <span class="tag">iteration 2</span>
+      <span class="tag on">110 s film published</span>
       <span class="tag on">11 offline tests passing</span>
       <span class="tag off">server blocked by sandbox</span>
       <span class="tag off">network blocked</span>
@@ -97,6 +98,21 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 2</div>
+      <div>
+        <h3>Pitch video and deck, rendered offline</h3>
+        <p>Ten designed slides drawn with Pillow, reference drugs depicted with RDKit, assembled by ffmpeg into a
+          110.0 s H.264 cut; no browser, no network. Published as a deck page with the film attached as an asset.
+          Loop rescoped to a bounded 90 minutes with a self-stop.</p>
+        <ul class="checks">
+          <li>ffprobe: 110.0 s, 1920×1080, H.264, 15.3 MB</li>
+          <li>Two slides inspected as frames; a footer collision fixed before shipping</li>
+          <li>Figures on the slides read from the same table the whitepaper uses</li>
+          <li class="no">Narration — the requested voice failed on "out of credits"; local speech is blocked by the sandbox, so the cut is silent and the script waits</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">5 Oct<br>iter 1</div>
       <div>
