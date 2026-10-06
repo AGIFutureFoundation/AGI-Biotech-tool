@@ -32,6 +32,10 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Structure parsers under test, and insertion codes fixed (iter 14)
 - [x] Provenance ledger under test by actual tampering, plus a standalone export verifier (iter 15)
 - [x] Database layer failure behaviour under test with a stubbed fetch (iter 16)
+- [x] Whitepaper figures corrected and put under test (iter 17)
+- [ ] Extend tests/claims.test.mjs to docs/pitchdeck.html and docs/investor-brief.html. Held back because
+      another session has pitchdeck.html open in the working tree; a guard that fails on someone else's
+      in-flight edit is a bad guard.
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -665,3 +669,69 @@ expected, or has changed its pagination — which is exactly what `make reachabl
 Response-shape drift at a public API is the most likely way this layer breaks in practice and it cannot be
 caught from here. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five
 Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 17 — the whitepaper had stopped being true
+
+Both open queue items still need the network or a package install, so the pick came from the preference
+order, which puts whitepaper refinements next. The whitepaper had not been touched in sixteen iterations
+while the repository moved underneath it.
+
+`docs/WHITE_PAPER.md` carries an Appendix A listing every figure it states next to the command that produces
+it, and says plainly: "do not trust it, run the commands ... any figure that is not reproducible should be
+treated as deleted." That is the right rule, and it had quietly stopped holding. §3.1 claimed **763 passed,
+775 collected, 2,034 lines of test code** against an actual **1,438 passed, ~1,496 collected, 9,374 lines**,
+and the JavaScript suites — twelve files and 179 cases at the start of this iteration — were not mentioned
+anywhere in the document. Nobody had lied. The document was written once and the repository kept moving,
+which is exactly what prose cannot notice.
+
+Done, in two halves.
+
+**Corrected.** §3.1 now carries both suite results with the measurement date, and states the five Python
+failures alongside the passes with the reason they fail, rather than quoting a cleaner number. Appendix A's
+rows were re-measured: test line count, Python line count, JS module count, test file counts, and the
+JavaScript test total, with the stale `make test` line replaced by the command that actually produces the
+figure. A new §3.1.1 lists **what the tests found** rather than only that they pass — the planarity gradient
+error, the dropped insertion codes, the stacking record crowded out by a detail cap, "load lark two", the
+refinement loop that could not terminate — plus the two limits documented rather than fixed: that a hash
+chain cannot detect records removed from its end without an external anchor, and that the database proxy
+retries any failed GET and so can cost two requests per lookup. A suite that only confirms its author's
+expectations is weak evidence, and a document reporting only a pass count is making that weak argument.
+
+**Guarded.** `tests/claims.test.mjs`, eleven cases that re-measure the document's figures from the
+filesystem and fail when claim and reality disagree. Verified offline (`node --test tests/*.test.mjs`, 190
+passed; `.venv/bin/python -m pytest tests/ -q`, 1438 passed):
+- Test line count, Python line count, JS module count and both test-file counts are measured with the same
+  commands the appendix names, and compared against the figures printed beside them.
+- The JavaScript test total is checked against the number of cases declared across the suites. It agrees
+  exactly: 190 declared, 190 run.
+- The Python line is required to carry its failures alongside its passes, and to say why those five fail, so
+  the passing count can never appear on its own.
+- The benchmark figure is scanned across five published surfaces for an overstated pass rate or a median
+  other than 2.54 A, and no surface may give the docking score an energy unit without disclaiming it.
+- Appendix A must pair every claim with a command, with no blank rows.
+- The document must state when it measured, and must still contain the defect list.
+
+Deliberately not asserted: the exact Python collection count. The other session commits here concurrently
+and adds Python tests — the figure read 1,499 and 1,496 within the same hour — so pinning it would produce a
+test that fails for reasons unrelated to the claim it guards. What is asserted instead is that the document
+says when it measured, which is the project's own rule for a figure that cannot be pinned.
+
+Four of the guard's first-draft assertions were wrong rather than the document. Two were arithmetic I had
+created myself: adding `claims.test.mjs` changed the line count and test count it measures, so the figures
+had to be re-measured with the guard in place, and the final line count is now read from the filesystem and
+formatted in rather than typed. The third was a false positive of the same family as iteration 9's — the
+progress report *quotes* the forbidden phrase "4 of 4 within 2 A" in order to describe this very check, so
+the scan now skips a quoted phrase, since a quoted phrase is being discussed and not asserted. The fourth
+was an appendix row reading `| ... | same |`, the table's way of pointing at the command above, which my
+assertion mistook for a missing command.
+
+Mutation-checked: reverting the JS module figure from 29 to its old 22 fails the guard with the measured
+value named in the message. The whitepaper was restored afterwards.
+
+Still unproven / blocked: `docs/pitchdeck.html` and `docs/investor-brief.html` are not yet under the guard.
+pitchdeck.html has 27 lines of uncommitted changes from the other session in the working tree, and a guard
+that fails on someone else's in-flight edit is a bad guard; it is a queue item instead. The citation and
+database figures in the appendix — the `make citations` rows — were left as they stand because re-measuring
+them needs the network, and they are marked with the date they were last measured rather than restated as
+current. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python
+failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.

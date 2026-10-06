@@ -105,13 +105,46 @@ thing: `make test`, `make imports`, `make reachable`, `make citations`,
 
 ### 3.1 The test suite exists and passes
 
+Measured 6 October 2026. Two suites, both offline.
+
 ```
-$ make test
-763 passed, 1 xfailed, 2 warnings in 17.66s
+$ .venv/bin/python -m pytest tests/ -q
+5 failed, 1438 passed, 55 skipped, 1 xfailed, 43 warnings in 19.08s
+
+$ node --test tests/*.test.mjs
+pass 190  fail 0
 ```
 
-775 tests are collected; 2,034 lines of test code. The single `xfail` is
-deliberate and is described in §6.
+**The five failures are stated rather than filtered.** All five are in
+`tests/test_server_lifecycle.py` and all five bind a local TCP port, which the
+sandbox these runs were made in refuses. They are an environment limitation, not
+a regression, and the honest figure is the one above and not a cleaner one. The
+single `xfail` is deliberate and is described in §6.
+
+9,374 lines of test code across 37 Python files and 13 JavaScript files. The
+JavaScript suites did not exist when this document was first written; they cover
+the modules the browser actually runs — structure parsing, pocket detection, the
+docking search and its refinement, the dynamics force field, binding-mode
+clustering, the voice grammar, the tool registry, the provenance ledger, and the
+database layer's behaviour when a source fails. §3.1.1 lists what they found.
+
+### 3.1.1 What the tests found, not just that they pass
+
+A suite that only ever confirms what its author expected is weak evidence. These
+are defects the tests located, each fixed in the commit that reported it:
+
+| Defect | Found by |
+|---|---|
+| The sp2 planarity restraint held its plane normal fixed, so its force was ~19% off its own energy gradient at small pyramidalisation | a finite-difference gradient check |
+| PDB insertion codes were dropped, merging residues 100 and 100A and leaving the merged residue with only one C-alpha | parser tests written from the format specification |
+| A flat detail cap let hydrophobic contacts crowd out the single π-stacking record | interaction-geometry tests on planted hits |
+| "load LRRK2" arrives from a speech recogniser as "load lark two" and matched nothing | voice grammar tests |
+| The flexible-refinement loop seeded its running best at infinity and so could never terminate on its first pass | refinement tests |
+
+Two limits were also documented that had been nowhere in the documentation: a
+hash chain cannot detect records removed from its *end* without an external
+anchor, and the database layer's proxy fallback retries on any failed GET rather
+than only a CORS refusal, so one lookup can cost two requests.
 
 `make imports` runs a parametrised import test over every module under
 `server/` and `scripts/` — 66 modules, all importing cleanly. That one check
@@ -505,15 +538,22 @@ deleted.
 
 ## Appendix A — Every quantitative claim and the command behind it
 
+Every figure in the table below was re-measured on 6 October 2026. A figure that
+does not reproduce should be treated as deleted — that rule applies to this
+document as much as to anything it describes, and several rows below are
+corrections to numbers that had drifted since it was written.
+
 | Claim | Command |
 |---|---|
-| 763 passed, 1 xfailed, 17.66s | `make test` |
-| 775 tests collected | `.venv/bin/python -m pytest tests/ -q --collect-only` |
-| 2,034 lines of test code | `cat tests/*.py \| wc -l` |
+| 5 failed, 1438 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
+| the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
+| 190 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
+| 9,374 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 37 Python and 13 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 66 modules import cleanly | `make imports` |
-| 22 of 22 JS modules reachable | `make reachable` |
-| 22,581 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
-| 22 JS modules | `ls js/*.js \| wc -l` |
+| every JS module reachable | `make reachable` |
+| 27,161 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
+| 29 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
 | 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` |
 | 84 target records checked | `grep -cE "^[A-Z][A-Z0-9]* - " <citations output>` |
