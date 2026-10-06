@@ -107,17 +107,30 @@ test('the whitepaper states the Python result honestly, failures included', () =
     'the passing count must never appear without its failures');
 });
 
+// Every surface that publishes the benchmark. docs/pitchdeck.html is deliberately absent: the other
+// session has uncommitted changes to it, and a guard that fails on someone else's in-flight edit is a bad
+// guard. It is a queue item in docs/ROADMAP_LOOP.md, not an oversight.
+const BENCHMARK_SURFACES = [
+  'docs/WHITE_PAPER.md', 'docs/wiki/Home.md', 'docs/wiki/Docking-and-Scoring.md', 'docs/wiki/Testing.md',
+  'docs/progress-report.html', 'docs/investor-brief.html',
+];
+
+// An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four
+// within 2 Å" — so a digit-only check would have let "Three of four" through the one document where an
+// overstatement costs the most. Found by auditing that file rather than by the check working.
+const INFLATED = /\b(3|4|three|four)\s+of\s+(4|four)\b[^.]{0,40}within\s+2/i;
+
 test('the benchmark figure is the measured one, everywhere it is published', () => {
   // The weakest claim in the product, and the one with the most incentive to drift upward.
-  const surfaces = ['docs/WHITE_PAPER.md', 'docs/wiki/Home.md', 'docs/wiki/Docking-and-Scoring.md',
-    'docs/wiki/Testing.md', 'docs/progress-report.html'];
-  for (const f of surfaces) {
-    const text = read(f);
-    for (const [i, line] of text.split('\n').entries()) {
-      // A phrase inside quotation marks is being discussed — the progress report quotes the forbidden
-      // wording in order to describe this very check. Only an unquoted claim is a claim.
-      const quoted = /["“”'][^"“”']*\b(3|4) of 4 within 2/.test(line);
-      assert.ok(quoted || !/\b(3|4) of 4 within 2/.test(line),
+  for (const f of BENCHMARK_SURFACES) {
+    for (const [i, line] of read(f).split('\n').entries()) {
+      // A phrase inside quotation marks is being discussed, not asserted — the progress report quotes the
+      // forbidden wording in order to describe this very check. The quote must sit IMMEDIATELY before the
+      // phrase: an earlier draft allowed any quote anywhere on the line, which in an HTML file matched the
+      // quotes around a style attribute and so exempted almost every line in the documents that matter
+      // most. A mutation test caught that; the escape hatch is now as narrow as its purpose.
+      const quoted = /["“”'](?:\s*)(3|4|three|four)\s+of\s+(4|four)\b/i.test(line);
+      assert.ok(quoted || !INFLATED.test(line),
         `${f}:${i + 1} overstates the benchmark pass rate: ${line.trim()}`);
       for (const m of line.matchAll(/median\s+([\d.]+)\s*(Å|A)\b/gi)) {
         assert.equal(m[1], '2.54', `${f}:${i + 1} gives a median of ${m[1]}; the measured value is 2.54 Å`);
@@ -126,9 +139,46 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
   }
 });
 
+test('the inflation check actually catches an inflated claim, in digits and in words', () => {
+  // A guard this cheap to get wrong is worth proving against known-bad input rather than trusting.
+  for (const bad of ['3 of 4 within 2 Å', 'Four of four within 2 Å, median 2.54 Å',
+    'three of 4 within 2 A', '4 of 4 within 2 Å']) {
+    assert.ok(INFLATED.test(bad), `the check should reject "${bad}"`);
+  }
+  for (const good of ['2 of 4 within 2 Å', 'Two of four within 2 Å, median 2.54 Å',
+    'two of 4 within 2 A', 'four of the compounds were screened']) {
+    assert.ok(!INFLATED.test(good), `the check should accept "${good}"`);
+  }
+});
+
+test('the quoted-phrase exemption is narrow enough to be useless as a loophole', () => {
+  // The exemption exists so a page can quote the forbidden wording while describing this check. It must not
+  // let an actual claim through just because a quotation mark appears earlier on the line — which is what
+  // happens in HTML, where every attribute carries quotes.
+  const exempt = (line) => /["“”'](?:\s*)(3|4|three|four)\s+of\s+(4|four)\b/i.test(line);
+  assert.ok(exempt('<li>Any line claiming "4 of 4 within 2 Å" fails the suite</li>'),
+    'a directly quoted phrase should be exempt');
+  assert.ok(!exempt('<p style="margin-top:12px"><strong>Three of four within 2 Å</strong></p>'),
+    'an HTML attribute quote must not exempt a claim made later on the same line');
+  assert.ok(!exempt('We achieved four of four within 2 Å on the panel we chose'),
+    'an unquoted claim is never exempt');
+});
+
+test('a surface that publishes the benchmark also publishes the failures', () => {
+  // The honest version of this figure is the table, not the headline. A page that says "2 of 4 within 2 Å"
+  // and drops the two failing rows has kept the number and lost the point of it.
+  for (const f of BENCHMARK_SURFACES) {
+    const text = read(f);
+    if (!/\b(2|two)\s+of\s+(4|four)\b/i.test(text)) continue;
+    assert.ok(/thrombin/i.test(text) && /BCL/i.test(text),
+      `${f} states the benchmark pass rate without naming the two cases that fail`);
+    assert.ok(/fail/i.test(text), `${f} should say plainly that those cases failed`);
+  }
+});
+
 test('no published surface gives the docking score an energy unit without disclaiming it', () => {
   const surfaces = ['docs/WHITE_PAPER.md', 'docs/wiki/Docking-and-Scoring.md', 'docs/wiki/Known-Limits.md',
-    'docs/progress-report.html'];
+    'docs/progress-report.html', 'docs/investor-brief.html'];
   const disclaims = /\bnot\b|\bnever\b|\bno\b|\bwithout\b|rather than|unvalidated|unitless|disclaim/i;
   const warns = /looks like|read as|mistaken|misread|convert|do not/i;
   for (const f of surfaces) {

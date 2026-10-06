@@ -33,9 +33,9 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Provenance ledger under test by actual tampering, plus a standalone export verifier (iter 15)
 - [x] Database layer failure behaviour under test with a stubbed fetch (iter 16)
 - [x] Whitepaper figures corrected and put under test (iter 17)
-- [ ] Extend tests/claims.test.mjs to docs/pitchdeck.html and docs/investor-brief.html. Held back because
-      another session has pitchdeck.html open in the working tree; a guard that fails on someone else's
-      in-flight edit is a bad guard.
+- [~] tests/claims.test.mjs extended to docs/investor-brief.html (iter 18). docs/pitchdeck.html is still
+      held back: the other session has uncommitted changes to it, and a guard that fails on someone else's
+      in-flight edit is a bad guard. Add it once that file is clean.
 - [ ] Ed25519 signing once `cryptography` can install
 
 ## Iterations
@@ -734,4 +734,54 @@ that fails on someone else's in-flight edit is a bad guard; it is a queue item i
 database figures in the appendix — the `make citations` rows — were left as they stand because re-measuring
 them needs the network, and they are marked with the date they were last measured rather than restated as
 current. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python
+failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 18 — the guard had a hole big enough to walk through
+
+Of the three open items, two need the network or a package install. The third — extending the claims guard
+to the deck and the investor brief — was half actionable: `docs/investor-brief.html` is clean in the working
+tree, and only `docs/pitchdeck.html` is still held by the other session. Investor-facing claims are also
+where an overstatement costs the most, so that was the half worth doing.
+
+Auditing the brief turned up no dishonesty in it — it already said "Two of four within 2 Å, median 2.54 Å",
+published the failing rows, and added that this is "not good enough to predict affinity". **It turned up a
+hole in my own guard instead.** The brief spells its numbers out in words, and the benchmark check from
+iteration 17 matched only digits, so "Three of four within 2 Å" would have passed unnoticed in the one
+document where it matters most.
+
+Closing that exposed a second, worse hole. The check has an exemption for a phrase inside quotation marks,
+because the progress report quotes the forbidden wording in order to describe the check itself. The
+exemption allowed a quote *anywhere earlier on the line* — and in an HTML file, every `style="…"` attribute
+carries quotes, so the exemption applied to essentially every line of every HTML document under guard. The
+check was close to vacuous on the surfaces that matter most, and it had been passing green the whole time.
+
+A mutation test is what found it. Rewriting the brief's figure to "Three of four" did **not** fail the suite
+on the first attempt. The exemption now requires the quote to sit immediately before the phrase, and there
+is a test whose only job is to prove the exemption is too narrow to be used as a loophole — including the
+exact HTML-attribute case that defeated it.
+
+Done, in three parts:
+- The benchmark check matches digits and words, both cases, and is itself proved against eight known-good
+  and known-bad strings rather than trusted.
+- A new check requires that any surface quoting the pass rate also names the two cases that fail. **It
+  caught a real instance on its first run**: `docs/wiki/Testing.md` stated "2 of 4 within 2 Å" in its
+  carried-forward table with no mention of Thrombin or BCL-X<sub>L</sub>. The pass rate is only meaningful
+  next to the cases it excludes, and that page now names them, with their RMSDs and the reason both fail.
+- `docs/investor-brief.html` joins the benchmark and energy-unit scans. Its one vague claim — "offline
+  tests" with no figure — now reads 1,438 Python and 193 JavaScript tests, which the guard re-measures.
+
+Verified offline (`node --test tests/*.test.mjs`, 193 passed; `tests/wiki.test.mjs`, 13 passed;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed). Mutation-checked twice: once before narrowing the
+exemption, where the inflated claim slipped through, and once after, where it fails with the offending line
+quoted in the message.
+
+The line count and JavaScript test figures in the whitepaper and the brief are now written by reading the
+filesystem and formatting the result in, not typed. Editing a test file changes the numbers that file's own
+tests measure, and doing that by hand cost three rounds of correction across iterations 17 and 18.
+
+Still unproven / blocked: `docs/pitchdeck.html`, which has uncommitted changes from the other session and
+stays out of the guard until that file is clean. Three further published surfaces were not audited this
+iteration — `docs/pitch.html`, `docs/whitepaper.html` and `docs/WIKI.md` — and the guard does not cover
+them, so a stale claim could still be sitting in any of them; that is a known gap, not a clean bill of
+health. The 4-case benchmark was not re-measured; 2 of 4 within 2 A, median 2.54 A stands. Five Python
 failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
