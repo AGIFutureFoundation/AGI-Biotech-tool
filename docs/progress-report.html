@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 16</span>
-      <span class="tag on">179 JavaScript tests passing</span>
+      <span class="tag">iteration 17</span>
+      <span class="tag on">190 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,38 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 17</div>
+      <div>
+        <h3>The whitepaper had stopped being true</h3>
+        <p>The whitepaper's Appendix A lists every figure beside the command that produces it, and says: do
+          not trust it, run the commands; any figure that is not reproducible should be treated as deleted.
+          That rule had quietly stopped holding. It claimed 763 tests passing and 2,034 lines of test code
+          against an actual 1,438 and 9,374, and never mentioned the JavaScript suites. Nobody had lied — the
+          document was written once and the repository kept moving, which is what prose cannot notice.</p>
+        <ul class="checks">
+          <li>Both suite results corrected, with the measurement date, and the five Python failures stated
+            alongside the passes with the reason they fail rather than a cleaner number</li>
+          <li>Every countable appendix row re-measured: test lines, Python lines, module and file counts</li>
+          <li>New section lists <em>what the tests found</em>, not only that they pass — the planarity
+            gradient error, the dropped insertion codes, "load lark two", the loop that could not terminate</li>
+          <li><code>tests/claims.test.mjs</code> re-measures the figures from the filesystem and fails when
+            claim and reality disagree. The JavaScript total is checked against cases declared: 190 and 190</li>
+          <li>The Python line must carry its failures with its passes, so the passing count cannot stand alone</li>
+          <li>Not asserted: the exact Python collection count, which moved 1,499 → 1,496 within the hour as
+            the concurrent session added tests. Pinning it would fail for unrelated reasons; the document
+            states when it measured instead</li>
+          <li>Four first-draft assertions were mine, not the document's — including a false positive on a line
+            that quotes the forbidden phrase in order to describe this very check</li>
+          <li>Mutation-checked: reverting the module figure to 22 fails with the measured value named.
+            190 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">The deck and investor brief are not yet guarded — the other session has the deck open
+            in the working tree, and a guard that fails on someone else's in-flight edit is a bad guard</li>
+          <li class="no">The citation and database rows were left as they stand, dated: re-measuring them
+            needs the network</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 16</div>
       <div>
