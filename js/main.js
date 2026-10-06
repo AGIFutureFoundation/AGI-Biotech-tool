@@ -5,7 +5,7 @@ import { parsePDB, parseMmCIF, parseMolblock, parsePDBFrames } from './structure
 import { MolView, REPS, COLORS, textSprite, dashedLine } from './render.js';
 import { MDEngine } from './md.js';
 import { ProteinGrid, vinaScore, findPockets, dockLigand, centroid } from './dock.js';
-import { refineAll } from './refine.js';
+import { refineAllFlexible } from './torsion.js';
 import { analyze, smilesTo3D, loadRDKit, setServerCaps, depict, heavyAtomModel, fingerprint } from './chem.js';
 import { CompoundLibrary, importFile } from './compounds.js';
 import { rcsb, alphafold, uniprot, openTargets, pubchem, chembl, server, foldseek, trials, interpro, reactome,
@@ -328,10 +328,12 @@ async function doDock() {
       xr.panel.setStatus(`docking ${run + 1}/12`);
     },
   });
-  // The MC search stops wherever its last accepted move landed; this tightens each pose inside the
-  // basin it found. Refinement only ever accepts a strict improvement, so this cannot make a pose worse.
+  // The MC search stops wherever its last accepted move landed, which is near a minimum rather than in
+  // it, and it samples torsions coarsely. This tightens each pose as a rigid body and then by dihedral,
+  // alternating until neither helps. Every stage accepts only strict improvements, so this cannot make a
+  // pose worse; torsion rotations change dihedrals alone, leaving bond lengths and angles untouched.
   status('refining poses…');
-  const refined = poses.length ? refineAll(S.grid, S.ligand, poses) : poses;
+  const refined = poses.length ? refineAllFlexible(S.grid, S.ligand, poses) : poses;
   S.poses = refined;
   $('#btnDock').disabled = false;
   if (refined.length) applyPose(0);
@@ -340,7 +342,7 @@ async function doDock() {
   if (refined.length) {
     S.ledger.append('dock', { compound: S.compound?.agiId || S.ligand.name, smiles: S.compound?.canonical || null,
       target: S.protein.name, site: S.pocket?.label || null, score: +refined[0].score.toFixed(2),
-      poses: refined.length, method: 'Monte Carlo search, Vina-style score, local rigid-body refinement',
+      poses: refined.length, method: 'Monte Carlo search, Vina-style score, local rigid-body and torsional refinement',
       refinedBy: +(refined[0].refinedBy || 0).toFixed(2),
       provenance: 'ESTIMATE: unvalidated in-browser score, not kcal/mol' }).then(renderLedger);
   }

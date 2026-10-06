@@ -16,8 +16,9 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Unit tests for js/analysis.js interaction geometry on synthetic coordinates (iter 3)
 - [x] Unit tests for js/voice.js parseCommand across the intent grammar (iter 4)
 - [x] Unit tests for js/agent.js intent-to-tool mapping and enum translation (iter 6)
-- [~] Docking: local rigid-body refinement built and unit-tested (iteration 7). The 4-case benchmark
-      re-measurement still waits on the network, so the 2-of-4 / 2.54 A median figure stands unchanged.
+- [~] Docking: local rigid-body refinement (iteration 7) and torsional refinement (iteration 8) built and
+      unit-tested on synthetic geometry. The 4-case benchmark re-measurement still waits on the network, so
+      the 2-of-4 / 2.54 A median figure stands unchanged and must not be restated as improved.
 - [ ] docs/wiki/ pages ready to paste into the GitHub wiki
 - [ ] Ed25519 signing once `cryptography` can install
 
@@ -170,4 +171,42 @@ unvalidated score is not a better prediction.
 Still unproven / blocked: whether refinement improves the 4-case re-docking benchmark. That needs
 structures from the RCSB and the network is blocked, so the published figure stays what it was measured at
 — 2 of 4 within 2 A, median 2.54 A — and is not restated as improved. Five Python failures remain in
+`tests/test_server_lifecycle.py`; all five need to bind a local port, which this sandbox refuses.
+
+### 2026-10-06 · Iteration 8 — the torsions the search only sampled coarsely
+
+Done: `js/torsion.js`. Iteration 7 tightened a pose as a rigid body; a ligand with rotatable bonds has more
+freedom than that, and the Monte Carlo search samples those dihedrals coarsely. This searches them directly:
+`rotateTorsion` turns the atoms on one side of a bond about that bond's own axis, `refineTorsions` runs a
+pattern search over every rotatable bond with a shrinking angular step, and `refineFlexible` alternates
+rigid-body and torsional passes until a full pass of both stops helping. Every stage accepts only strict
+improvements. The interactive dock path in `js/main.js` now calls `refineAllFlexible`, and the ledger records
+the method as rigid-body *and* torsional refinement rather than rigid-body alone.
+
+Verified offline (`node --test` over all five JS suites, 61 passed; `node --check js/torsion.js js/main.js`;
+`.venv/bin/python -m pytest tests/ -q`, 1438 passed). The geometry checks are exact and make no reference to
+the scoring function, which is the point of them:
+- A torsion rotation preserves **every** bond length to 1e-4 A and every bond angle to 1e-4 rad. The hinge
+  atoms and the whole fixed side do not move at all. A rotation followed by its inverse returns the input.
+- It moves the dihedral spanning its own bond by exactly the angle asked for, and the two flanking dihedrals
+  by nothing — so one call changes one degree of freedom, not several.
+- A six-carbon sp3 zig-zag yields exactly the three rotatable bonds the geometry implies; the two terminal
+  bonds are correctly excluded, and the smaller side is always the one that moves.
+- A bond whose atoms have collapsed onto each other is skipped rather than normalised by zero; coordinates
+  never become NaN.
+- Search discipline: never worse than its input from four starting bends, bond lengths still 1.53 A after a
+  full refinement, byte-identical determinism, input array never mutated, budget respected, a finer angular
+  step never worse. A rigid ligand costs exactly one scoring call and is returned unchanged.
+- `refineFlexible` is never worse than `refinePose` alone, and a pose already settled stops after one pass
+  instead of burning the budget. `refineAllFlexible` re-sorts and keeps a gain record per pose.
+
+One bug of mine, found by the test rather than by reading: `refineFlexible` seeded its running best at
+Infinity, so the first pass always compared favourably and the loop could never stop on it. A settled pose
+cost two passes where one would do. Now seeded from the pose's own starting score.
+
+Still unproven / blocked: whether torsional refinement improves the 4-case re-docking benchmark. That needs
+structures from the RCSB and the network is blocked; the published figure stays what was measured — 2 of 4
+within 2 A, median 2.54 A — and is not restated. Nor does this add an internal-strain term: `vinaScore` sees
+protein-ligand contacts only, so a torsion that folds the ligand onto itself costs nothing in this search,
+which is why `refineFlexible` polishes a conformer rather than generating one. Five Python failures remain in
 `tests/test_server_lifecycle.py`; all five need to bind a local port, which this sandbox refuses.
