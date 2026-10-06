@@ -26,6 +26,21 @@ change to the search at all.
 
 That is a diagnosis, not just a score: **the next work belongs in the energy terms, not the search.**
 
+![Re-docking benchmark: eleven cases, RMSD to the crystallographic pose](chart-redock.png)
+
+Each row is one case. The green dot is the best pose the search produced; the amber dot is the pose the
+scorer ranked first. Where the two are far apart the search did its job and the ranking did not — that gap
+is the four scoring failures, and it is the whole argument for working on the energy terms next.
+
+## Watch it run
+
+[![A 110-second cut of the workspace](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/media/frame-38s.jpg)](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/pitch.mp4)
+
+A 110-second silent cut, rendered offline from the same figures as the rest of this wiki — no narration,
+nothing staged. GitHub does not play video inside a wiki page, so the image above is a link to the file in
+the repository, where it plays. [More frames and the longer
+walkthrough](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/tree/enterprise-hardening-and-ingestion/docs) sit alongside it.
+
 The six failures, named: CDK5 (1UNL), GSK-3β (1Q41), carbonic anhydrase II (1OQ5) and β-II tryptase (2BM2)
 are **scoring** failures — a good pose was found and ranked below a bad one. BCL-X<sub>L</sub> (2YXJ) and
 MetAP2 (1R58) are **sampling** failures, where no good pose was generated at all.

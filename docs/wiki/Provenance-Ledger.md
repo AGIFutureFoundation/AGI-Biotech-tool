@@ -1,5 +1,8 @@
 # Provenance Ledger
 
+![How a result is hashed, chained and anchored](graph-provenance.png)
+
+
 Every result the workspace produces is appended to a SHA-256 hash chain: each record carries the hash of
 the one before it, so changing an earlier record invalidates every record after it. Verifying the chain is
 one call, and exporting it gives you the whole history as a file.

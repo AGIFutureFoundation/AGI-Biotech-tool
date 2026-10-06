@@ -1,5 +1,8 @@
 # Docking and Scoring
 
+![Re-docking benchmark: eleven cases, RMSD to the crystallographic pose](chart-redock.png)
+
+
 This is the part of the product most likely to mislead you, so it gets the most honest page.
 
 ## What the score is
@@ -144,3 +147,11 @@ node --test tests/refine.test.mjs tests/torsion.test.mjs tests/poses.test.mjs
 The JavaScript suites test the search and refinement on synthetic geometry — receptors and ligands built so
 the right answer is known by construction. The Python suites check the scoring port term by term against
 reference values. See [Testing](Testing).
+
+## The ceiling this search is working against
+
+![What perfect ranking would be worth: 45% today, 82% with the poses already being generated](chart-ceiling.png)
+
+The bar is what the benchmark would read if the scoring function ranked perfectly over the poses the search
+already produces. The distance between the two is not a hypothetical: those poses are generated today and
+thrown away by the ranking.

@@ -27,8 +27,18 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WIKI_SRC = os.path.join(ROOT, "docs", "wiki")
+MEDIA_SRC = os.path.join(ROOT, "docs", "media")
 # Instructions for maintainers, not a wiki page.
 NOT_A_PAGE = {"README.md"}
+
+# A wiki page referencing an image it does not ship renders a broken-image icon,
+# which is worse than no figure. Images a page embeds are copied in beside it.
+#
+# PNG and JPEG only, deliberately. GitHub serves a wiki's .svg as text/plain, so
+# an <img> pointing at one shows nothing -- the charts here are rasterised from
+# their SVG sources for that reason, and shipping the .svg as well would invite
+# someone to reference it and get a blank.
+MEDIA_EXT = (".png", ".jpg", ".jpeg", ".gif")
 
 
 def run(cmd, cwd=None, check=True):
@@ -42,6 +52,19 @@ def remote_wiki_url():
     if origin.startswith("git@"):                       # git@github.com:owner/repo
         origin = "https://" + origin[4:].replace(":", "/", 1)
     return origin + ".wiki.git", origin
+
+
+def media_referenced(pages):
+    """Image files the pages actually reference, so nothing unused ships."""
+    want = set()
+    for page in pages:
+        src = open(os.path.join(WIKI_SRC, page)).read()
+        for m in re.finditer(r"!\[[^\]]*\]\(([^)]+)\)", src):
+            target = m.group(1).strip()
+            if target.startswith(("http:", "https:", "/")):
+                continue                      # hosted elsewhere, not ours to ship
+            want.add(os.path.basename(target))
+    return sorted(want)
 
 
 def check_pages():
@@ -67,14 +90,28 @@ def main():
     if not pages:
         sys.exit(f"no pages in {WIKI_SRC}")
 
+    media = media_referenced(pages)
+    missing_media = [m for m in media
+                     if not os.path.exists(os.path.join(MEDIA_SRC, m))]
+    if missing_media:
+        sys.exit("pages reference images that are not in docs/media: "
+                 + ", ".join(missing_media))
+    bad_ext = [m for m in media if not m.lower().endswith(MEDIA_EXT)]
+    if bad_ext:
+        sys.exit("GitHub wikis do not render these inline; rasterise them first: "
+                 + ", ".join(bad_ext))
+
     wiki_url, repo_url = remote_wiki_url()
-    print(f"source : docs/wiki ({len(pages)} pages)")
+    print(f"source : docs/wiki ({len(pages)} pages, {len(media)} images)")
     print(f"target : {wiki_url}")
     check_pages()
 
     if a.dry_run:
         for p in pages:
             print(f"    {p[:-3].replace('-', ' ')}  <- docs/wiki/{p}")
+        for m in media:
+            size = os.path.getsize(os.path.join(MEDIA_SRC, m))
+            print(f"    [image] {m}  ({size // 1024} KB)")
         return 0
 
     tmp = tempfile.mkdtemp(prefix="wiki-")
@@ -101,6 +138,8 @@ has to be created once in the browser, after which this command owns the wiki.
                 os.remove(os.path.join(tmp, f))
         for p in pages:
             shutil.copyfile(os.path.join(WIKI_SRC, p), os.path.join(tmp, p))
+        for m in media:
+            shutil.copyfile(os.path.join(MEDIA_SRC, m), os.path.join(tmp, m))
 
         run(["git", "add", "-A"], cwd=tmp)
         status = run(["git", "status", "--porcelain"], cwd=tmp).stdout.strip()
@@ -112,7 +151,7 @@ has to be created once in the browser, after which this command owns the wiki.
         push = run(["git", "push", "--quiet"], cwd=tmp, check=False)
         if push.returncode != 0:
             sys.exit("push failed:\n" + push.stderr)
-        print(f"  published {len(pages)} pages -> {repo_url}/wiki")
+        print(f"  published {len(pages)} pages and {len(media)} images -> {repo_url}/wiki")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     return 0
