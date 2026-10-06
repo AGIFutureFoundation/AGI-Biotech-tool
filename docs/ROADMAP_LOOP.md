@@ -13,9 +13,9 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 
 ## Queue
 
-- [ ] Unit tests for js/analysis.js interaction geometry on synthetic coordinates
-- [ ] Unit tests for js/voice.js parseCommand across the intent grammar
-- [ ] Unit tests for js/agent.js intent-to-tool mapping and enum translation
+- [x] Unit tests for js/analysis.js interaction geometry on synthetic coordinates (iter 3)
+- [x] Unit tests for js/voice.js parseCommand across the intent grammar (iter 4)
+- [x] Unit tests for js/agent.js intent-to-tool mapping and enum translation (iter 6)
 - [ ] Docking: wider search budget and a rescoring pass, measured against the 4-case benchmark
 - [ ] docs/wiki/ pages ready to paste into the GitHub wiki
 - [ ] Ed25519 signing once `cryptography` can install
@@ -115,3 +115,27 @@ sandbox, so all cuts are silent and docs/pitch_narration.txt still waits); the a
 12.8 MB upload twice, so the page carries a 4 MB 720p copy while the 1080p master stays in the repo.
 No revenue, no signed customer, and no team or raise figures: those are the user's to supply, not mine
 to invent.
+
+### 2026-10-06 · Iteration 6 — the tool registry and the voice-to-renderer seam under test
+
+Done: `tests/agent.test.mjs`, seventeen cases over `js/agent.js` driven by a stub workspace that records
+calls, so every tool runs with no browser, no structure and no network.
+
+Verified offline (`node --test tests/agent.test.mjs`, 17 passed; all three JS suites together, 39 passed):
+- Every registered tool has a snake_case name, a usable description, a valid object schema, and no
+  required property it fails to declare. No duplicate names.
+- The published schema carries exactly name, description and parameters, and never leaks the function.
+- The seam that matters: "colour by confidence" reaches the renderer as `plddt`, and "show cartoon" as
+  `cartoon+pocket`. A person says one word; the renderer answers to another.
+- Seven spoken intents route to the tool meant; an unrecognised sentence offers help and executes nothing.
+- An unknown tool name is refused; failures are recorded in history and re-thrown rather than swallowed;
+  start and result events carry the calling source.
+- load_target falls back to a gene search and says plainly when nothing matches; load_compound names the
+  three ways to identify a molecule; extract_ligand refuses a structure with nothing bound.
+- The four tools marked slow are the four that actually cost compute.
+
+One test expectation of mine was wrong, not the code: another session had tightened the dock units string
+from "approximate" to "unitless Vina-like score ... not kcal/mol", which is the better statement. The
+assertion now checks that the field disclaims exactness rather than demanding one phrase.
+
+Still unproven: the tools against a live workspace (needs a port and a browser); every HTTP route.
