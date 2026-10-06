@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 8</span>
-      <span class="tag on">61 JavaScript tests passing</span>
+      <span class="tag">iteration 9</span>
+      <span class="tag on">74 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,27 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 9</div>
+      <div>
+        <h3>The wiki, with a test that reads it</h3>
+        <p><code>docs/wiki/</code> is nine pages, one file per GitHub wiki page, pushable or pasteable, with a
+          sidebar and a publishing recipe. Home leads with the re-docking failure rather than the feature list,
+          and Known Limits is its own page linked from the front page rather than a section at the bottom of a
+          long document. Counts were read out of the code, not recalled: 19 intents, 22 tools, 21 database hosts.</p>
+        <ul class="checks">
+          <li>Prose is not compiled, so <code>tests/wiki.test.mjs</code> is the compiler: 13 cases, 74 JavaScript tests in all</li>
+          <li>Every internal link resolves; the sidebar and the page set agree both ways; no orphan pages</li>
+          <li>No page gives the docking score an energy unit except to disclaim it</li>
+          <li>Any line claiming "4 of 4 within 2 Å", or a median other than 2.54 Å, fails the suite</li>
+          <li>Home, the docking page and the testing page must each say the figure was carried forward</li>
+          <li>The intent count is compared against the module, so a new intent cannot ship undocumented</li>
+          <li>Guards mutation-checked, not assumed: an inflated table and a misspelled link each fail, then reverted</li>
+          <li class="no">Not pushed — <code>git push</code> to the wiki repository needs a valid GitHub token</li>
+          <li class="no">Two wiki figures are marked carried-forward because they cannot be re-measured here</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 8</div>
       <div>
