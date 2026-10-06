@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 10</span>
-      <span class="tag on">88 JavaScript tests passing</span>
+      <span class="tag">iteration 11</span>
+      <span class="tag on">100 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,30 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 11</div>
+      <div>
+        <h3>The one stage of the chain nobody was testing</h3>
+        <p><code>findPockets</code> is the first stage of the docking chain and had no JavaScript test. It
+          matters more than its position suggests: if it ranks a surface dent above a buried cavity, the
+          search, the refinement, the scoring and the analysis all run correctly against the wrong site, and
+          nothing in the output says so. Receptors were built so the cavity is known by construction —
+          Fibonacci-sphere shells, a solid ball with no interior, a dimple pressed into a plate.</p>
+        <ul class="checks">
+          <li>No defect found: every behaviour put to it was correct, so the value here is the guard, not a fix</li>
+          <li>Cavity located to 0.5 Å, sized 900–1200 Å<sup>3</sup> against a predicted ~1000, buriedness above 0.95</li>
+          <li>Nearest wall atom over 6 Å and under 10 from the centre — demonstrably inside the shell</li>
+          <li>A convex solid reports no pocket; a dimple 25 Å away does not register at all, let alone outrank</li>
+          <li>Excluding a cap of wall drops buriedness 0.986 → 0.837 and retreats the centre from the opening</li>
+          <li>Stable across grid spacings 1.0 / 1.25 / 1.5; volume spread under 15 percent</li>
+          <li>Mutation-checked: loosening the buriedness threshold to 3 of 26 fails six of twelve cases</li>
+          <li>100 JavaScript tests and 1438 Python tests passing</li>
+          <li class="no">Real crystallographic cavities. Synthetic shells prove the algorithm does what it
+            claims; they do not prove its thresholds suit real protein surfaces, which are rougher and
+            rarely sealed</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 10</div>
       <div>
