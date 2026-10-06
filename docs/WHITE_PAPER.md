@@ -109,7 +109,7 @@ Measured 6 October 2026. Two suites, both offline.
 
 ```
 $ .venv/bin/python -m pytest tests/ -q
-5 failed, 1466 passed, 55 skipped, 1 xfailed, 43 warnings in 84.14s (0:01:24)
+5 failed, 1467 passed, 55 skipped, 1 xfailed, 43 warnings in 76.62s (0:01:16)
 
 $ node --test tests/*.test.mjs
 pass 224  fail 0
@@ -121,7 +121,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-10,435 lines of test code across 40 Python files and 15 JavaScript files. The
+10,509 lines of test code across 40 Python files and 15 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -545,10 +545,10 @@ corrections to numbers that had drifted since it was written.
 
 | Claim | Command |
 |---|---|
-| 5 failed, 1466 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
+| 5 failed, 1467 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
 | 224 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 10,435 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 10,509 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
 | 40 Python and 15 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 86 modules import cleanly | `make imports` |
 | 28 of 30 JS modules reachable from the app; 2 staged, 0 dead | `make reachable` |

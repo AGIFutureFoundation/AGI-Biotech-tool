@@ -76,6 +76,29 @@ def _non_macos(monkeypatch):
     monkeypatch.setattr(mpv.ImageFont, "truetype", truetype)
 
 
+def _any_real_font():
+    """Any scalable font file this machine actually has, whatever platform it is.
+
+    This used to be the macOS Georgia path with a skip if it was absent, which
+    inverted the point of the suite: the five tests that prove the renderer
+    works WITHOUT macOS fonts were the five that skipped on a machine without
+    them. On Linux CI they silently did not run.
+
+    Nothing here depends on which face it is -- the fixture only needs a real
+    file to install into the fake /usr/share tree, so any candidate from any
+    role on any platform does.
+    """
+    for paths in mpv.FONT_CANDIDATES.values():
+        for path in paths:
+            if os.path.exists(path):
+                try:
+                    ImageFont.truetype(path, 12)      # scalable, and actually loadable
+                    return path
+                except OSError:
+                    continue
+    pytest.skip("no scalable font anywhere on this machine to build the fake tree from")
+
+
 @pytest.fixture
 def linux_box(tmp_path, monkeypatch):
     """A machine with fonts-dejavu-core installed and no /System/Library/Fonts.
@@ -89,9 +112,7 @@ def linux_box(tmp_path, monkeypatch):
     each role's macOS candidate first in the list, and hide it. Finding the
     substitute then requires actually walking the list.
     """
-    source = "/System/Library/Fonts/Supplemental/Georgia.ttf"
-    if not os.path.exists(source):
-        pytest.skip("no real font file on this machine to install into the fake tree")
+    source = _any_real_font()
 
     # Built from fixed names, NOT from FONT_CANDIDATES. Reading the Linux paths
     # out of the table under test made this fixture error out against the
@@ -193,3 +214,56 @@ def test_the_candidate_lists_reach_past_macos():
         assert elsewhere, f"{role} has no non-macOS candidate"
         assert any("dejavu" in p.lower() or "liberation" in p.lower() for p in elsewhere), \
             f"{role} names no font from a standard Linux package"
+
+
+def test_the_fixture_does_not_need_macos_to_build_its_fake_tree(tmp_path, monkeypatch):
+    """The regression in the test suite itself, not in the renderer.
+
+    _any_real_font used to be the hardcoded macOS Georgia path with a skip if
+    it was missing. That meant the five tests proving the renderer survives
+    WITHOUT macOS fonts were exactly the five that did not run on a machine
+    without them -- they skipped on Linux CI, silently, which is the worst way
+    for coverage to be absent.
+
+    This has to FAIL on the old fixture, not skip. A first version let the
+    helper's own pytest.skip propagate, so against the defect it reported
+    "skipped" -- green, and reproducing the exact silence it exists to catch.
+    The skip is caught and turned into a failure.
+    """
+    # Find a donor directly, NOT through the helper, so the helper's skip
+    # cannot decide this test's outcome.
+    donor_src = None
+    for paths in mpv.FONT_CANDIDATES.values():
+        for path in paths:
+            if os.path.exists(path):
+                try:
+                    ImageFont.truetype(path, 12)
+                    donor_src = path
+                    break
+                except OSError:
+                    continue
+        if donor_src:
+            break
+    if donor_src is None:
+        pytest.skip("this machine has no scalable font at all")
+
+    donor = tmp_path / "DejaVuSerif.ttf"
+    shutil.copyfile(donor_src, donor)
+
+    monkeypatch.setattr(mpv, "FONT_CANDIDATES",
+                        {r: [MACOS_TREE + "/Supplemental/Georgia.ttf", str(donor)]
+                         for r in ROLES})
+    real_exists = os.path.exists
+    monkeypatch.setattr(os.path, "exists",
+                        lambda p: False if str(p).startswith(MACOS_TREE) else real_exists(p))
+
+    try:
+        found = _any_real_font()
+    except BaseException as exc:                       # pytest's Skipped is a BaseException
+        if type(exc).__name__ == "Skipped":
+            pytest.fail("the fixture skipped on a machine that has a usable font installed; "
+                        "on Linux CI that silently drops the five cross-platform tests")
+        raise
+
+    assert found == str(donor), \
+        f"with no macOS fonts the fixture resolved {found!r} instead of the installed face"
