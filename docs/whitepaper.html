@@ -1,270 +1,458 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AGI BioXR — molecular research you can check</title>
-<meta name="description" content="A molecular research workspace built so every number can be traced to where it came from, or is marked as a placeholder in the output itself.">
+<title>biodao.blockchain</title>
 <style>
-:root{--bg:#070b12;--panel:#0d141f;--panel2:#111a27;--line:#1e2b3c;--ink:#e8f1ff;
-  --dim:#93a7bd;--accent:#39d98a;--accent2:#4cc9f0;--warn:#ffbe0b;--radius:12px;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);
-  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--accent2)}
-.wrap{max-width:900px;margin:0 auto;padding:0 20px}
-code{font-family:var(--mono);font-size:.87em;color:var(--accent2)}
-h2{font-size:26px;margin:0 0 12px;letter-spacing:-.01em}
-h3{font-size:18px;margin:30px 0 8px}
-p{margin:0 0 16px}
-.sub{color:var(--dim);max-width:66ch}
-section{padding:54px 0;border-bottom:1px solid var(--line)}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--accent);margin-bottom:14px}
+  /* Layout: single measured column, full-bleed section bands, data shown in bordered plates.
+     Dark-first — the product is a dark 3D workspace and the paper should feel continuous with it. */
+  :root {
+    --ink: #e6eef8;
+    --ink-dim: #8ea3bb;
+    --ink-faint: #5d718a;
+    --bg: #070b11;
+    --bg-raised: #0d1420;
+    --bg-plate: #111a27;
+    --line: #1d2a3a;
+    --accent: #39d98a;
+    --accent-2: #4cc9f0;
+    --warn: #ffbe0b;
+    --bad: #ff5d73;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+      --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+      --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #121a24; --ink-dim: #4a5c72; --ink-faint: #7b8ca1;
+    --bg: #f7f9fc; --bg-raised: #ffffff; --bg-plate: #eef2f8; --line: #d7dfea;
+    --accent: #12875a; --accent-2: #1a6f93; color-scheme: light;
+  }
 
-header{padding:76px 0 46px;border-bottom:1px solid var(--line)}
-h1{font-size:clamp(32px,5.4vw,50px);line-height:1.1;margin:0 0 18px;letter-spacing:-.025em}
-.lede{font-size:clamp(17px,2.1vw,19.5px);color:var(--dim);max-width:62ch;margin:0 0 26px}
-.meta{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.6;
+         -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 860px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
 
-figure{margin:26px 0}
-img,video{max-width:100%;height:auto;display:block;border:1px solid var(--line);
-  border-radius:var(--radius);background:#000}
-figcaption{margin-top:10px;font-size:13.5px;color:var(--dim)}
-.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.grid2 figure{margin:0}
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: clamp(2.4rem, 7vw, 4rem); letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.5rem, 3.6vw, 2.1rem); margin-bottom: 0.6rem; }
+  h3 { font-size: 1.05rem; font-family: var(--body); font-weight: 600; margin-bottom: 0.3rem; }
+  p { margin: 0 0 1rem; color: var(--ink-dim); }
+  p.lead { font-size: 1.12rem; color: var(--ink); }
+  strong { color: var(--ink); font-weight: 600; }
+  a { color: var(--accent-2); }
 
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-.n{font-size:38px;font-weight:700;line-height:1;letter-spacing:-.02em;margin:0 0 6px}
-.cap{color:var(--dim);font-size:14px;margin:0}
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: 0.7rem; }
 
-table{width:100%;border-collapse:collapse;font-size:14.5px;margin:18px 0}
-th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
-th{color:var(--dim);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
-td.m{font-family:var(--mono)}
-.ok{color:var(--accent)}.warn{color:var(--warn)}
+  header.hero { border-bottom: 1px solid var(--line); background:
+      radial-gradient(1100px 420px at 20% -10%, rgba(57,217,138,0.10), transparent 60%), var(--bg); }
+  .hero-inner { padding-block: clamp(48px, 9vw, 92px) clamp(36px, 6vw, 64px); }
+  .mark { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 0.82rem;
+          color: var(--ink-dim); margin-bottom: 1.6rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+  .hero h1 .pt2 { color: var(--accent); }
+  .hero p.lead { max-width: 60ch; margin-top: 1.2rem; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.6rem; }
+  .tag { font-family: var(--mono); font-size: 0.72rem; border: 1px solid var(--line); border-radius: 999px;
+         padding: 4px 11px; color: var(--ink-dim); }
 
-.honest{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
-  border-radius:var(--radius);padding:24px}
-.honest ul{margin:12px 0 0;padding-left:20px;color:var(--dim)}
-.honest li{margin-bottom:10px}
-.honest b{color:var(--ink)}
-.marker{font-family:var(--mono);font-size:12.5px;color:var(--warn)}
+  section { padding-block: clamp(36px, 6vw, 60px); border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
 
-.cta{display:flex;gap:28px;align-items:center;flex-wrap:wrap;background:var(--panel);
-  border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-.cta img{width:168px;height:168px;border:none;background:#fff;padding:10px;border-radius:10px}
-.btn{display:inline-block;padding:11px 20px;border-radius:var(--radius);text-decoration:none;
-  font-weight:600;font-size:14.5px;background:var(--accent);color:#05210f;border:1px solid var(--accent)}
-.btn.ghost{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 680px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
 
-footer{padding:38px 0 70px;color:var(--dim);font-size:13px}
-footer a{margin-right:16px}
-@media(max-width:600px){th:nth-child(4),td:nth-child(4){display:none}}
+  .plate { background: var(--bg-plate); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+  .plate h3 { margin-bottom: 0.35rem; }
+  .plate p { margin: 0; font-size: 0.93rem; }
+
+  .stat { font-family: var(--mono); font-size: 1.9rem; color: var(--ink); font-variant-numeric: tabular-nums;
+          line-height: 1.1; }
+  .stat small { display: block; font-family: var(--body); font-size: 0.78rem; color: var(--ink-faint);
+                margin-top: 6px; letter-spacing: 0.02em; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-plate); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+       color: var(--ink-faint); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--accent); } .fail { color: var(--bad); }
+
+  .phase { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding: 14px 0;
+           border-bottom: 1px solid var(--line); }
+  .phase:last-child { border-bottom: 0; }
+  .phase .when { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-faint); padding-top: 2px; }
+  .phase h3 { margin-bottom: 0.25rem; }
+  .phase p { margin: 0; font-size: 0.93rem; }
+  @media (max-width: 560px) { .phase { grid-template-columns: 1fr; gap: 4px; } }
+
+  .status { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+            border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; margin-left: 8px;
+            vertical-align: middle; white-space: nowrap; }
+  .status.live { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .status.part { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  .status.next { color: var(--ink-faint); }
+
+  .limits { border-left: 3px solid var(--warn); padding: 2px 0 2px 16px; }
+  .limits li { color: var(--ink-dim); margin-bottom: 0.6rem; font-size: 0.95rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 0.4rem; color: var(--ink-dim); }
+
+  /* Call to action */
+  .cta { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+         display: grid; grid-template-columns: 1fr 180px; gap: 24px; align-items: start; }
+  @media (max-width: 680px) { .cta { grid-template-columns: 1fr; } }
+  #qr { width: 168px; height: 168px; background: #fff; border-radius: 10px; padding: 10px; }
+  #qr svg, #qr canvas { width: 100%; height: 100%; display: block; }
+  .qr-cap { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-faint); text-align: center;
+            margin-top: 8px; line-height: 1.4; }
+
+  form { display: grid; gap: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 0.78rem; color: var(--ink-faint); margin-bottom: 4px;
+          font-family: var(--mono); letter-spacing: 0.04em; }
+  input, textarea, select { width: 100%; background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 8px; padding: 9px 11px; font: inherit; font-size: 0.92rem; }
+  textarea { min-height: 84px; resize: vertical; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { background: var(--accent); color: #04140d; border: 0; border-radius: 8px; padding: 11px 18px;
+           font: inherit; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.08); }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
+  .formnote { font-size: 0.82rem; color: var(--ink-faint); margin: 0; }
+  .contact { font-family: var(--mono); font-size: 0.9rem; color: var(--ink); word-break: break-all; }
+  .sent { border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background:
+      color-mix(in srgb, var(--accent) 10%, transparent); border-radius: 8px; padding: 12px 14px; font-size: 0.92rem; }
+
+  footer { padding-block: 32px; color: var(--ink-faint); font-size: 0.82rem; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
-</head>
-<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 
-<header><div class="wrap">
-  <div class="eyebrow">Whitepaper · AGI Future Foundation</div>
-  <h1>Molecular research you can check.</h1>
-  <p class="lede">A drug-discovery workspace that runs in a browser or a headset, built on one rule:
-  every number it shows is either traceable to the thing that produced it, or marked in the output
-  itself as a placeholder. Nothing in between.</p>
-  <p class="meta">Updated 2026-10-05 · Open source · Contact: <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a></p>
-</div></header>
-
-<section><div class="wrap">
-  <div class="eyebrow">See it work</div>
-  <h2>Two minutes, rendered by the app itself</h2>
-  <p class="sub">The walkthrough below is produced by the software from a live session. Every figure on
-  screen comes from a real run against real public databases — nothing is staged for the film.</p>
-  <figure>
-    <video controls preload="metadata" playsinline poster="media/frame-12s.jpg">
-      <source src="biodao-walkthrough.mp4" type="video/mp4">
-      Your browser cannot play this video. The file is <code>docs/biodao-walkthrough.mp4</code>.
-    </video>
-    <figcaption>2:08 (128&nbsp;s), 1920×1080, captions burned in. A 110-second cut was asked for;
-    this is the existing render and runs 18 seconds longer. Trimming it would cut mid-caption, so the
-    real length is stated rather than the requested one claimed. A longer 3:02 cut is also in the
-    repository as <code>docs/walkthrough-share.mp4</code>.</figcaption>
-  </figure>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">The problem</div>
-  <h2>A plausible number is worse than no number</h2>
-  <p class="sub">Computational drug discovery produces figures that look alike whatever their origin.
-  A docking score from a validated engine, an estimate from an unvalidated one, and a placeholder a
-  developer left in a stub all render as <code>-8.4</code>. Downstream — in a grant application, a
-  board deck, a paper — they are indistinguishable.</p>
-  <p>The failure is not that tools are wrong. It is that they are <em>silent about how right they
-  are</em>. A score with no provenance cannot be challenged, reproduced, or retracted, and the person
-  relying on it usually cannot tell which kind they are holding.</p>
-  <p>This project takes the opposite default. A value carries its origin, or it announces that it has
-  none. That constraint shaped every component below, and it is the reason several of them refuse to
-  do things their users might want.</p>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">What it does</div>
-  <h2>A workspace, not a pipeline</h2>
-  <div class="grid2">
-    <figure><img src="media/frame-38s.jpg" alt="A protein structure in the workspace with a bound ligand and an evidence panel showing trial, interaction, domain and paper counts.">
-      <figcaption>Evidence gathered from nine public databases in one action — domains, pathways,
-      interactions, expression, population constraint, trials and literature.</figcaption></figure>
-    <figure><img src="media/frame-64s.jpg" alt="The workspace showing docking and scoring in progress.">
-      <figcaption>Pocket detection and docking run in the browser; the score updates as the compound
-      is pulled through the site.</figcaption></figure>
-  </div>
-  <h3>Structures from the real sources</h3>
-  <p>Load by gene, PDB id, UniProt accession or disease. Experimental structures come from the RCSB
-  PDB, predicted ones from AlphaFold, and per-residue confidence is displayed rather than averaged
-  away — a 70 pLDDT loop and a 95 pLDDT core are not the same evidence.</p>
-  <h3>Docking that reports its own accuracy</h3>
-  <p>A Vina-style scoring function runs in the browser, with a Python implementation checked term by
-  term against it so the two cannot silently diverge. The weights are Vina's published values. What
-  is unusual is not the function but that the repository measures it, publishes the number, and the
-  number is not flattering.</p>
-  <h3>Shared sessions with real ownership</h3>
-  <p>Several people in one molecule, on a laptop or in a headset. The server arbitrates who holds an
-  object — two clients cannot settle a grab between themselves, because at 12&nbsp;Hz each believes it
-  was first. Holds are leases, so a crashed tab releases rather than blocking the room forever.</p>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">Evidence</div>
-  <h2>The benchmark, including the part that looks bad</h2>
-  <p class="sub">Eleven crystal ligands are pulled out of their structures and docked back blind. Five
-  land within 2&nbsp;Å. That is the honest headline, and it is worse than the four-case set this
-  replaced, which scored three of four.</p>
-  <figure><img src="media/chart-redock.svg" alt="Chart comparing ranked and best-found RMSD across eleven re-docking cases.">
-    <figcaption>Green dot: the best pose the search generated. Coloured dot: the pose the scoring
-    function ranked first. The gap between them is the finding.</figcaption></figure>
-  <p>Widening the set is what produced the drop. With four cases each result was worth 25 points, and
-  the four happened to suit a shape-and-hydrophobicity score. Eleven cases span kinase, protease,
-  nuclear-receptor, metalloenzyme and protein–protein-interface sites, and the score fell to 45%.</p>
-  <h3>Which half is broken</h3>
-  <p>A success rate says a case failed. It does not say whether the search never found the pose or the
-  scoring function found it and ranked it below something wrong — and those call for opposite work.
-  The benchmark now separates them.</p>
-  <table>
-    <tr><th>Case</th><th>Ranked</th><th>Best found</th><th>Failure mode</th></tr>
-    <tr><td>1UNL · CDK5</td><td class="m warn">6.00 Å</td><td class="m ok">1.29 Å</td><td>scoring</td></tr>
-    <tr><td>1Q41 · GSK-3β</td><td class="m warn">6.82 Å</td><td class="m ok">0.54 Å</td><td>scoring</td></tr>
-    <tr><td>1OQ5 · carbonic anhydrase</td><td class="m warn">7.50 Å</td><td class="m ok">1.63 Å</td><td>scoring</td></tr>
-    <tr><td>2BM2 · tryptase</td><td class="m warn">5.22 Å</td><td class="m ok">1.60 Å</td><td>scoring</td></tr>
-    <tr><td>2YXJ · BCL-XL</td><td class="m warn">4.59 Å</td><td class="m warn">3.86 Å</td><td>sampling</td></tr>
-    <tr><td>1R58 · MetAP2</td><td class="m warn">3.25 Å</td><td class="m warn">3.02 Å</td><td>sampling</td></tr>
-  </table>
-  <figure><img src="media/chart-ceiling.svg" alt="Bar chart: 5 of 11 succeed, 9 of 11 reachable, 11 total.">
-    <figcaption>The gap between the first two bars is what the ranking costs.</figcaption></figure>
-  <p>Four of six failures are poses the search located and the scorer mis-ranked. Perfect ranking over
-  poses already being generated would take the benchmark from 45% to 82% with no change to the search
-  at all. That is where the next work belongs, and it is a measurement rather than an intuition.</p>
-  <h3>What the benchmark cannot tell you</h3>
-  <p>Single runs are draws. The same case scored 1.44&nbsp;Å and 7.50&nbsp;Å on consecutive runs of
-  identical code, and three runs of the unmodified benchmark gave 3/11, 5/11 and 6/11. An A/B of a
-  scoring change over three runs per arm came back inconclusive for exactly that reason. Runs are now
-  seedable so both arms see identical random draws — without that, noise reads as a result.</p>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">Architecture</div>
-  <h2>How a run becomes something a third party can verify</h2>
-  <figure><img src="media/graph-provenance.svg" alt="Graph showing a docking run, compound and target feeding a result record, which goes into a content store and a Merkle root, which can be anchored or attested.">
-    <figcaption>Every edge is code in this repository.</figcaption></figure>
-  <h3>Placeholders cannot launder themselves</h3>
-  <p>Where no model has run, a value is a marked number, not a number. The marker survives arithmetic,
-  formatting, JSON, storage and export, because it is carried by the type rather than by a convention
-  someone has to remember. Finding this was instructive: the helper written to preserve it through
-  JSON <em>did not work</em> — <code>default=</code> is never consulted for a <code>float</code>
-  subclass, so every JSON path in the repository had been silently stripping the marker, including
-  content-addressed storage.</p>
-  <p>Even a count is covered. <span class="marker">Screening of 5 compounds identified 2 [SYNTHETIC]
-  compounds with favorable binding</span> — a tally derived from placeholders is re-marked, because a
-  bare integer is the most quotable number in any document.</p>
-  <h3>Anchoring refuses placeholder data</h3>
-  <p>A Merkle root can be anchored on Monad for a timestamp a third party can check. The anchor
-  <em>refuses</em> a record containing placeholders: permanence reads as authority, and
-  "verified on-chain" attached to a stub is a claim that cannot be withdrawn. No key is ever held —
-  the software builds an unsigned transaction and a person signs it.</p>
-  <h3>Evidence that re-resolves</h3>
-  <p>Disease panels ship with verbatim quotes and identifiers, and two scripts re-ask the sources
-  whether each record still exists and still says what is claimed. The registry check covers 126
-  assertions across 46 trial records. A claim that cannot be checked is reported as a failure, not a
-  skip.</p>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">Where it stands</div>
-  <h2>Figures, each reproducible by a command</h2>
-  <div class="cards">
-    <div class="card"><p class="n">1,265</p><p class="cap">tests, one command</p></div>
-    <div class="card"><p class="n">126/126</p><p class="cap">trial claims verified live</p></div>
-    <div class="card"><p class="n">14</p><p class="cap">public sources, no API keys</p></div>
-    <div class="card"><p class="n">1</p><p class="cap">host contacted on page load</p></div>
-  </div>
-  <h3>Data egress is a gate, not a promise</h3>
-  <p>Every outbound host is declared with what it is for and what is sent to it, and the build fails
-  on one that is not. Running it the first time found 26 undeclared hosts; most turned out to be a
-  directory that <em>describes</em> databases and never calls them, which is now a separate category —
-  a reviewer who checks one entry and finds it never contacted stops believing the whole table.</p>
-  <p>The one host contacted on load is a CDN serving the 3D engine. That is the genuine weak point in
-  "runs locally", and the inventory says so rather than listing it flatly.</p>
-  <figure><img src="media/frame-115s.jpg" alt="The workspace showing the provenance ledger with chained records.">
-    <figcaption>The session ledger: each record chained by hash to the one before it.</figcaption></figure>
-</div></section>
-
-<section><div class="wrap">
-  <div class="honest">
-    <h2>What this is not</h2>
-    <p class="sub" style="margin-bottom:0">Most of the harm a tool like this can do is by sounding
-    more certain than it is.</p>
-    <ul>
-      <li><b>Not a validated predictor.</b> The in-browser score is for ranking and teaching. It is not
-        kcal/mol, has not been validated against experiment, and is not a replacement for Vina or Glide.
-        Eleven cases is a sanity check, not a validation study.</li>
-      <li><b>Not a deployed product.</b> No cluster, no hosted instance, no user base, no service-level
-        commitment. It runs locally, for one team at a time.</li>
-      <li><b>Not clinical or regulatory.</b> Not a medical device, gives no medical advice, and a
-        supplier listing a compound is not clearance to obtain or handle it.</li>
-      <li><b>Not endorsed.</b> The disease focus reflects design intent. No partnership, sponsorship or
-        endorsement exists with any organisation working in those areas.</li>
-      <li><b>Several integrations are unverified and say so in their own output.</b> No live Monad node
-        has answered, no real wallet signature has been checked, and x402 settlement is not
-        implemented. Each returns a field stating this rather than implying otherwise.</li>
-    </ul>
-  </div>
-</div></section>
-
-<section><div class="wrap">
-  <div class="eyebrow">Next</div>
-  <h2>Read the code, or tell us where it is wrong</h2>
-  <p class="sub">Everything above is reproducible from the repository with a single command. We would
-  rather you checked than took our word for it.</p>
-  <div class="cta">
-    <img src="media/qr-repo.png" alt="QR code linking to the AGI-Biotech-tool repository on GitHub.">
-    <div>
-      <p style="margin-bottom:10px"><b>Scan, or clone it:</b></p>
-      <p style="margin-bottom:16px"><code>github.com/AGIFutureFoundation/AGI-Biotech-tool</code></p>
-      <p style="margin-bottom:16px"><a class="btn" href="mailto:x@agifuturefoundation.org?subject=AGI%20BioXR">Email the team</a>
-      <a class="btn ghost" href="https://github.com/AGIFutureFoundation/AGI-Biotech-tool">Open on GitHub</a></p>
-      <p class="cap" style="margin:0">Collaboration, review and correction all welcome at
-      <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a>.</p>
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="mark"><span class="dot"></span> AGI FUTURE FOUNDATION</div>
+    <h1>biodao<span class="pt2">.blockchain</span></h1>
+    <p class="lead">A molecular research workspace that a scientist can operate by hand in a headset, and that
+      another agent can operate over a protocol — with every result signed, costed and traceable.</p>
+    <div class="hero-meta">
+      <span class="tag">22 callable tools</span>
+      <span class="tag">14 public databases</span>
+      <span class="tag">60 curated targets</span>
+      <span class="tag">ALS · Parkinson's · paediatric orthopaedics</span>
     </div>
   </div>
-</div></section>
+</header>
 
-<footer><div class="wrap">
-  <a href="../index.html">Workspace</a><a href="WIKI.md">Wiki</a><a href="SPEC.md">Spec</a>
-  <a href="../PROJECT_STATUS.md">Status</a>
-  <p style="margin-top:16px">Structures from the RCSB PDB, AlphaFold DB (EMBL-EBI / DeepMind), UniProt,
-  ChEMBL and Open Targets. Trials from ClinicalTrials.gov. Literature via PubMed. Environments from
-  Poly Haven (CC0). Contact: <a href="mailto:x@agifuturefoundation.org">x@agifuturefoundation.org</a>.</p>
-</div></footer>
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The problem</div>
+    <h2>Discovery software assumes a human is driving</h2>
+    <p>A medicinal chemist moves between a structure viewer, a docking program, half a dozen database websites and a
+      spreadsheet. Each hand-off loses context, and none of it records why a decision was made. Meanwhile the thing
+      most likely to do that work next is an agent, and almost no scientific software can be called by one: there is
+      no tool schema, no way to pay for a metered run, no way to prove afterwards which system produced a number.</p>
+    <p>For rare neurogenetic disease the gap is worse. The targets are poorly served, the data is scattered across
+      public resources that each speak a different dialect, and the teams working on them are small.</p>
+  </div>
+</section>
 
-</body>
-</html>
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The product</div>
+    <h2>One workspace, three ways in</h2>
+    <div class="grid3">
+      <div class="plate">
+        <h3>By hand</h3>
+        <p>A 3D workspace in the browser or a headset. Pick up a protein, drop a compound in its pocket, pull it
+          about while the physics runs. Pinch to grab, two pinches to scale, point to steer.</p>
+      </div>
+      <div class="plate">
+        <h3>By voice</h3>
+        <p>"Load LRRK2." "Find pockets." "Dock it." "What am I looking at?" The answer comes back spoken, which is
+          what works on glasses with no display of their own.</p>
+      </div>
+      <div class="plate">
+        <h3>By agent</h3>
+        <p>Every panel action is a typed tool. An MCP client lists them and drives a live session — the same
+          buttons a researcher presses, with the result read back.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">Underneath: structures from the Protein Data Bank and AlphaFold, pocket detection,
+      flexible docking, interaction fingerprints, library screening, molecular dynamics both interactive and
+      all-atom, and a target evidence sweep across nine databases at once.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Evidence</div>
+    <h2>What the numbers actually say</h2>
+    <p>Re-docking benchmark: take a drug out of the crystal structure it was solved in, dock it back blind, measure
+      how far the top pose lands from the experiment. Under 2 Å is the usual bar.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Complex</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>MAO-B · safinamide</td><td class="num">1.20 Å</td><td class="num">−9.62</td><td class="num">−10.01</td><td class="pass">pass</td></tr>
+          <tr><td>Oestrogen receptor · 4-OHT</td><td class="num">1.24 Å</td><td class="num">−9.24</td><td class="num">−10.13</td><td class="pass">pass</td></tr>
+          <tr><td>Thrombin · inhibitor</td><td class="num">3.83 Å</td><td class="num">−11.03</td><td class="num">−8.34</td><td class="fail">fail</td></tr>
+          <tr><td>BCL-XL · ABT-737</td><td class="num">4.04 Å</td><td class="num">−9.96</td><td class="num">−6.92</td><td class="fail">fail</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px"><strong>Two of four within 2 Å, median 2.54 Å.</strong> The failures are a large
+      flexible ligand and a deep charged pocket, which is where a short search and an empirical score struggle. The
+      honest reading: good enough to triage a library and rank what to look at first, not good enough to predict
+      affinity. That number is published here rather than buried because the first thing a serious customer does is
+      run their own controls.</p>
+    <div class="grid3" style="margin-top:18px">
+      <div class="plate"><div class="stat">27<small>ns/day all-atom dynamics, consumer GPU</small></div></div>
+      <div class="plate"><div class="stat">7.4 ms<small>per frame, 8,778-atom flexible protein</small></div></div>
+      <div class="plate"><div class="stat">0.98<small>AlphaMissense score at SOD1 H46, a known ALS site</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Architecture</div>
+    <h2>Built so another agent can be the customer</h2>
+    <div class="grid2">
+      <div class="plate">
+        <h3>Tool layer <span class="status live">live</span></h3>
+        <p>22 operations with JSON schemas. The same registry serves the console, the voice layer and the MCP
+          server, so a new capability appears in all three at once.</p>
+      </div>
+      <div class="plate">
+        <h3>x402 payments <span class="status part">protocol only</span></h3>
+        <p>Metered tools answer an unpaid call with a spec-shaped HTTP 402 challenge naming the price, asset and
+          network. Settlement is deliberately not wired: no wallet, no funds move.</p>
+      </div>
+      <div class="plate">
+        <h3>NANDA discovery <span class="status live">live</span></h3>
+        <p>A signed AgentFacts document at a well-known URL: identity, endpoints, capabilities, pricing, and the
+          benchmark limits stated in the document itself.</p>
+      </div>
+      <div class="plate">
+        <h3>OML-style fingerprints <span class="status live">live</span></h3>
+        <p>Secret challenge/response pairs prove which service answered, and every result carries a signature, so
+          a figure can be checked long after the session ended.</p>
+      </div>
+      <div class="plate">
+        <h3>Provenance chain <span class="status live">live</span></h3>
+        <p>Each run is appended to a SHA-256 hash chain. Alter one record and verification names it. A local chain,
+          not a blockchain — nothing is broadcast.</p>
+      </div>
+      <div class="plate">
+        <h3>Environments <span class="status live">live</span></h3>
+        <p>Any glTF scene becomes the backdrop: a lab, a city, a yacht. Exports arrive at any scale, so implausible
+          ones are normalised and stood on the floor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Roadmap</div>
+    <h2>What exists, and what comes next</h2>
+    <div class="phase">
+      <div class="when">Done</div>
+      <div><h3>Workspace and data spine</h3>
+        <p>XR workspace, 60 verified targets, 14 public databases, docking, dynamics, interaction analysis,
+          provenance, compound import from PDF, dashboard, mobile layout.</p></div>
+    </div>
+    <div class="phase">
+      <div class="when">Done</div>
+      <div><h3>Agent surface</h3>
+        <p>Typed tool registry, natural-language console, voice control, hand tracking, MCP server verified driving
+          a live browser session.</p></div>
+    </div>
+    <div class="phase">
+      <div class="when">Next · 4 weeks</div>
+      <div><h3>Scoring that passes its own benchmark</h3>
+        <p>Raise re-docking from 2 of 4 toward the field standard: longer searches, a rescoring pass, and a wider
+          benchmark set published with every release rather than quoted selectively.</p></div>
+    </div>
+    <div class="phase">
+      <div class="when">Next · 6 weeks</div>
+      <div><h3>Hardware and shared sessions</h3>
+        <p>Hand tracking and voice tested on Quest 3 and Vision Pro. Multi-user rooms gain object ownership and
+          voice, so two people cannot drag the same ligand.</p></div>
+    </div>
+    <div class="phase">
+      <div class="when">Quarter</div>
+      <div><h3>Settlement and registry</h3>
+        <p>Wire x402 to a facilitator so metered tools genuinely bill per call, and publish AgentFacts to a public
+          index so other agents can find the service without being told about it.</p></div>
+    </div>
+    <div class="phase">
+      <div class="when">Quarter</div>
+      <div><h3>Deployment for teams</h3>
+        <p>Hosted and on-premises installs, per-seat and per-call pricing, an audit export built from the
+          provenance chain for partners who must show how a result was produced.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Honest limits</div>
+    <h2>What this is not, yet</h2>
+    <ul class="limits">
+      <li><strong>Docking is triage, not prediction.</strong> 2 of 4 re-docking cases within 2 Å. Treat scores as a
+        ranking and run your own controls on targets you care about.</li>
+      <li><strong>Interactive physics is coarse by design.</strong> Harmonic terms, an elastic-network backbone, no
+        explicit water. The all-atom OpenMM backend is the one to quote.</li>
+      <li><strong>Payments do not settle.</strong> The 402 challenge is real; the transfer is not implemented.</li>
+      <li><strong>A hash chain is not a blockchain.</strong> It makes tampering detectable. It does not broadcast
+        or reach consensus.</li>
+      <li><strong>Ray-Ban Meta glasses cannot render this.</strong> No third-party WebXR browser exists for them.
+        The voice companion on a paired phone is the honest substitute.</li>
+      <li><strong>Hand tracking is untested on hardware.</strong> Written to the WebXR spec, verified in code, not
+        yet worn.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="work-with-us">
+  <div class="wrap">
+    <div class="eyebrow">Call to action</div>
+    <h2>Work with us</h2>
+    <p>We are looking for three things: disease foundations with a target and no computational team, pharma groups
+      who want an agent-operable workspace behind their firewall, and engineers who want to work on the scoring
+      function. Tell us which you are and we will come back with a specific next step.</p>
+    <div class="cta">
+      <div>
+        <form id="intake">
+          <div class="row2">
+            <div><label for="f-name">Name</label><input id="f-name" name="name" required autocomplete="name"></div>
+            <div><label for="f-email">Email</label><input id="f-email" name="email" type="email" required autocomplete="email"></div>
+          </div>
+          <div class="row2">
+            <div><label for="f-org">Organisation</label><input id="f-org" name="org" autocomplete="organization"></div>
+            <div><label for="f-social">Social or site</label><input id="f-social" name="social" placeholder="x.com/… · linkedin.com/in/… · lab site"></div>
+          </div>
+          <div class="row2">
+            <div><label for="f-kind">You are</label>
+              <select id="f-kind" name="kind">
+                <option>Disease foundation or patient group</option>
+                <option>Pharma or biotech team</option>
+                <option>Academic lab</option>
+                <option>Engineer or researcher</option>
+                <option>Investor</option>
+                <option>Other</option>
+              </select></div>
+            <div><label for="f-when">Good times to talk</label><input id="f-when" name="when" placeholder="e.g. weekday mornings, UK time"></div>
+          </div>
+          <div><label for="f-need">What do you need?</label>
+            <textarea id="f-need" name="need" placeholder="The target, the question, or the problem you are stuck on." required></textarea></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button type="submit" id="submit">Send</button>
+            <button type="button" class="ghost" id="copy">Copy our email</button>
+          </div>
+          <p class="formnote" id="note">Goes to the AGI Future Foundation. Stored with this paper, so anyone given
+            editing access to it can read what is submitted — send anything confidential by email instead.</p>
+        </form>
+        <div id="done" class="sent" hidden></div>
+        <p style="margin-top:14px"><span class="contact">x@agifuturefoundation.org</span></p>
+      </div>
+      <div>
+        <div id="qr" aria-label="QR code linking to this page"></div>
+        <div class="qr-cap">Scan to open<br>and share this paper</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    biodao.blockchain — powered by AGI Corp · AGI Future Foundation.
+    Figures on this page come from runs of the shipped code, not from projections.
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // QR encodes whatever URL this page is open at, so a shared copy always points at itself.
+  (function drawQR() {
+    var host = document.getElementById('qr');
+    if (!host || typeof QRCode === 'undefined') return;
+    try {
+      new QRCode(host, { text: location.href, width: 300, height: 300,
+        colorDark: '#07110c', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    } catch (e) { host.remove(); }
+  })();
+
+  // The form writes to the artifact's own store. A signed-out visitor gets no store, so the page
+  // falls back to showing the address rather than pretending a message was sent.
+  var form = document.getElementById('intake');
+  var done = document.getElementById('done');
+  var note = document.getElementById('note');
+  var submit = document.getElementById('submit');
+  var store = null, me = null;
+
+  (async function connect() {
+    try {
+      store = await window.claude?.use?.('db');
+      var user = await window.claude?.use?.('user');
+      me = user ? await user.id() : null;
+    } catch (e) { store = null; }
+    if (!store) {
+      note.textContent = 'This copy cannot submit directly — email us instead, the address is below.';
+      submit.disabled = true;
+      submit.style.opacity = 0.5;
+    }
+  })();
+
+  form.addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    if (!store) return;
+    var data = Object.fromEntries(new FormData(form).entries());
+    data.submitted = new Date().toISOString();
+    data.from = me || 'unknown';
+    submit.disabled = true;
+    submit.textContent = 'Sending…';
+    try {
+      var key = 'intake/' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      await store.doc(key).set(data);
+      form.hidden = true;
+      done.hidden = false;
+      done.textContent = 'Thank you, ' + (data.name || 'noted') + '. We have it, and will reply to '
+        + (data.email || 'you') + ' with a specific next step.';
+    } catch (e) {
+      submit.disabled = false;
+      submit.textContent = 'Send';
+      note.textContent = 'That did not save (' + (e && e.code ? e.code : 'unknown') + '). Email us instead.';
+    }
+  });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this;
+    var addr = 'x@agifuturefoundation.org';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(addr).then(function () {
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy our email'; }, 1800);
+      }).catch(select);
+    } else select();
+    function select() {
+      var el = document.querySelector('.contact');
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected — press copy';
+      setTimeout(function () { btn.textContent = 'Copy our email'; }, 2400);
+    }
+  });
+</script>

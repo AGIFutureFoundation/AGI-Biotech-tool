@@ -20,6 +20,7 @@ google-cloud-bigquery each switch on their feature when importable.
   python server/server.py --https         # self-signed HTTPS so a Quest on Wi-Fi can enter VR
 """
 import argparse
+import base64
 import errno
 import io
 import json
@@ -72,6 +73,8 @@ def _try(mod):
     except Exception:  # noqa: BLE001
         return None
 
+
+import agent_protocols as AP  # x402, NANDA AgentFacts, OML-style fingerprints
 
 HAVE = {
     "rdkit": _try("rdkit") is not None,
@@ -609,6 +612,14 @@ class Handler(SimpleHTTPRequestHandler):
                                     "mb": round(os.path.getsize(os.path.join(d, f)) / 1e6, 1),
                                     "label": os.path.splitext(f)[0].replace("_", " ").replace("gtasa ", "").strip()})
             return self._json({"scenes": out})
+        if p == "/.well-known/agent-facts.json":
+            base = f"http://{self.headers.get('Host', 'localhost:8000')}"
+            return self._json(AP.agent_facts(base, TOOL_SCHEMA, AP.PRICING))
+        if p == "/api/oml/challenge":
+            return self._json(AP.fingerprint_challenge())
+        if p == "/api/pricing":
+            return self._json({"pricing": AP.PRICING, "network": AP.PAYMENT_NETWORK,
+                               "settlement": "not wired; see server/agent_protocols.py"})
         if p == "/api/tools":
             return self._json({"tools": TOOL_SCHEMA})
         if p == "/api/health":
@@ -767,13 +778,45 @@ class Handler(SimpleHTTPRequestHandler):
                 if job:
                     job["cancel"] = True
                 return self._json({"ok": bool(job)})
+            if p == "/api/oml/verify":
+                b = json.loads(self._body())
+                return self._json(AP.fingerprint_verify(b.get("index"), b.get("response")))
+            if p == "/api/verify":
+                return self._json(AP.verify_stamp(json.loads(self._body())))
+            if p == "/api/intake":
+                b = json.loads(self._body())
+                path = os.path.join(ROOT, "data", "intake.jsonl")
+                b["received"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                b["signature"] = AP.IDENTITY.sign_json(b)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "a") as f:
+                    f.write(json.dumps(b) + "\n")
+                print(f"intake: {b.get('name','?')} <{b.get('email','?')}> {b.get('need','')[:60]}", flush=True)
+                return self._json({"ok": True, "received": b["received"],
+                                   "note": "Stored locally. No mail is sent from this deployment."})
             if p == "/api/command":
                 body = json.loads(self._body())
+                # x402: a metered tool answers with a payment challenge until the caller pays.
+                tool = body.get("tool")
+                if AP.price_of(tool):
+                    ok, detail = AP.verify_payment(self.headers.get("X-PAYMENT"), tool,
+                                                   accept_test_payments=os.environ.get("BIODAO_X402_TEST") == "1")
+                    if not ok:
+                        challenge = AP.payment_required(tool, f"http://{self.headers.get('Host','localhost:8000')}/api/command")
+                        challenge["reason"] = detail
+                        body_bytes = json.dumps(challenge).encode()
+                        self.send_response(402)
+                        self.send_header("Content-Type", "application/json")
+                        self.send_header("X-PAYMENT-REQUIRED", base64.b64encode(body_bytes).decode())
+                        self.send_header("Content-Length", str(len(body_bytes)))
+                        self.end_headers()
+                        return self.wfile.write(body_bytes)
                 try:
                     out = dispatch_command(body["tool"], body.get("args") or {}, int(body.get("timeout", 180)))
                 except (RuntimeError, TimeoutError) as e:
                     return self._json({"ok": False, "error": str(e)}, 503)
-                return self._json(out)
+                # Every result carries a signature, so its origin can be checked later.
+                return self._json(AP.stamp(out, tool))
             if p == "/api/command/result":
                 body = json.loads(self._body())
                 with COMMAND_LOCK:

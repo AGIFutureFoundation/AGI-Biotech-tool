@@ -19,3 +19,4 @@ docs/*.mp4
 # master is what made this repository unpushable and stays out.
 !docs/biodao-walkthrough.mp4
 !docs/walkthrough-share.mp4
+.keys/
