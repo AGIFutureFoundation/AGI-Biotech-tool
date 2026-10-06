@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>biodao build log</title>
 <style>
   /* Layout: a running log. Status rail on the left, evidence plates on the right.
@@ -76,6 +81,8 @@
   footer { padding-block: 28px; color: var(--ink-faint); font-size: 0.82rem; }
   .contact { font-family: var(--mono); color: var(--ink); }
 </style>
+</head>
+<body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 
 <header>
@@ -86,7 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 2</span>
+      <span class="tag">iteration 3</span>
+      <span class="tag on">18 offline tests passing</span>
       <span class="tag on">110 s film published</span>
       <span class="tag on">11 offline tests passing</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -98,6 +106,21 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">5 Oct<br>iter 3</div>
+      <div>
+        <h3>Interaction analysis under test</h3>
+        <p>Seven offline cases on synthetic geometry: a five-residue protein and a probe ligand placed so each
+          interaction class has exactly one planted hit. Run with <code>node --test tests/analysis.test.mjs</code>.</p>
+        <ul class="checks">
+          <li>Stacking with PHE at 3.7 Å, hydrogen bond at 2.9 Å, salt bridge at 2.9 Å, hydrophobic contact at 3.8 Å; a residue 30 Å away never appears</li>
+          <li>Ring detector accepts a flat unsaturated ring, rejects puckered and saturated ones</li>
+          <li>Variant-overlap arithmetic and series clustering checked against hand-computed values</li>
+          <li>Bug found and fixed: a flat detail cap let hydrophobic contacts crowd out the one stacking record</li>
+          <li class="no">Same thresholds on real complexes — needs the network</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">5 Oct<br>iter 2</div>
       <div>
@@ -180,3 +203,5 @@
     <span class="contact">x@agifuturefoundation.org</span>
   </div>
 </footer>
+</body>
+</html>
