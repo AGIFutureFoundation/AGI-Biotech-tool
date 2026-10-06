@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 17</span>
-      <span class="tag on">190 JavaScript tests passing</span>
+      <span class="tag">iteration 18</span>
+      <span class="tag on">193 JavaScript tests passing</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,37 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 18</div>
+      <div>
+        <h3>The guard had a hole big enough to walk through</h3>
+        <p>Extending the claims guard to the investor brief found no dishonesty in the brief — it already
+          published its failures and said the figure is not good enough to predict affinity. It found two
+          holes in the guard instead, and the second one had been passing green the whole time.</p>
+        <ul class="checks">
+          <li>The brief spells its numbers out, and the benchmark check matched only digits — so "Three of
+            four within 2 Å" would have passed in the document where it costs most. Now both forms, and the
+            check is proved against eight known-good and known-bad strings</li>
+          <li><strong>The worse one:</strong> the exemption for a quoted phrase allowed a quote anywhere
+            earlier on the line. In HTML every <code>style="…"</code> attribute carries quotes, so it
+            exempted nearly every line of every HTML document under guard — close to vacuous on the surfaces
+            that matter most</li>
+          <li>A mutation test found it: rewriting the brief's figure did <em>not</em> fail the suite. The
+            quote must now sit immediately before the phrase, with a test whose only job is to prove the
+            exemption cannot be used as a loophole</li>
+          <li>New check: any surface quoting the pass rate must name the cases that fail. <strong>It caught a
+            real instance on its first run</strong> — the Testing page stated "2 of 4 within 2 Å" with no
+            mention of Thrombin or BCL-X<sub>L</sub>. Both are now named, with RMSDs and why they fail</li>
+          <li>The brief's vague "offline tests" now reads 1,438 Python and 193 JavaScript tests, re-measured
+            by the guard</li>
+          <li>Counts are now written by reading the filesystem, not typed — hand-editing them cost three
+            rounds of correction across two iterations</li>
+          <li class="no">The deck stays out of the guard until the other session's changes land</li>
+          <li class="no">Three further surfaces were not audited — pitch.html, whitepaper.html and WIKI.md.
+            A stale claim could still be sitting in any of them; a known gap, not a clean bill of health</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 17</div>
       <div>

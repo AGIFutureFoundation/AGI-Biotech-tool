@@ -30,7 +30,7 @@ All thirteen run with `node --test`, no browser, no network, no server.
 | `tests/structure.test.mjs` | 17 | The PDB and mmCIF parsers, column by column, and bond perception |
 | `tests/ledger.test.mjs` | 21 | The provenance hash chain, by actually tampering with it |
 | `tests/api.test.mjs` | 18 | How the database layer behaves when a source fails, with `fetch` stubbed |
-| `tests/claims.test.mjs` | 13 | Re-measures the published figures, and guards the benchmark claim |
+| `tests/claims.test.mjs` | 14 | Re-measures the published figures, and guards the benchmark claim |
 | `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |
 
