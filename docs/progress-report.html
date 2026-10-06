@@ -93,8 +93,8 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 5</span>
-      <span class="tag on">33 offline tests passing</span>
+      <span class="tag">iteration 6</span>
+      <span class="tag on">50 offline tests passing</span>
       <span class="tag on">110 s film published</span>
       <span class="tag on">11 offline tests passing</span>
       <span class="tag off">server blocked by sandbox</span>
@@ -106,6 +106,23 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">6 Oct<br>iter 6</div>
+      <div>
+        <h3>The tool registry and the voice-to-renderer seam</h3>
+        <p>Seventeen cases over <code>js/agent.js</code> against a stub workspace that records calls, so every
+          tool runs with no browser and no network. All three JavaScript suites together: 39 passing.</p>
+        <ul class="checks">
+          <li>Every tool has a valid object schema and declares each property it requires; no duplicate names</li>
+          <li>The published MCP schema carries name, description and parameters, and never leaks the function</li>
+          <li>The seam that matters: "colour by confidence" arrives as <code>plddt</code>, "show cartoon" as <code>cartoon+pocket</code></li>
+          <li>An unrecognised sentence offers help and executes nothing; an unknown tool name is refused</li>
+          <li>Failures are recorded and re-thrown rather than swallowed; events carry the calling source</li>
+          <li>One wrong expectation was mine, not the code: the dock units string had been tightened to disclaim kcal/mol</li>
+          <li class="no">The tools against a live workspace — needs a port and a browser</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 5</div>
       <div>
