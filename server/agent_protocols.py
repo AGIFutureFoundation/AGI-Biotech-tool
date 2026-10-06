@@ -44,23 +44,59 @@ class Identity:
 
     def __init__(self, name="biodao.blockchain"):
         self.name = name
-        os.makedirs(KEYDIR, exist_ok=True)
+        os.makedirs(KEYDIR, mode=0o700, exist_ok=True)
         self.alg = "ed25519" if HAVE_ED25519 else "hmac-sha256"
         self._load_or_create()
 
+    def _read_key(self, path):
+        with open(path) as f:
+            data = json.load(f)
+        self.secret = base64.b64decode(data["secret"])
+        self.created = data["created"]
+
     def _load_or_create(self):
+        """Load the signing key, or create it privately and exactly once.
+
+        Two things the straightforward version got wrong:
+
+        A plain open(path, "w") creates the file 0o666 & ~umask -- 0o644 under
+        the usual 022 -- and the chmod to 0o600 lands afterwards. Between the
+        two, any other local account can read the signing key. The fix is to
+        never let it exist with wider permissions: os.open with O_EXCL and an
+        explicit 0o600 mode.
+
+        And `if not exists: write` is not a decision, it is a race. Two first
+        starts both see no file and both write. The one that loses carries on
+        with a secret that is not the one on disk, so it signs happily until it
+        restarts, picks up the winner's key, and every signature it issued
+        stops verifying. Creating through a temporary file and os.link makes
+        publication atomic: link fails if the name is taken, and the loser
+        adopts the winner's key instead of its own. Nothing ever observes a
+        half-written key file either, which open(path, "w") also allowed.
+        """
         path = os.path.join(KEYDIR, "agent_key.json")
         if os.path.exists(path):
-            data = json.load(open(path))
-            self.secret = base64.b64decode(data["secret"])
-            self.created = data["created"]
+            self._read_key(path)
         else:
             self.secret = secrets.token_bytes(32)
             self.created = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            with open(path, "w") as f:
-                json.dump({"secret": base64.b64encode(self.secret).decode(), "created": self.created,
-                           "note": "Local signing key. Not a wallet; holds no funds. Do not commit."}, f, indent=1)
-            os.chmod(path, 0o600)
+            tmp = os.path.join(KEYDIR, ".agent_key." + secrets.token_hex(16))
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump({"secret": base64.b64encode(self.secret).decode(), "created": self.created,
+                               "note": "Local signing key. Not a wallet; holds no funds. Do not commit."},
+                              f, indent=1)
+                try:
+                    os.link(tmp, path)
+                except FileExistsError:
+                    # Another process published first. Its key is the real one.
+                    self._read_key(path)
+            finally:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
         if HAVE_ED25519:
             self._key = Ed25519PrivateKey.from_private_bytes(self.secret)
             self.public = base64.b64encode(self._key.public_key().public_bytes(
