@@ -80,9 +80,15 @@ export function discrimination(modes, { margin = DEFAULT_MARGIN } = {}) {
       note: `one binding mode found; nothing to compare it against (${MARGIN_IS_UNCALIBRATED})`,
     };
   }
-  const gap = +(modes[1].best - modes[0].best).toFixed(3);
+  // Decide on the raw gap, present the rounded one. Rounding first made the
+  // comparison lie at the boundary: a 0.4996 gap becomes 0.500, which passes
+  // `>= 0.5` and reports a preference the measurement does not support. The
+  // whole point of this function is to refuse to call a near-tie a choice, so
+  // getting it wrong exactly at the margin is the one place it cannot afford to.
+  const rawGap = modes[1].best - modes[0].best;
+  const gap = +rawGap.toFixed(3);
   const runnerUpRmsd = modes[1].rmsdToBest;
-  const discriminates = gap >= margin;
+  const discriminates = rawGap >= margin;
   const note = discriminates
     ? `top mode leads the next by ${gap} at ${runnerUpRmsd} A, above the ${margin} margin `
       + `(${MARGIN_IS_UNCALIBRATED})`

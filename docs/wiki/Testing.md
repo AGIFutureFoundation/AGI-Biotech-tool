@@ -7,8 +7,8 @@ right now is marked as carried forward rather than restated as fresh.
 
 | Command | Result |
 | --- | --- |
-| `.venv/bin/python -m pytest tests/ -q` | **1438 passed**, 55 skipped, 1 xfailed, **5 failed** |
-| `node --test tests/*.test.mjs` | **208 passed**, 0 failed |
+| `.venv/bin/python -m pytest tests/ -q` | **1469 passed**, 55 skipped, 1 xfailed, **5 failed** |
+| `node --test tests/*.test.mjs` | **227 passed**, 0 failed |
 
 The five Python failures are all in `tests/test_server_lifecycle.py` and all need to bind a local port,
 which the environment these were run in refuses. They are an environment limitation, not a regression, and
@@ -16,7 +16,7 @@ they are reported here rather than filtered out of the count.
 
 ## The JavaScript suites
 
-All fourteen run with `node --test`, no browser, no network, no server.
+All 15 run with `node --test`, no browser, no network, no server.
 
 | Suite | Cases | What it proves |
 | --- | --- | --- |
@@ -25,14 +25,15 @@ All fourteen run with `node --test`, no browser, no network, no server.
 | `tests/agent.test.mjs` | 17 | The tool registry, schema validity, and the voice-to-renderer enum seam |
 | `tests/refine.test.mjs` | 8 | Rigid-body refinement on a synthetic receptor with a seat known by construction |
 | `tests/torsion.test.mjs` | 14 | Torsion geometry exactly, plus the torsional search discipline |
-| `tests/poses.test.mjs` | 14 | Binding-mode clustering, and whether the score discriminated between modes |
+| `tests/poses.test.mjs` | 17 | Binding-mode clustering, and whether the score discriminated between modes |
 | `tests/pockets.test.mjs` | 12 | Pocket detection on hollow shells, a solid ball, and a surface dimple |
 | `tests/structure.test.mjs` | 17 | The PDB and mmCIF parsers, column by column, and bond perception |
 | `tests/ledger.test.mjs` | 21 | The provenance hash chain, by actually tampering with it |
 | `tests/api.test.mjs` | 18 | How the database layer behaves when a source fails, with `fetch` stubbed |
 | `tests/rescore.test.mjs` | 13 | Three rescoring terms, and a corrected ranking inversion |
 | `tests/claims.test.mjs` | 16 | Re-measures the published figures, and guards the benchmark claim |
-| `tests/md.test.mjs` | 21 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
+| `tests/md.test.mjs` | 23 | The dynamics force field, its gradient, the minimiser, and the engine's invariants |
+| `tests/calibrate.test.mjs` | 16 | The rescoring weight-calibration harness, on dumps whose right answer is known by construction |
 | `tests/wiki.test.mjs` | 13 | These pages: link integrity, sidebar coverage, and the claims that must not drift |
 
 ### Why synthetic geometry
@@ -88,7 +89,7 @@ not telling you much.
 
 ## The Python suite
 
-1438 cases covering the server, the scoring port, the compound ingestion, the agent protocols and the
+1469 cases covering the server, the scoring port, the compound ingestion, the agent protocols and the
 video rendering. Of note:
 
 | Suite | What it proves |
@@ -102,6 +103,7 @@ video rendering. Of note:
 | Figure | Command | Status |
 | --- | --- | --- |
 | Re-docking: 5 of 11 succeed, 9 of 11 reachable | `node evals/redock.mjs` | **Needs the network** |
+| MD throughput: approximately 27 ns/day on Apple GPU | OpenMM benchmark | Needs the server |
 
 **The six failures are named, because a pass rate is only meaningful next to the cases it excludes:**
 CDK5 (1UNL), GSK-3β (1Q41), carbonic anhydrase II (1OQ5) and tryptase (2BM2) are *scoring* failures — the
@@ -111,7 +113,6 @@ MetAP2 (1R58) are *sampling* failures, where no good pose was generated at all.
 `tests/claims.test.mjs` requires any page quoting the figure to name the failures and to agree with the case
 count in `evals/redock.mjs`. The second half of that check is new in iteration 19, and it exists because this
 page and four others spent ten iterations citing a superseded four-case set while the eval had eleven.
-| MD throughput: approximately 27 ns/day on Apple GPU | OpenMM benchmark | Needs the server |
 
 Whether the refinement added in the two most recent iterations improves the re-docking benchmark **has not
 been measured**. See [Docking and Scoring](Docking-and-Scoring).

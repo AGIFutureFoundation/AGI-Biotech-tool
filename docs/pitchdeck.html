@@ -137,20 +137,23 @@
     <section class="slide">
       <div class="n">03 · EVIDENCE</div>
       <h2>What the numbers actually say</h2>
-      <p>Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. Under 2 Å is the usual bar.</p>
+      <p>Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. Under 2 Å is the usual bar. Eleven cases; the six failures are below, with what the scorer ranked first against the best pose the search produced.</p>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Complex</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+          <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
           <tbody>
-            <tr><td>MAO-B · safinamide</td><td class="num">1.20 Å</td><td class="num">−9.62</td><td class="num">−10.01</td><td class="pass">pass</td></tr>
-            <tr><td>Oestrogen receptor · 4-OHT</td><td class="num">1.24 Å</td><td class="num">−9.24</td><td class="num">−10.13</td><td class="pass">pass</td></tr>
-            <tr><td>Thrombin · inhibitor</td><td class="num">3.83 Å</td><td class="num">−11.03</td><td class="num">−8.34</td><td class="fail">fail</td></tr>
-            <tr><td>BCL-XL · ABT-737</td><td class="num">4.04 Å</td><td class="num">−9.96</td><td class="num">−6.92</td><td class="fail">fail</td></tr>
+            <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
+            <tr><td>GSK-3&beta; · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
+            <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
+            <tr><td>&beta;-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
+            <tr><td>BCL-XL · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
+            <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
           </tbody>
         </table>
       </div>
-      <p><strong>2 of 4 within 2 Å, median 2.54 Å.</strong> Good enough to triage a library; not good enough to predict
-        affinity. Published, because serious customers run their own controls.</p>
+      <p><strong>5 of 11 within 2 Å; 9 of 11 reachable.</strong> Four of the six failures are ranking failures, not
+        search failures — the pose was found and scored below a worse one. Good enough to triage a library; not good
+        enough to predict affinity. Published, because serious customers run their own controls.</p>
     </section>
 
     <section class="slide">

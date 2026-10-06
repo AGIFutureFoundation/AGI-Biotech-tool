@@ -206,20 +206,25 @@
     <div class="eyebrow">Evidence</div>
     <h2>What the numbers actually say</h2>
     <p>Re-docking benchmark: take a drug out of the crystal structure it was solved in, dock it back blind, measure
-      how far the top pose lands from the experiment. Under 2 Å is the usual bar.</p>
+      how far the top pose lands from the experiment. Under 2 Å is the usual bar. Eleven cases; the six failures
+      are below, with what the scorer ranked first against the best pose the search actually produced.</p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Complex</th><th>Top pose</th><th>Crystal</th><th>Docked</th><th>Result</th></tr></thead>
+        <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
         <tbody>
-          <tr><td>MAO-B · safinamide</td><td class="num">1.20 Å</td><td class="num">−9.62</td><td class="num">−10.01</td><td class="pass">pass</td></tr>
-          <tr><td>Oestrogen receptor · 4-OHT</td><td class="num">1.24 Å</td><td class="num">−9.24</td><td class="num">−10.13</td><td class="pass">pass</td></tr>
-          <tr><td>Thrombin · inhibitor</td><td class="num">3.83 Å</td><td class="num">−11.03</td><td class="num">−8.34</td><td class="fail">fail</td></tr>
-          <tr><td>BCL-XL · ABT-737</td><td class="num">4.04 Å</td><td class="num">−9.96</td><td class="num">−6.92</td><td class="fail">fail</td></tr>
+          <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
+          <tr><td>GSK-3&beta; · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
+          <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
+          <tr><td>&beta;-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
+          <tr><td>BCL-XL · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
+          <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:14px"><strong>Two of four within 2 Å, median 2.54 Å.</strong> The failures are a large
-      flexible ligand and a deep charged pocket, which is where a short search and an empirical score struggle. The
+    <p style="margin-top:14px"><strong>5 of 11 within 2 Å; 9 of 11 reachable.</strong> Four of the six failures are
+      <em>scoring</em> failures — the search found a pose under 2 Å and the ranking put something wrong above it, by
+      0.54 Å against 6.82 Å in the GSK-3β case. Two are sampling failures. That diagnosis says the next work belongs
+      in the energy terms, not the search. The
       honest reading: good enough to triage a library and rank what to look at first, not good enough to predict
       affinity. That number is published here rather than buried because the first thing a serious customer does is
       run their own controls.</p>
@@ -289,8 +294,9 @@
     <div class="phase">
       <div class="when">Next · 4 weeks</div>
       <div><h3>Scoring that passes its own benchmark</h3>
-        <p>Raise re-docking from 2 of 4 toward the field standard: longer searches, a rescoring pass, and a wider
-          benchmark set published with every release rather than quoted selectively.</p></div>
+        <p>Close the gap between the 5 of 11 the scorer ranks correctly and the 9 of 11 the search already reaches:
+          a rescoring pass first, since four of the six failures are ranking failures, then longer searches, with the
+          benchmark published with every release rather than quoted selectively.</p></div>
     </div>
     <div class="phase">
       <div class="when">Next · 6 weeks</div>
@@ -318,7 +324,7 @@
     <div class="eyebrow">Honest limits</div>
     <h2>What this is not, yet</h2>
     <ul class="limits">
-      <li><strong>Docking is triage, not prediction.</strong> 2 of 4 re-docking cases within 2 Å. Treat scores as a
+      <li><strong>Docking is triage, not prediction.</strong> 5 of 11 re-docking cases within 2 Å. Treat scores as a
         ranking and run your own controls on targets you care about.</li>
       <li><strong>Interactive physics is coarse by design.</strong> Harmonic terms, an elastic-network backbone, no
         explicit water. The all-atom OpenMM backend is the one to quote.</li>

@@ -147,8 +147,15 @@ def agent_facts(base_url, tools, pricing):
         "capabilities": [{"name": t.get("name"), "description": (t.get("description") or "")[:160]} for t in tools],
         "pricing": pricing,
         "verification": {"fingerprint": f"{base_url}/api/oml/challenge", "scheme": "oml-1.0-style"},
-        "limits": {"note": "Docking scores are an unvalidated empirical estimate. Benchmark: 2 of 4 "
-                           "re-docking cases within 2 A, median 2.54 A. Not a binding prediction."},
+        # The benchmark an agent is told about has to be the benchmark that was
+        # run. This said "2 of 4 ... median 2.54 A" for ten iterations after the
+        # eval was widened to eleven cases -- a retired figure, signed and served
+        # to every agent that discovered this service, in the one field whose
+        # entire purpose is to stop an agent trusting a number it should not.
+        "limits": {"note": "Docking scores are an unvalidated empirical estimate. Benchmark: 5 of 11 "
+                           "re-docking cases within 2 A; 9 of 11 are reachable, so four of the six "
+                           "failures are ranking failures rather than search failures. "
+                           "Not a binding prediction."},
     }
     facts["proof"] = IDENTITY.sign_json(facts)
     return facts

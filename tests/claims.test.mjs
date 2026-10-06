@@ -115,12 +115,16 @@ test('the whitepaper states the Python result honestly, failures included', () =
     'the passing count must never appear without its failures');
 });
 
-// Every surface that publishes the benchmark. docs/pitchdeck.html is deliberately absent: the other
-// session has uncommitted changes to it, and a guard that fails on someone else's in-flight edit is a bad
-// guard. It is a queue item in docs/ROADMAP_LOOP.md, not an oversight.
+// Every surface that publishes the benchmark.
+//
+// docs/pitchdeck.html and docs/whitepaper.html were both absent, and both were publishing the superseded
+// four-case figure with nothing checking them -- which is the whole failure mode this list exists to stop.
+// The pitchdeck exclusion was written while another session had it open and was reasonable then; it was
+// never removed after those edits landed. Both are in now. A page that is hard to guard is the page that
+// drifts, so the bar for leaving one out is that it does not publish the figure at all.
 const BENCHMARK_SURFACES = [
   'docs/WHITE_PAPER.md', 'docs/wiki/Home.md', 'docs/wiki/Docking-and-Scoring.md', 'docs/wiki/Testing.md',
-  'docs/progress-report.html', 'docs/investor-brief.html',
+  'docs/progress-report.html', 'docs/investor-brief.html', 'docs/pitchdeck.html', 'docs/whitepaper.html',
 ];
 
 // An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four

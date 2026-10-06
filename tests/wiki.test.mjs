@@ -83,23 +83,56 @@ test('the docking score is never given affinity units', () => {
   }
 });
 
-test('the benchmark figure is stated honestly wherever it appears', () => {
-  const claims = [];
+test('the benchmark figure is stated honestly wherever it appears', async () => {
+  // This check used to REQUIRE "2 of 4" -- it asserted every `N of 4` claim said 2, and that at
+  // least two such claims existed. Written when four cases was the measurement, it then outlived
+  // it: once evals/redock.mjs was widened to eleven, the test was holding the retired figure in
+  // place on these pages and failing anyone who corrected them. A guard that enforces a stale
+  // number is worse than no guard, because it looks like the number was checked.
+  //
+  // What is enforced now is the rule, not the digits: the case count comes from the eval, no page
+  // may overstate the pass rate, and a four-case figure is allowed only where it is explicitly
+  // labelled as superseded history.
+  const { CASES } = await import('../evals/redock.mjs');
+  const SUCCESS = 5, REACHABLE = 9;
+
+  const stated = [];
   for (const f of files) {
     for (const [i, line] of pages[f].split('\n').entries()) {
-      if (/\b(\d) of 4\b/.test(line) && /2\s*Å/.test(line)) claims.push({ f, i, line });
-      // Nothing may claim a better pass rate than was measured.
-      assert.ok(!/\b(3|4) of 4 within 2/.test(line), `${f}:${i + 1} overstates the benchmark: ${line.trim()}`);
+      const where = `${f}:${i + 1}`;
+
+      // Nothing may claim a better pass rate than was measured, in digits or in words.
+      assert.ok(!/\b(6|7|8|9|10|11|six|seven|eight|nine|ten|eleven)\s+of\s+(11|eleven)\b[^.]{0,40}(within|succeed)/i
+        .test(line) || /reachable/i.test(line),
+        `${where} overstates the benchmark: ${line.trim()}`);
+
+      // A four-case figure is history. It may appear only on a line that says so.
+      if (/\b(\d|two|three|four)\s+of\s+(4|four)\b/i.test(line)) {
+        assert.ok(/superseded|retired|until iteration|earlier|historical|previously|no longer/i.test(line),
+          `${where} cites the four-case benchmark as if current: ${line.trim()}`);
+      }
+
+      if (new RegExp(`\\b${SUCCESS} of ${CASES.length}\\b`).test(line)) stated.push({ f, i, line });
     }
   }
-  assert.ok(claims.length >= 2, 'the benchmark result should appear on Home and on the docking page');
-  for (const c of claims) {
-    assert.ok(/\b2 of 4\b/.test(c.line), `${c.f}:${c.i + 1} states a pass rate other than 2 of 4: ${c.line.trim()}`);
-  }
-  // The median must match the measurement everywhere it is given.
+
+  assert.ok(stated.length >= 2,
+    `the ${SUCCESS} of ${CASES.length} result should appear on Home and on the docking page`);
+
+  // Where a page gives the reachable figure it must be the measured one.
   for (const f of files) {
-    for (const m of pages[f].matchAll(/median\s+([\d.]+)\s*Å/gi)) {
-      assert.equal(m[1], '2.54', `${f} gives a median of ${m[1]} Å; the measured value is 2.54 Å`);
+    for (const m of pages[f].matchAll(/\b(\d+)\s+of\s+11\s+are\s+reachable/gi)) {
+      assert.equal(Number(m[1]), REACHABLE,
+        `${f} says ${m[1]} of 11 reachable; the measurement is ${REACHABLE}`);
+    }
+  }
+
+  // The 2.54 Å median belongs to the retired four-case set and has no eleven-case counterpart.
+  for (const f of files) {
+    for (const [i, line] of pages[f].split('\n').entries()) {
+      if (!/median\s+[\d.]+\s*Å/i.test(line)) continue;
+      assert.ok(/superseded|retired|until iteration|earlier|historical|previously/i.test(line),
+        `${f}:${i + 1} gives a median as a current figure; the eleven-case set has none: ${line.trim()}`);
     }
   }
 });

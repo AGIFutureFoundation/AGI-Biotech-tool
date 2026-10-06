@@ -33,8 +33,9 @@ and must not be changed. `README.md` is this file and is never published.
 
 1. **No number without its source.** Every figure says which command produced it and when. A figure that
    cannot be re-measured right now is marked as carried forward, not restated as fresh.
-2. **The weakest result is on the page.** The re-docking benchmark is 2 of 4 within 2 Å. That belongs in
-   the wiki in the same size type as everything else.
+2. **The weakest result is on the page.** The re-docking benchmark is 5 of 11 within 2 Å. That belongs in
+   the wiki in the same size type as everything else — and the figure comes from `evals/redock.mjs`, not
+   from a number written down here a second time.
 3. **The score is unitless.** It is Vina-shaped and never written as kcal/mol.
 
 `tests/wiki.test.mjs` enforces all three mechanically, plus link integrity and sidebar coverage. Run it

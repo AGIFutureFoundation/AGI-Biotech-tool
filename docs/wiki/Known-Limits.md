@@ -9,9 +9,15 @@ limits section buried at the bottom of a long document is a limits section nobod
 to kcal/mol, a ΔG or a K<sub>d</sub>, and do not compare scores across different targets. See
 [Docking and Scoring](Docking-and-Scoring).
 
-**Pose prediction works on half the benchmark.** 2 of 4 within 2 Å, median 2.54 Å. Compact ligands in deep
-rigid pockets are placed well; long flexible ligands in shallow grooves are not. Four cases cannot
-generalise, and re-docking is the easy version of the problem — cross-docking has not been measured.
+**Pose prediction works on under half the benchmark.** 5 of 11 within 2 Å; 9 of 11 are reachable. Compact
+ligands in deep rigid pockets are placed well; long flexible ligands in shallow grooves are not. Four of the
+six failures — CDK5, GSK-3β, carbonic anhydrase II, β-II tryptase — are *scoring* failures, where a good
+pose was found and ranked below a bad one; BCL-X<sub>L</sub> and MetAP2 are *sampling* failures. Eleven
+cases still cannot generalise, and re-docking is the easy version of the problem — cross-docking has not
+been measured. Carried forward, not re-measured: the eval needs the structure databases.
+
+(An earlier version of this page gave 2 of 4 within 2 Å and a 2.54 Å median. That four-case set is
+superseded; those four are now four of the eleven.)
 
 **There is no internal-strain term.** The score sees protein-ligand contacts only. A conformer that folds
 onto itself is not penalised, which is why refinement polishes a conformer rather than generating one.

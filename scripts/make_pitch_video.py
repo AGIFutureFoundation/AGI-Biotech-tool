@@ -123,13 +123,24 @@ def font(kind, size):
 # The single source of truth for the numbers on screen. Edit here, and the slides follow.
 FIGURES = {
     "tools": 22, "databases": 14, "targets": 60,
+    # The six failures of the eleven-case set, with what the scorer ranked first
+    # against the best pose the search actually produced. Showing the failures is
+    # the point of the slide: where the two columns diverge, the search worked and
+    # the ranking did not.
+    #
+    # This table held the superseded four-case set long after evals/redock.mjs was
+    # widened to eleven, so a re-render republished a retired figure -- into a film
+    # embedded at the top of a brief that elsewhere calls that figure superseded.
     "benchmark": [
-        ("MAO-B · safinamide", "1.20 Å", "−9.62", "−10.01", True),
-        ("Oestrogen receptor · 4-OHT", "1.24 Å", "−9.24", "−10.13", True),
-        ("Thrombin · inhibitor", "3.83 Å", "−11.03", "−8.34", False),
-        ("BCL-XL · ABT-737", "4.04 Å", "−9.96", "−6.92", False),
+        ("CDK5 · 1UNL", "6.00 Å", "1.29 Å", "scoring", False),
+        ("GSK-3β · 1Q41", "6.82 Å", "0.54 Å", "scoring", False),
+        ("Carbonic anhydrase II · 1OQ5", "7.50 Å", "1.63 Å", "scoring", False),
+        ("β-II tryptase · 2BM2", "5.22 Å", "1.60 Å", "scoring", False),
+        ("BCL-XL · 2YXJ", "4.59 Å", "3.86 Å", "sampling", False),
+        ("MetAP2 · 1R58", "3.25 Å", "3.02 Å", "sampling", False),
     ],
-    "benchmark_line": "2 of 4 within 2 Å · median 2.54 Å",
+    "benchmark_headers": ["Failure", "Ranked", "Best found", "Mode"],
+    "benchmark_line": "5 of 11 within 2 Å · 9 of 11 reachable",
     "md_ns_per_day": "27", "frame_ms": "7.4", "missense_h46": "0.98",
 }
 
@@ -285,19 +296,21 @@ def slide_benchmark():
             "Under 2 Å is the usual bar.", y + 20, size=30)
     top = y + 110
     plate(d, [160, top, 1760, top + 380])
-    hdr = ["Complex", "Top pose", "Crystal", "Docked", "Result"]
-    xs = [200, 820, 1080, 1320, 1580]
+    hdr = FIGURES["benchmark_headers"]
+    xs = [200, 980, 1240, 1540]
     for h, x in zip(hdr, xs):
         d.text((x, top + 26), h.upper(), font=font("mono", 20), fill=FAINT)
     d.line([180, top + 70, 1740, top + 70], fill=LINE, width=2)
     for r, row in enumerate(FIGURES["benchmark"]):
-        yy = top + 96 + r * 68
+        yy = top + 96 + r * 46
         for (val, x) in zip(row[:4], xs):
-            d.text((x, yy), val, font=font("mono", 30) if x > 400 else font("body", 30), fill=INK)
-        d.text((xs[4], yy), "pass" if row[4] else "fail", font=font("mono", 30), fill=ACCENT if row[4] else BAD)
-    d.text((160, top + 420), FIGURES["benchmark_line"], font=font("display_b", 48), fill=INK)
-    body(d, "Good enough to triage a library, not to predict affinity. Published rather than buried, because "
-            "serious customers run their own controls.", top + 488, size=26, width=1600)
+            colour = BAD if val == "sampling" else (WARN if val == "scoring" else INK)
+            d.text((x, yy), val, font=font("mono", 26) if x > 400 else font("body", 26), fill=colour)
+    d.text((160, top + 408), FIGURES["benchmark_line"], font=font("display_b", 44), fill=INK)
+    body(d, "In four of the six the search found a pose under 2 Å and the ranking put something wrong above "
+            "it — 0.54 Å in one case. Perfect ranking over poses we already produce takes this from 45% to "
+            "82%. Published rather than buried, because serious customers run their own controls.",
+         top + 472, size=26, width=1600)
     brand(d)
     return img
 
@@ -368,7 +381,7 @@ def slide_limits():
     img = gradient_bg(); d = ImageDraw.Draw(img)
     eyebrow(d, "Honest limits")
     headline(d, "What this is not, yet", size=72)
-    items = ["Docking is triage, not prediction. 2 of 4 re-docking cases within 2 Å.",
+    items = ["Docking is triage, not prediction. 5 of 11 re-docking cases within 2 Å.",
              "Interactive physics is coarse by design. The all-atom OpenMM backend is the one to quote.",
              "Payments do not settle. The 402 challenge is real; the transfer is not implemented.",
              "A hash chain is not a blockchain. It makes tampering detectable; it reaches no consensus.",

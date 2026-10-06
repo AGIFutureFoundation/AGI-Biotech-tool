@@ -17,9 +17,12 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
 - [x] Unit tests for js/voice.js parseCommand across the intent grammar (iter 4)
 - [x] Unit tests for js/agent.js intent-to-tool mapping and enum translation (iter 6)
 - [~] Docking: local rigid-body refinement (iteration 7), torsional refinement (iteration 8) and binding-mode
-      clustering with a discrimination check (iteration 10), all unit-tested on synthetic geometry. The 4-case
-      benchmark re-measurement still waits on the network, so the 2-of-4 / 2.54 A median figure stands
-      unchanged and must not be restated as improved.
+      clustering with a discrimination check (iteration 10), all unit-tested on synthetic geometry. The
+      four-case set is retired — it became four of the eleven when evals/redock.mjs was widened — and the
+      standing figure is 5 of 11 within 2 A, 9 of 11 reachable. That eleven-case result has NOT been
+      re-measured since the refinement work landed; it still waits on the network. So the refinement must
+      not be restated as improving it. (Historical only: the retired four-case set read 2 of 4, median
+      2.54 A.)
 - [ ] Calibrate the discrimination margin in js/poses.js against the re-docking benchmark — how large a score
       gap must be before the better-scoring pose is reliably the closer one. Needs the network. Until then the
       default is a stated convention and says so in its own output.

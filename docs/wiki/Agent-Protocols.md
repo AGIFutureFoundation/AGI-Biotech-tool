@@ -44,9 +44,15 @@ A signed JSON-LD AgentFacts document at `/.well-known/agent-facts.json`, followi
 agent fetches it, learns what this workspace can do and under what terms, and verifies the signature.
 
 The document carries the capability list, the terms, and — deliberately — **the benchmark caveat**. An agent
-that discovers this service is told in the discovery document itself that the docking benchmark is 2 of 4
-within 2 Å. A capability claim that omits its own error rate is how an agent ends up trusting a number it
-should not, and discovery is the only place the agent is guaranteed to look.
+that discovers this service is told in the discovery document itself that the docking benchmark is 5 of 11
+within 2 Å, with 9 of 11 reachable. A capability claim that omits its own error rate is how an agent ends up
+trusting a number it should not, and discovery is the only place the agent is guaranteed to look.
+
+That field is also where a stale figure does the most damage, and it was stale. For ten iterations after
+the eval was widened to eleven cases it served the superseded 2 of 4 figure, signed, to every agent that
+asked for it.
+`tests/test_agent_protocols.py` now reads the case count out of `evals/redock.mjs` and fails if the
+served note disagrees, rather than checking it against a number written down a second time.
 
 ## OML 1.0 — fingerprinting
 

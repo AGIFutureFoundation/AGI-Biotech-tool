@@ -122,19 +122,20 @@ def slide_benchmark():
     y = headline(d, "Our docking is honest about where it fails", size=70)
     top = y + 90
     plate(d, [160, top, 1760, top + 350])
-    xs = [200, 820, 1080, 1320, 1580]
-    for h, x in zip(["Complex", "Top pose", "Crystal", "Docked", "Result"], xs):
+    xs = [200, 980, 1240, 1540]
+    for h, x in zip(FIGURES["benchmark_headers"], xs):
         d.text((x, top + 24), h.upper(), font=font("mono", 20), fill=FAINT)
     d.line([180, top + 66, 1740, top + 66], fill=LINE, width=2)
     for r, row in enumerate(FIGURES["benchmark"]):
-        yy = top + 92 + r * 62
+        yy = top + 92 + r * 42
         for val, x in zip(row[:4], xs):
-            d.text((x, yy), val, font=font("mono", 28) if x > 400 else font("body", 28), fill=INK)
-        d.text((xs[4], yy), "pass" if row[4] else "fail", font=font("mono", 28), fill=ACCENT if row[4] else BAD)
-    d.text((160, top + 390), FIGURES["benchmark_line"], font=font("display_b", 46), fill=INK)
-    body(d, "Two of four. We publish the failures because the first thing a serious buyer does is run their own "
-            "controls, and a number that collapses on contact costs more than it ever earned.", top + 452,
-         size=28, width=1600)
+            colour = BAD if val == "sampling" else (WARN if val == "scoring" else INK)
+            d.text((x, yy), val, font=font("mono", 25) if x > 400 else font("body", 25), fill=colour)
+    d.text((160, top + 382), FIGURES["benchmark_line"], font=font("display_b", 42), fill=INK)
+    body(d, "In four of the six failures the search found a pose under 2 Å and the ranking put something "
+            "wrong above it — 0.54 Å in one case. We publish the failures because the "
+            "first thing a serious buyer does is run their own controls, and a number that collapses on "
+            "contact costs more than it ever earned.", top + 446, size=28, width=1600)
     brand(d)
     return img
 
@@ -195,7 +196,8 @@ def slide_ask():
     eyebrow(d, "The ask", y=250)
     headline(d, "Fund the scoring function", y=300, size=86)
     body(d, "The benchmark is the ceiling on everything else we sell. Capital goes to the search and rescoring "
-            "work that moves two of four toward the field standard, hardware testing on Quest and Vision Pro, "
+            "work that closes the gap between the 5 of 11 we rank correctly and the 9 of 11 the search "
+            "already reaches, hardware testing on Quest and Vision Pro, "
             "and wiring payment settlement.", 450, size=34, width=1540, color=INK)
     plate(d, [160, 660, 1240, 840])
     d.text((200, 692), "x@agifuturefoundation.org", font=font("mono", 44), fill=ACCENT)
@@ -254,7 +256,7 @@ CARDS = [
     ("biodao.blockchain", "Drug discovery an AI agent can run, pay for, and be held to.", ACCENT),
     ("22 typed tools", "Every action a scientist can take, an agent can call.", INK),
     ("33 offline tests", "Written this week. Each verified by a command in the repo.", INK),
-    ("2 of 4", "Our docking benchmark. We publish the failures too.", WARN),
+    ("5 of 11", "Our docking benchmark. We publish the failures too.", WARN),
     ("14 databases", "Public. No account, no key, anywhere in the stack.", INK),
     ("x@agifuturefoundation.org", "ALS · Parkinson's · paediatric orthopaedics.", ACCENT),
 ]

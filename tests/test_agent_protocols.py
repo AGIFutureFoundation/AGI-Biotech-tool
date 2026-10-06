@@ -38,12 +38,30 @@ def test_stamp_detects_a_swapped_signature():
     assert ap.verify_stamp(a)["ok"] is False
 
 
+def _eval_case_count():
+    """How many cases evals/redock.mjs actually defines, read from the source.
+
+    The benchmark size lives in code. Any document or payload citing a different
+    one is quoting a benchmark that no longer exists, which is exactly what
+    happened here for ten iterations.
+    """
+    import pathlib
+    import re
+
+    src = (pathlib.Path(__file__).resolve().parent.parent / "evals" / "redock.mjs").read_text()
+    block = src.split("export const CASES = [")[1].split("];")[0]
+    return len(re.findall(r"^\s*\{", block, re.M))
+
+
 def test_agent_facts_are_signed_and_declare_limits():
     facts = ap.agent_facts("http://localhost:8000", [{"name": "dock", "description": "d"}], ap.PRICING)
     assert facts["id"] == ap.IDENTITY.agent_id
     assert facts["proof"]["alg"] == ap.IDENTITY.alg
     # The benchmark caveat travels with the discovery document, not just the marketing.
-    assert "2 of 4" in facts["limits"]["note"]
+    # Asserted against the eval rather than a literal: this line read "2 of 4" and
+    # went on passing for ten iterations after the eval was widened to eleven cases,
+    # so the test was holding the stale figure in place rather than catching it.
+    assert f"of {_eval_case_count()}" in facts["limits"]["note"]
     body = {k: v for k, v in facts.items() if k != "proof"}
     assert ap.verify_stamp({**body, "proof": facts["proof"]})["ok"] is True
 
@@ -103,3 +121,42 @@ def test_the_challenge_does_not_leak_its_answer():
     assert "response" not in ch
     pairs = ap._fingerprint_pairs()
     assert pairs[ch["index"]]["response"] not in json.dumps(ch)
+
+
+# --------------------------------------------------------------- the published benchmark
+
+def test_the_discovery_document_states_the_benchmark_that_was_actually_run():
+    """An AgentFacts limits note is the one field an agent is guaranteed to read.
+
+    It carried "2 of 4 ... median 2.54 A" for ten iterations after evals/redock.mjs
+    was widened to eleven cases -- a retired figure, signed, and served to every
+    agent that discovered the service. The whole point of the field is to stop an
+    agent trusting a number it should not.
+    """
+    import agent_protocols as ap
+
+    note = ap.agent_facts("http://127.0.0.1:8000", [], ap.PRICING)["limits"]["note"]
+
+    cases = _eval_case_count()
+
+    assert f"of {cases}" in note, (
+        f"the discovery document cites a benchmark of a different size than the "
+        f"{cases} cases in evals/redock.mjs")
+    assert "2 of 4" not in note and "2.54" not in note, \
+        "the superseded four-case figure is still being served to agents"
+    assert "not a binding prediction" in note.lower()
+
+
+def test_the_discovery_document_is_signed_over_the_benchmark_it_states():
+    """Changing the note must change the proof, or the caveat is unsigned."""
+    import agent_protocols as ap
+
+    facts = ap.agent_facts("http://127.0.0.1:8000", [], ap.PRICING)
+    assert ap.verify_stamp(facts)["ok"]
+
+    tampered = dict(facts)
+    tampered["limits"] = {"note": "Benchmark: 11 of 11 re-docking cases within 2 A."}
+    result = ap.verify_stamp(tampered)
+    assert not result["ok"], \
+        "the limits note can be rewritten without invalidating the signature"
+    assert "altered after signing" in result["reason"]

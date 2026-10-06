@@ -158,3 +158,29 @@ test('clustering does not mutate the poses it was given', () => {
   assert.deepEqual(poses.map((p) => Array.from(p.coords)), before, 'coordinates must be untouched');
   assert.deepEqual(poses.map((p) => p.score), order, 'the input array must not be re-sorted in place');
 });
+
+test('a gap just under the margin is not rounded up into a preference', () => {
+  // The boundary case. gap used to be rounded to 3 decimals BEFORE being
+  // compared, so 0.4996 became 0.500, cleared `>= 0.5`, and the module
+  // announced a preference its own threshold says it does not have.
+  const modes = [{ best: -8.0, rmsdToBest: 0 }, { best: -7.5004, rmsdToBest: 3.1 }];
+  const v = discrimination(modes, { margin: 0.5 });
+
+  assert.equal(v.discriminates, false,
+    `a raw gap of ${-7.5004 - -8.0} is below the 0.5 margin and must not count as a preference`);
+  assert.equal(v.gap, 0.5, 'the reported gap stays rounded for display');
+  assert.match(v.note, /not a preference/);
+});
+
+test('a gap exactly on the margin still counts', () => {
+  // `>=` is the documented boundary; the fix must not quietly tighten it.
+  const modes = [{ best: -8.0, rmsdToBest: 0 }, { best: -7.5, rmsdToBest: 3.1 }];
+  assert.equal(discrimination(modes, { margin: 0.5 }).discriminates, true);
+});
+
+test('a gap just over the margin counts, and is not rounded down out of one', () => {
+  const modes = [{ best: -8.0, rmsdToBest: 0 }, { best: -7.4996, rmsdToBest: 3.1 }];
+  const v = discrimination(modes, { margin: 0.5 });
+  assert.equal(v.discriminates, true);
+  assert.equal(v.gap, 0.5, 'display rounding is unchanged');
+});

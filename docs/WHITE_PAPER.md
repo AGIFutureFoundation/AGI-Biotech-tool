@@ -59,8 +59,9 @@ code, at every exit, or it decays.
 ## 2. The stack, accurately
 
 **Language and runtime.** Python 3 for the server, data layer and scientific
-code (22,581 lines across `server/` and `scripts/`); JavaScript ES modules for
-the browser and XR layer (22 modules, all reachable from `main.js`). RDKit for
+code (27,438 lines across `server/` and `scripts/`); JavaScript ES modules for
+the browser and XR layer (30 modules; 28 reachable from `main.js`, and 2 staged —
+imported by the test and eval suites while they wait to be wired into the app). RDKit for
 cheminformatics. NumPy for the scoring arithmetic. The HTTP layer is the Python
 standard library's `ThreadingHTTPServer` with a hand-written dispatch table —
 Flask is not installed and is not a dependency.
@@ -109,10 +110,10 @@ Measured 6 October 2026. Two suites, both offline.
 
 ```
 $ .venv/bin/python -m pytest tests/ -q
-5 failed, 1467 passed, 55 skipped, 1 xfailed, 43 warnings in 76.62s (0:01:16)
+5 failed, 1469 passed, 55 skipped, 1 xfailed, 43 warnings in 48.37s
 
 $ node --test tests/*.test.mjs
-pass 224  fail 0
+pass 227  fail 0
 ```
 
 **The five failures are stated rather than filtered.** All five are in
@@ -121,7 +122,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-10,509 lines of test code across 40 Python files and 15 JavaScript files. The
+10,629 lines of test code across 40 Python files and 15 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -147,7 +148,7 @@ anchor, and the database layer's proxy fallback retries on any failed GET rather
 than only a CORS refusal, so one lookup can cost two requests.
 
 `make imports` runs a parametrised import test over every module under
-`server/` and `scripts/` — 66 modules, all importing cleanly. That one check
+`server/` and `scripts/` — 86 modules, all importing cleanly. That one check
 would have caught three of this repository's worst historical bugs: the API
 layer that raised `NameError`, a module missing a `typing` import, and a
 dependency that was never declared.
@@ -155,8 +156,16 @@ dependency that was never declared.
 ```
 $ make reachable
 entry points : main.js
-reachable    : 22 of 22 modules
+reachable    : 28 of 30 modules
+  STAGED      js/ledger-verify.js (exercised by tests/evals, not yet in the app)
+  STAGED      js/rescore.js (exercised by tests/evals, not yet in the app)
 ```
+
+A staged module is one nothing in the app imports but the test or eval suites do.
+The check reports them separately from dead code and fails only on the latter:
+conflating the two pushes whoever hits the gate toward wiring an unfinished
+module into the live app to get a green tick, which is the opposite of what a
+dead-code gate is for.
 
 ### 3.2 Every cited identifier re-resolves against the live source
 
@@ -538,28 +547,35 @@ deleted.
 
 ## Appendix A — Every quantitative claim and the command behind it
 
-Every figure in the table below was re-measured on 6 October 2026. A figure that
-does not reproduce should be treated as deleted — that rule applies to this
-document as much as to anything it describes, and several rows below are
+Every figure in the table below was re-measured on 6 October 2026 **except the
+rows that need network access** — the `make citations` result, the 84 target
+records, the seeded-failure count, the offline-run row and the PMID quotation
+check. Those reach ClinicalTrials.gov, the RCSB, ChEMBL, UniProt and NCBI, which
+this environment cannot, so they carry their last measured values and are marked
+in the table. Saying "every figure" while five of them were carried forward is
+precisely the drift this appendix exists to prevent, and it had happened here.
+
+A figure that does not reproduce should be treated as deleted — that rule applies
+to this document as much as to anything it describes, and several rows below are
 corrections to numbers that had drifted since it was written.
 
 | Claim | Command |
 |---|---|
-| 5 failed, 1467 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
+| 5 failed, 1469 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
-| 224 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 10,509 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 227 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
+| 10,629 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
 | 40 Python and 15 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 86 modules import cleanly | `make imports` |
 | 28 of 30 JS modules reachable from the app; 2 staged, 0 dead | `make reachable` |
-| 27,416 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
+| 27,438 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
 | 30 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
-| 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` |
-| 84 target records checked | `grep -cE "^[A-Z][A-Z0-9]* - " <citations output>` |
-| 13 deliberate failures, non-zero exit | `.venv/bin/python scripts/verify_panel_citations.py --seed-bad` |
-| 0/204 checks pass with no network and no cache; exit 1 | `AGI_DB_OFFLINE=1 AGI_DB_CACHE=<empty> .venv/bin/python scripts/verify_panel_citations.py ALS` |
-| "completion rates **for**" is in PMID 30616998; "**of**" is not | `.venv/bin/python` + NCBI efetch of PMID 30616998 |
+| 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` *carried forward — needs the network* |
+| 84 target records checked | `grep -cE "^[A-Z][A-Z0-9]* - " <citations output>` *carried forward — needs the network* |
+| 13 deliberate failures, non-zero exit | `.venv/bin/python scripts/verify_panel_citations.py --seed-bad` *carried forward — needs the network* |
+| 0/204 checks pass with no network and no cache; exit 1 | `AGI_DB_OFFLINE=1 AGI_DB_CACHE=<empty> .venv/bin/python scripts/verify_panel_citations.py ALS` *carried forward — needs the network* |
+| "completion rates **for**" is in PMID 30616998; "**of**" is not | `.venv/bin/python` + NCBI efetch of PMID 30616998 *carried forward — needs the network* |
 | 13 port tests pass, tolerance 1e-9 | `.venv/bin/python -m pytest tests/test_vina_score_port.py -q` |
 | old core C14H10, 3 rings; current core C16H10, 4 rings | `.venv/bin/python -c` + RDKit `CalcMolFormula` / `CalcNumRings` |
 | acrylamide+urea → C20H14N2O2, MW 314.34, cLogP 4.44, 4 rings | same |
