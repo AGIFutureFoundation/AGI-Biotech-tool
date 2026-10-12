@@ -148,3 +148,20 @@ def test_a_cross_origin_post_is_refused_before_any_handler_runs():
 def test_the_wildcard_origin_is_gone():
     source = open(server.__file__).read()
     assert '"Access-Control-Allow-Origin", "*"' not in source
+
+
+# --------------------------------------------------------------------------- bigquery
+
+def test_bigquery_free_form_sql_requires_a_token():
+    """body["sql"] runs verbatim against BigQuery when no preset is given.
+
+    The two presets only ever bind a gene name or a list of ids into a fixed
+    query, so they stay open; the free-form branch previously had no check at
+    all and would run whatever SQL the caller sent.
+    """
+    source = open(server.__file__).read()
+    start = source.index('if p == "/api/bigquery":')
+    block = source[start:start + 900]
+
+    assert 'if not body.get("preset")' in block, "the free-form branch is not gated"
+    assert "self._user()" in block, "the free-form SQL branch does not check a token"

@@ -911,7 +911,16 @@ class Handler(SimpleHTTPRequestHandler):
                 if not HAVE["bigquery"]:
                     return self._json({"error": "pip install google-cloud-bigquery and run "
                                                 "`gcloud auth application-default login`"}, 501)
-                return self._json(run_bigquery(json.loads(self._body())))
+                body = json.loads(self._body())
+                if not body.get("preset"):
+                    # The preset branch only binds a gene name or a list of ids into a
+                    # fixed, parametrized query. Without a preset, body["sql"] runs
+                    # verbatim against BigQuery -- arbitrary SQL from whoever can reach
+                    # the port, previously with no check at all.
+                    user = self._user()
+                    if not user:
+                        return True
+                return self._json(run_bigquery(body))
             if self._api_post(p):
                 return
         except Exception as e:  # noqa: BLE001

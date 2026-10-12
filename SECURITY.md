@@ -25,20 +25,21 @@ machine's port 8000 gets the workspace — this is deliberate, because it is how
 same Wi-Fi connects, but it means an untrusted network exposes the app. Pass `--host 127.0.0.1` if
 you do not need the LAN.
 
-**Authentication is a demo stub, not authentication.** `server/auth.py`'s `authenticate_user()`
-ignores the password argument entirely: it returns a valid JWT for any email already present in the
-in-memory user store, and its own docstring says "In production, use bcrypt". There is no password
-storage, and the user store does not survive a restart. Do not put this behind a public address and
-do not treat its roles as a security boundary.
+**The user store is in-memory only.** `server/auth.py` hashes and checks passwords (scrypt, with a
+constant-time comparison even for an unknown email), so a correct password is required to sign in.
+But `USERS_DB` is a plain module-level dict: it does not survive a restart, and there is no
+persistent account storage. Do not treat it as a durable identity system.
 
-**`JWT_SECRET` has a default.** `server/auth.py` reads `os.getenv('JWT_SECRET',
-'dev-secret-change-in-production')`. Tokens are HS256. Deployed without that variable set, the
-signing key is a published constant and anyone can mint an admin token. If you ever run this
-anywhere but localhost, set `JWT_SECRET` to a long random value first.
+**`JWT_SECRET` should still be set explicitly before you deploy.** `server/auth.py` no longer ships
+a published fallback key (`dev-secret-change-in-production`); if the variable is unset it generates
+a random key per process and prints a warning instead. That closes the "anyone can mint an admin
+token" hole, but tokens still will not validate across a restart or between multiple worker
+processes unless `JWT_SECRET` is set to the same value everywhere. Tokens are HS256.
 
-**Most API routes are unauthenticated.** Only two handlers in `server/server.py` call the token
-check; everything else — structure loading, docking, simulation, file ingestion, the BigQuery
-panel — is open to whoever can reach the port.
+**Most API routes are unauthenticated.** Only a few handlers in `server/server.py` call the token
+check — project access, and the free-form-SQL half of the BigQuery panel — everything else:
+structure loading, docking, simulation, file ingestion, and the two parametrized BigQuery presets,
+is open to whoever can reach the port.
 
 **The workspace is drivable from outside.** The agent command channel lets any HTTP client dispatch
 tool calls into connected browser sessions. Combined with the two points above, reaching the port
