@@ -6,6 +6,11 @@
 //
 //   node evals/redock.mjs            # the default set
 //   node evals/redock.mjs 2V5Z:SAG   # one case
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { parsePDB, parseMolblock } from '../js/structure.js';
 import { ProteinGrid, vinaScore, dockLigand, rmsd, centroid } from '../js/dock.js';
 
@@ -47,12 +52,53 @@ export const CASES = [
 export const SUCCESS_A = 2.0;
 
 const UA = { 'User-Agent': 'biodao-evals/1.0' };
-const text = async (url) => { const r = await fetch(url, { headers: UA }); if (!r.ok) throw new Error(`${url} -> ${r.status}`); return r.text(); };
+const fetchText = async (url) => {
+  const r = await fetch(url, { headers: UA });
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  return r.text();
+};
+
+// Structures are cached on disk and committed.
+//
+// Two reasons, and the second is the one that matters. The first is practical:
+// this benchmark spent twenty iterations marked "needs the network", and every
+// run re-fetched eleven structures from the RCSB. The second is that a published
+// figure measured against a file the RCSB can revise is not reproducible. The
+// PDB does re-release entries; if 1OYT changes, the benchmark silently measures
+// something else and the number in the whitepaper stops meaning what it said.
+// Pinning the inputs is what makes a re-run a re-run.
+//
+// ~3 MB for the eleven cases. Refresh deliberately with --refresh-structures.
+const CACHE = join(dirname(fileURLToPath(import.meta.url)), 'structures');
+const REFRESH = process.argv.includes('--refresh-structures');
+
+async function cached(name, url) {
+  const file = join(CACHE, name);
+  if (!REFRESH) {
+    try { return await readFile(file, 'utf8'); } catch { /* fall through to fetch */ }
+  }
+  const body = await fetchText(url);
+  await mkdir(CACHE, { recursive: true });
+  await writeFile(file, body);
+  return body;
+}
+
+/** Every structure the benchmark needs, so a run can be checked for completeness before it starts. */
+export function cacheStatus(cases) {
+  return cases.map(({ pdb, lig }) => ({
+    pdb,
+    lig,
+    protein: existsSync(join(CACHE, `${pdb}.pdb`)),
+    ligand: existsSync(join(CACHE, `${pdb}_${lig}.sdf`)),
+  }));
+}
 
 export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000, seed = null } = {}) {
   const t0 = Date.now();
-  const protein = parsePDB(await text(`https://files.rcsb.org/download/${pdb}.pdb`), { name: pdb });
-  const sdf = await text(`https://models.rcsb.org/v1/${pdb.toLowerCase()}/ligand?label_comp_id=${lig}&encoding=sdf`);
+  const protein = parsePDB(
+    await cached(`${pdb}.pdb`, `https://files.rcsb.org/download/${pdb}.pdb`), { name: pdb });
+  const sdf = await cached(`${pdb}_${lig}.sdf`,
+    `https://models.rcsb.org/v1/${pdb.toLowerCase()}/ligand?label_comp_id=${lig}&encoding=sdf`);
   const ligand = parseMolblock(sdf, { name: lig });
 
   // Every copy of this ligand must stop acting as receptor, or the pose clashes with itself.
@@ -79,6 +125,75 @@ export async function runCase({ pdb, lig, note }, { runs = 12, steps = 3000, see
     success: top != null && top <= SUCCESS_A,    // the standard criterion
     nearNative: best != null && best <= SUCCESS_A, // a near-native pose found anywhere in the ranking
     poses: poses.length, seconds: +((Date.now() - t0) / 1000).toFixed(1),
+  };
+}
+
+/**
+ * Run every case over K seeds and report the distribution rather than one draw.
+ *
+ * This is the answer to "make the benchmark repeat itself", and the answer is
+ * that it already does: a seeded run reproduces bit for bit
+ * (tests/redock-reproducibility.test.mjs). What never repeated was the
+ * *reported figure*, because one seed is one sample of a wide distribution and
+ * the benchmark printed it as an integer. Three runs gave 5, 6 and 4 of 11 for
+ * exactly that reason.
+ *
+ * So the statistic changes shape. A case is no longer pass/fail; it has a pass
+ * fraction over K seeds. The benchmark figure becomes a mean with a range, and
+ * a case that passes 3 of 5 seeds is visible as what it is rather than being
+ * rounded to whichever side the one chosen seed landed on.
+ *
+ * The cost is linear: K times a full run, and a full run is ~11 x 150 s. That
+ * is the real reason this was never done, and it is worth saying rather than
+ * pretending K=5 is free.
+ */
+export async function runEnsemble(cases = CASES, { seeds = [1, 2, 3, 4, 5], ...opts } = {}) {
+  const perCase = new Map(cases.map((c) => [c.pdb, { ...c, draws: [] }]));
+
+  for (const seed of seeds) {
+    for (const c of cases) {
+      try {
+        const r = await runCase(c, { ...opts, seed });
+        perCase.get(c.pdb).draws.push({ seed, topRmsd: r.topRmsd, success: r.success, nearNative: r.nearNative });
+      } catch (e) {
+        perCase.get(c.pdb).draws.push({ seed, error: e.message });
+      }
+    }
+  }
+
+  const cases_ = [...perCase.values()].map((c) => {
+    const measured = c.draws.filter((d) => !d.error);
+    const passes = measured.filter((d) => d.success).length;
+    const rmsds = measured.map((d) => d.topRmsd).filter((v) => v != null).sort((a, b) => a - b);
+    return {
+      pdb: c.pdb,
+      lig: c.lig,
+      seedsRun: c.draws.length,
+      measured: measured.length,
+      passFraction: measured.length ? +(passes / measured.length).toFixed(3) : null,
+      rmsdRange: rmsds.length ? [rmsds[0], rmsds[rmsds.length - 1]] : null,
+      // A case that passes every seed and a case that passes none are both
+      // settled; the ones in between are where the benchmark has no opinion.
+      settled: measured.length ? passes === 0 || passes === measured.length : false,
+    };
+  });
+
+  const perSeed = seeds.map((seed) => ({
+    seed,
+    succeeded: cases_.reduce((n, c) => n + (perCase.get(c.pdb).draws.find((d) => d.seed === seed)?.success ? 1 : 0), 0),
+  }));
+  const rates = perSeed.map((p) => p.succeeded);
+
+  return {
+    cases: cases.length,
+    seeds,
+    perSeed,
+    succeededRange: [Math.min(...rates), Math.max(...rates)],
+    meanSucceeded: +(rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(2),
+    alwaysPass: cases_.filter((c) => c.passFraction === 1).map((c) => c.pdb),
+    neverPass: cases_.filter((c) => c.passFraction === 0).map((c) => c.pdb),
+    unsettled: cases_.filter((c) => !c.settled).map((c) => c.pdb),
+    perCase: cases_,
   };
 }
 
@@ -146,6 +261,28 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = argv.find((a) => a.includes(':') && !a.startsWith('--'));
   const cases = arg ? [{ pdb: arg.split(':')[0], lig: arg.split(':')[1], note: 'ad hoc' }] : CASES;
   if (seed != null) console.log(`seed ${seed} — this run is reproducible\n`);
+
+  // --seeds N reports the distribution instead of one draw. A single seeded run
+  // reproduces exactly, so the thing that never repeated was not the benchmark
+  // but the decision to publish one sample of it as an integer.
+  const seedsAt = argv.indexOf('--seeds');
+  if (seedsAt >= 0) {
+    const k = Number(argv[seedsAt + 1]) || 5;
+    const seeds = Array.from({ length: k }, (_, i) => (seed ?? 1) + i);
+    console.log(`ensemble over ${k} seeds: ${seeds.join(', ')}`);
+    console.log(`this is ${k}x a full run — roughly ${Math.round(k * cases.length * 150 / 60)} minutes\n`);
+    const e = await runEnsemble(cases, { seeds });
+    for (const c of e.perCase) {
+      const pct = c.passFraction == null ? '  n/a' : `${String(Math.round(c.passFraction * 100)).padStart(3)}%`;
+      const range = c.rmsdRange ? `${c.rmsdRange[0]}–${c.rmsdRange[1]} Å` : '—';
+      console.log(`${c.pdb}/${c.lig}  passes ${pct} of seeds  top-pose RMSD ${range}`);
+    }
+    console.log(`\nper seed: ${e.perSeed.map((p) => `${p.seed}:${p.succeeded}`).join('  ')}`);
+    console.log(`mean ${e.meanSucceeded} of ${e.cases}, range ${e.succeededRange.join('–')}`);
+    console.log(`always pass: ${e.alwaysPass.join(', ') || 'none'}`);
+    console.log(`never pass : ${e.neverPass.join(', ') || 'none'}`);
+    console.log(`unsettled  : ${e.unsettled.join(', ') || 'none'}  <- where the benchmark has no opinion`);
+  } else {
   const out = await runAll(cases, { seed });
   for (const r of out.results) {
     if (r.error) { console.log(`${r.pdb}  ERROR  ${r.error}`); continue; }
@@ -196,5 +333,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (su.samplingFailures.length) {
     console.log(`\nsampling failures (${su.samplingFailures.length}) — no near-native pose was generated:`);
     for (const f of su.samplingFailures) console.log(`  ${f}`);
+  }
   }
 }
