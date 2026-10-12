@@ -135,3 +135,71 @@ def test_module_imports_and_exposes_something_public(module_name):
     module = __import__(module_name)
     public = [n for n in dir(module) if not n.startswith("_")]
     assert public, f"{module_name} exposes no public API"
+
+
+# --------------------------------------------------------- the positive case
+
+def test_a_scorer_actually_produces_a_computed_potency_not_a_constant():
+    """The claim the platform rests on, asserted end to end rather than by shape.
+
+    Everything above checks the seam by reading source and signatures. None of
+    it would notice the regression that matters most: a `try/except` wrapped
+    around the scorer call, falling back to `_calculate_binding_energy`. The
+    attribute names would still match, the scorer would still expose
+    `score_warheads`, and the no-scorer test would still see `[SYNTHETIC]` --
+    all green, while the platform's strongest claim quietly reverted to a
+    lookup table.
+
+    So this runs the path and inspects the value: a real float, not a
+    SyntheticValue, with the SMILES of the molecule it was computed on.
+    """
+    import synthetic_provenance as sp
+    import pyrene_docking
+    from pyrene_apoptotic_discovery import PyreneSeries3Generator
+
+    generator = PyreneSeries3Generator(structural_scorer=pyrene_docking.PyreneVinaScorer())
+    compounds = generator.generate_series3_compounds("BCL2", "pediatric_leukemia", 2)
+    assert compounds, "the structural path produced nothing"
+
+    for c in compounds:
+        potency = c.predicted_potency
+        assert not isinstance(potency, sp.SyntheticValue), (
+            f"{c.compound_id} came back as {potency!r} -- a placeholder. The scorer was "
+            "supplied, so this is either a silent fallback or a broken wire-up.")
+        assert "SYNTHETIC" not in f"{potency}"
+        assert isinstance(float(potency), float)
+
+        # A score whose molecule cannot be identified is the untraceable number
+        # this whole module exists to replace.
+        assert c.smiles, f"{c.compound_id} carries a computed potency but no SMILES"
+        assert "c" in c.smiles.lower(), f"{c.compound_id} SMILES has no carbon: {c.smiles!r}"
+
+
+def test_the_computed_record_says_which_fields_are_still_placeholders():
+    """Potency being real must not launder the fields that are not."""
+    import pyrene_docking
+    from pyrene_apoptotic_discovery import PyreneSeries3Generator
+
+    generator = PyreneSeries3Generator(structural_scorer=pyrene_docking.PyreneVinaScorer())
+    c = generator.generate_series3_compounds("BCL2", "pediatric_leukemia", 1)[0]
+
+    assert "COMPUTED predicted_potency" in c.provenance
+    for still_a_constant in ("pediatric_safety_score", "synthetic_accessibility",
+                             "selectivity_score"):
+        assert still_a_constant in c.provenance, (
+            f"{still_a_constant} is still a hand-set constant but the provenance "
+            "field no longer names it")
+
+
+def test_a_failing_scorer_raises_rather_than_falling_back():
+    """The documented contract: no scorer means constants, a broken one means stop."""
+    import pyrene_docking
+    from pyrene_apoptotic_discovery import PyreneSeries3Generator
+
+    class Broken(pyrene_docking.PyreneVinaScorer):
+        def score_warheads(self, *a, **kw):
+            raise RuntimeError("receptor unavailable")
+
+    generator = PyreneSeries3Generator(structural_scorer=Broken())
+    with pytest.raises(RuntimeError, match="receptor unavailable"):
+        generator.generate_series3_compounds("BCL2", "pediatric_leukemia", 1)

@@ -4,7 +4,7 @@
 # wrong interpreter produces a passing run that proves nothing.
 PY := .venv/bin/python
 
-.PHONY: help test jstest imports reachable citations trials verify inventory serve egress llm wiki
+.PHONY: help test jstest imports reachable citations trials verify inventory serve egress llm wiki figures
 .DEFAULT_GOAL := help
 
 help:
@@ -20,6 +20,7 @@ help:
 	@echo "make egress     every host the app can contact, declared and checked"
 	@echo "make llm        is an LLM provider configured and reachable?"
 	@echo "make wiki       publish docs/wiki to the GitHub wiki (checks pages first)"
+	@echo "make figures    re-measure the whitepaper's figures from the filesystem"
 	@echo "make serve      run the app on http://localhost:8000"
 
 test:
@@ -51,6 +52,14 @@ citations:
 # fail an offline build. Run it before merging anything that touches a panel.
 trials:
 	$(PY) scripts/verify_trial_claims.py
+
+# The other half of tests/claims.test.mjs: that test catches the drift, this
+# fixes it. Retyping the numbers by hand is how they drifted to begin with.
+# Pass the suite line through, because running the suite from inside the script
+# would report a different number than the one the document quotes:
+#   make figures SUITE="5 failed, 1558 passed, 56 skipped, 1 xfailed, ..."
+figures:
+	node scripts/update_paper_figures.mjs $(if $(SUITE),--suite "$(SUITE)",)
 
 # Checks the pages before it publishes, and refuses to push ones that fail.
 wiki:

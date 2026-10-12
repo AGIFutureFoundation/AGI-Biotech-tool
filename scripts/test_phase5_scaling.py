@@ -2,54 +2,29 @@
 """Test Phase 5: Advanced features and scaling.
 
 Tests:
-- Load testing (concurrent workflows)
 - Database migration utilities
 - Active learning (compound prioritization)
 - Transfer learning setup
 """
 
 import sys
-import asyncio
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "server"))
 
-from load_testing import LoadTestRunner, WorkflowLoadTest, StressTest
 from database_migration import DatabaseMigrator, ConnectionPool, PerformanceOptimization
 from active_learning import ActiveLearner, EnsembleUncertainty, TransferLearning
 
-def test_load_testing():
-    """Test concurrent workflow load testing."""
-    print("\n" + "="*70)
-    print("⚡ Phase 5: Load Testing")
-    print("="*70)
-    
-    async def run_tests():
-        # Test 1: Simulate 50 concurrent workflows
-        print("\n1️⃣  Testing 50 concurrent workflows...")
-        wf_test = WorkflowLoadTest()
-        runner = LoadTestRunner(max_concurrent=50)
-        result = await runner.run_concurrent_test(
-            wf_test.simulate_workflow,
-            num_operations=50,
-            operation_name="workflow_simulation"
-        )
-        print(f"   ✓ Success rate: {result['success_rate']:.1f}%")
-        print(f"   ✓ Throughput: {result['throughput_per_second']:.2f} ops/s")
-        
-        # Test 2: Stress test to find breaking point
-        print("\n2️⃣  Running stress test (finding breaking point)...")
-        stress = StressTest()
-        stress_result = await stress.run_stress_test(
-            wf_test.simulate_workflow,
-            start_concurrent=10,
-            increment=10,
-            max_test=100
-        )
-        print(f"   ✓ Breaking point: {stress_result['breaking_point']} concurrent ops")
-    
-    asyncio.run(run_tests())
-    print("\n✅ Load Testing Complete")
+# Load testing was removed, not fixed. server/load_testing.py ran its "workflow"
+# as four `await asyncio.sleep(random.uniform(...))` calls, so every throughput
+# and breaking-point number it printed measured the event loop and nothing else.
+#
+# It was not replaced with a real one because the real workload is the wrong
+# shape for this harness: one docking call is 2.4-6.5 s of CPU-bound NumPy, so
+# an asyncio concurrency test over it would report a second kind of fiction
+# rather than a measurement. A throughput harness for this platform needs
+# process-level parallelism and a defined receptor set, which is a piece of work
+# in its own right and not a patch to this file.
 
 def test_database_migration():
     """Test database migration utilities."""
@@ -165,7 +140,6 @@ def main():
     print("="*70)
     
     try:
-        test_load_testing()
         test_database_migration()
         test_active_learning()
         test_integration()

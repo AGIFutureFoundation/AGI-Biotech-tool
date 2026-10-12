@@ -110,7 +110,7 @@ Measured 6 October 2026. Two suites, both offline.
 
 ```
 $ .venv/bin/python -m pytest tests/ -q
-5 failed, 1469 passed, 55 skipped, 1 xfailed, 43 warnings in 48.37s
+5 failed, 1558 passed, 56 skipped, 1 xfailed, 43 warnings in 63.91s (0:01:03)
 
 $ node --test tests/*.test.mjs
 pass 227  fail 0
@@ -122,7 +122,7 @@ sandbox these runs were made in refuses. They are an environment limitation, not
 a regression, and the honest figure is the one above and not a cleaner one. The
 single `xfail` is deliberate and is described in §6.
 
-10,629 lines of test code across 40 Python files and 15 JavaScript files. The
+10,836 lines of test code across 41 Python files and 15 JavaScript files. The
 JavaScript suites did not exist when this document was first written; they cover
 the modules the browser actually runs — structure parsing, pocket detection, the
 docking search and its refinement, the dynamics force field, binding-mode
@@ -414,11 +414,16 @@ scoring is a port of the functional form.
 Merkle root and inclusion proofs. Anchoring is a separate, deliberate act with a
 cost, and the module does not do it or pretend to.
 
-**It does not have a validated load or throughput benchmark.**
-`server/load_testing.py` still simulates workflow steps with
-`asyncio.sleep(random.uniform(...))`. Any throughput number it prints measures
-how fast Python sleeps. It is not run by `make verify` and no figure from it
-appears in this document. It should be treated as unbuilt.
+**It does not have a validated load or throughput benchmark.** It has no load
+harness at all, which is the honest state. `server/load_testing.py` used to run
+its "workflow" as four `asyncio.sleep(random.uniform(...))` calls and report
+throughput and a breaking point from them; it has been deleted rather than
+repaired. One real docking call is 2.4-6.5 s of CPU-bound NumPy, so an asyncio
+concurrency harness over the real work would report a different fiction rather
+than a measurement -- throughput here needs process parallelism and a fixed
+receptor set, which is a piece of work in its own right.
+`tests/test_no_simulated_benchmarks.py` fails the build if any module sleeps and
+reports a per-unit-time rate, so the shape cannot return somewhere new.
 
 **It does not claim efficacy of any kind, for any compound, in any disease.**
 
@@ -428,29 +433,36 @@ appears in this document. It should be treated as unbuilt.
 
 Ordered by what unblocks the most, not by what demonstrates best.
 
-1. **Repair the structural-scoring wire-up.** `PyreneSeries3Generator` with a
-   `structural_scorer` currently raises `AttributeError: 'DockingResult' object
-   has no attribute 'smiles'` — `_structural_score` reads a field the dataclass
-   does not define. The docking module itself works when called directly (§3.4);
-   only the generator path is broken. Until it is fixed, generated compounds
-   carry heuristic `[SYNTHETIC]` potency and no SMILES. This is the single
-   highest-value fix in the repository.
-2. **Put the structural path under test**, so the wire-up cannot break silently
-   again — the failure above is exactly the class of bug `make imports` catches
-   for imports and nothing currently catches for call paths.
-3. **Replace or delete `load_testing.py`.** A harness that measures `sleep` is
-   worse than no harness, because it produces a number.
-4. **Broaden receptor coverage.** Structural scoring needs a curated receptor
+**Done since this list was written**, and recorded here because the entries
+described the repository as worse than it now is:
+
+- ~~Repair the structural-scoring wire-up.~~ `PyreneSeries3Generator` with a
+  `structural_scorer` now runs end to end: `DockingResult` carries `smiles`,
+  and generated compounds come back with a computed `predicted_potency` and the
+  structure it was computed on. Without a scorer the heuristic constants still
+  apply and are still marked `[SYNTHETIC]`.
+- ~~Put the structural path under test.~~ `tests/test_integration_seams.py`.
+  The seam is checked with real objects rather than mocks — a mock supplies
+  whatever attribute is asked of it, which would have hidden the original bug
+  perfectly — and the suite now also asserts the positive case: with a scorer
+  the potency is a real float and not a `SyntheticValue`, and a scorer that
+  fails raises instead of falling back to the constants.
+- ~~Replace or delete `load_testing.py`.~~ Deleted; see §4.
+
+Remaining, ordered by what unblocks the most:
+
+1. **Broaden receptor coverage.**
+   Structural scoring needs a curated receptor
    and pocket definition per target; today that curation is narrow, and the
    scorer raises rather than falling back when it is missing.
-5. **Retire the remaining `SyntheticValue` fields** by attaching real models —
+2. **Retire the remaining `SyntheticValue` fields** by attaching real models —
    ADMET, selectivity, synthetic accessibility — or by deleting the fields. Each
    retirement is independently verifiable: the field stops printing
    `[SYNTHETIC]`.
-6. **Run `make citations` on a schedule.** Panel citations are verified against
+3. **Run `make citations` on a schedule.** Panel citations are verified against
    live sources, which means they can rot. A monthly scheduled run converts
    silent rot into a failing build.
-7. **Independent replication of the port.** The Vina port is checked against
+4. **Independent replication of the port.** The Vina port is checked against
    `js/dock.js`; both could be wrong together. Comparison against a real Vina
    install on a standard benchmark set would close that.
 
@@ -504,11 +516,15 @@ candidates within one receptor and nothing more.
 global optimum, and results will move with the seed. Neither receptor
 flexibility nor explicit solvent is modelled.
 
-**The structural scoring path is currently broken end to end** (§5, item 1). The
-platform's strongest claim — that potency can be computed rather than asserted —
-is demonstrable today only by calling the docking module directly, not through
-the generator that is supposed to use it. It fails loudly rather than falling
-back to constants, which is the correct failure, but it fails.
+**The structural scoring path now works end to end**, which is a correction to
+this section rather than an addition: it previously said the path was broken,
+and that statement had outlived the defect. A generator given a
+`structural_scorer` returns a computed potency and the SMILES behind it. The
+limitation that remains is narrower and real — coverage. Structural scoring
+needs a curated receptor and pocket definition per target, that curation is
+narrow today, and the scorer raises rather than falling back when it is
+missing. So the claim holds for the targets that are curated and fails loudly,
+not quietly, for the rest.
 
 **Most fields in a generated compound record are still placeholders.** Safety,
 selectivity, synthetic accessibility and the MD batch are hand-set constants.
@@ -561,14 +577,14 @@ corrections to numbers that had drifted since it was written.
 
 | Claim | Command |
 |---|---|
-| 5 failed, 1469 passed, 55 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
+| 5 failed, 1558 passed, 56 skipped, 1 xfailed | `.venv/bin/python -m pytest tests/ -q` |
 | the 5 failures all bind a local port | `.venv/bin/python -m pytest tests/test_server_lifecycle.py -q` |
 | 227 JavaScript tests pass, 0 fail | `node --test tests/*.test.mjs` |
-| 10,629 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
-| 40 Python and 15 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
+| 10,836 lines of test code | `cat tests/*.py tests/*.mjs \| wc -l` |
+| 41 Python and 15 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 86 modules import cleanly | `make imports` |
 | 28 of 30 JS modules reachable from the app; 2 staged, 0 dead | `make reachable` |
-| 27,438 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
+| 27,191 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
 | 30 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
 | 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` *carried forward — needs the network* |
@@ -587,7 +603,7 @@ corrections to numbers that had drifted since it was written.
 | 1,336 unique structures from 16 files; 1,180 already valid, 156 repaired, 0 unfixable, 23 ambiguous | `.venv/bin/python -c` + `smiles_repair.repair_many` over `data/extracted_compound_inventory.json` |
 | Vina and Open Babel absent | `which vina obabel` |
 | old `server.py`: 29 `@app.route` decorators, `app` never defined, Flask absent, `NameError` on import | `git show 16628dc^:server/server.py`; `.venv/bin/python -c "import flask"`; import of the archived tree |
-| structural path raises `AttributeError: 'DockingResult' object has no attribute 'smiles'` | `PyreneSeries3Generator(structural_scorer=PyreneVinaScorer()).generate_series3_compounds(...)` |
+| structural path returns a computed potency and a SMILES, not a placeholder | `PyreneSeries3Generator(structural_scorer=PyreneVinaScorer()).generate_series3_compounds('BCL2','pediatric_leukemia',3)` |
 
 **One figure was not reproduced and has therefore been omitted from this
 document:** the historical "58 routes" count for the dead API layer. The archived

@@ -174,7 +174,13 @@ def test_monitoring():
     print(f"   Active workflows: {summary['active_workflows']}")
     print(f"   Workflows completed: {summary['workflows']}")
     print(f"   Errors: {summary['errors']['total']}")
-    print(f"   Throughput: {summary['throughput']['workflows_per_hour']:.2f} workflows/hour")
+    # Labelled, because an unqualified "workflows/hour" on a console with tick
+    # marks reads as a platform capability. It is the collector's arithmetic over
+    # two workflows that slept for 0.1 s and 0.15 s -- the sleeps ARE the thing
+    # under test here, which is what separates this from the deleted
+    # load_testing.py, where they stood in for work that was never done.
+    print(f"   Throughput arithmetic (over 2 synthetic workflows, not a benchmark): "
+          f"{summary['throughput']['workflows_per_hour']:.2f} workflows/hour")
     
     # Test 5: Dashboard data
     print("\n5️⃣  Generating dashboard data...")

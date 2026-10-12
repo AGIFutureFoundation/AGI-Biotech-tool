@@ -391,15 +391,25 @@ requires passing `--host 0.0.0.0` deliberately.
 
 ### Do you have a throughput or load benchmark?
 
-No, and please do not accept one from us.
+No, and there is now no harness that could be mistaken for one.
 
-`server/load_testing.py` simulates workflow steps with
-`asyncio.sleep(random.uniform(...))`. Any operations-per-second figure it prints
-measures how fast Python sleeps, which is why a historical "596 ops/second"
-appears in no current document. The module is not run by `make verify` and its
-output should be treated as unbuilt. Replacing or deleting it is on the roadmap —
-a harness that measures `sleep` is worse than no harness, because it produces a
-number and numbers get quoted.
+`server/load_testing.py` used to run its "workflow" as four
+`asyncio.sleep(random.uniform(...))` calls and then report throughput, success
+rate and a breaking point. Every one of those measured the event loop, which is
+why a historical "596 ops/second" appears in no current document. It has been
+deleted rather than repaired.
+
+It was not replaced with a real harness because the real workload is the wrong
+shape for that one: a single docking call is 2.4-6.5 seconds of CPU-bound NumPy,
+so an asyncio concurrency test over it would report a second kind of fiction
+rather than a measurement. A genuine throughput figure here needs process-level
+parallelism and a fixed receptor set, and that is a piece of work in its own
+right rather than a patch.
+
+`tests/test_no_simulated_benchmarks.py` now fails the build if any module under
+`server/` or `scripts/` calls `sleep()` and also names a per-unit-time rate, so
+the shape cannot come back somewhere new. A harness that measures `sleep` is
+worse than no harness, because it produces a number and numbers get quoted.
 
 ### What does the content-addressed store actually give me?
 
