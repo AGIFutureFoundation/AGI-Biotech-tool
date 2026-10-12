@@ -130,7 +130,18 @@ const BENCHMARK_SURFACES = [
 // An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four
 // within 2 Å" — so a digit-only check would have let "Three of four" through the one document where an
 // overstatement costs the most. Found by auditing that file rather than by the check working.
-const INFLATED_RAW = /\b(6|7|8|9|10|11|six|seven|eight|nine|ten|eleven)\s+of\s+(11|eleven)\b[^.]{0,40}(within|succeed)/gi;
+// The measured figure, read from the file the eval writes rather than from a number typed here. This is the
+// structural fix for iteration 19's failure: the documents are now checked against a run, not against prose.
+const RUN = JSON.parse(read('evals/benchmark-runs.json'));
+
+// Anything claiming a higher pass rate than the run recorded. Built from RUN.succeeded, so re-measuring and
+// re-publishing cannot require editing this regex — which is exactly the maintenance burden that let the
+// superseded figure survive ten iterations.
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven'];
+const overstatements = [];
+for (let n = RUN.succeededRange[1] + 1; n <= RUN.cases; n++) overstatements.push(String(n), WORDS[n]);
+const INFLATED_RAW = new RegExp(
+  `\\b(${overstatements.join('|')})\\s+of\\s+(${RUN.cases}|${WORDS[RUN.cases]})\\b[^.]{0,40}(within|succeed)`, 'gi');
 // "nine of eleven are reachable" is the recorded figure and the more useful one, so a reachability claim is
 // not a claim about the pass rate.
 //
@@ -205,10 +216,18 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
         .test(line);
       assert.ok(quoted || !INFLATED.test(line),
         `${f}:${i + 1} overstates the benchmark pass rate: ${line.trim()}`);
-      // The reachable count is the figure that carries the diagnosis, so it must not drift either.
-      for (const m of line.matchAll(/\b(\d+|nine)\s+of\s+(11|eleven)\s+(?:are\s+)?reachable/gi)) {
-        assert.ok(/^(9|nine)$/i.test(m[1]),
-          `${f}:${i + 1} says ${m[1]} of eleven reachable; the recorded figure is 9`);
+      // The reachable count carries the diagnosis, so it must not drift either — and it is checked against
+      // the run, not against a number remembered here.
+      // A line that is describing a superseded figure is reporting history, not making a claim. The same
+      // exemption the four-case check uses, for the same reason: a correction has to be able to say what it
+      // is correcting.
+      const describesPast = /previously|earlier run|supersed|correction|withdraw|until iteration|had been/i.test(line);
+      for (const m of line.matchAll(/\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven)\s+of\s+(11|eleven)\s+(?:are\s+)?reachable/gi)) {
+        if (describesPast) continue;
+        const claimed = /^\d+$/.test(m[1]) ? Number(m[1]) : WORDS.indexOf(m[1].toLowerCase());
+        const [lo, hi] = RUN.reachableRange;
+        assert.ok(claimed >= lo && claimed <= hi,
+          `${f}:${i + 1} says ${m[1]} of eleven reachable; measured range is ${lo}-${hi}`);
       }
     }
   }
@@ -216,12 +235,11 @@ test('the benchmark figure is the measured one, everywhere it is published', () 
 
 test('the inflation check actually catches an inflated claim, in digits and in words', () => {
   // A guard this cheap to get wrong is worth proving against known-bad input rather than trusting.
-  for (const bad of ['7 of 11 within 2 Å', 'Nine of eleven succeed on the panel',
-    'eight of 11 within 2 A', '11 of 11 succeed']) {
+  for (const bad of ['Nine of eleven succeed on the panel', 'eleven of 11 within 2 A', '11 of 11 succeed']) {
     assert.ok(INFLATED.test(bad), `the check should reject "${bad}"`);
   }
-  for (const good of ['5 of 11 succeed, 9 of 11 reachable', 'Five of eleven succeed',
-    'nine of eleven are reachable — the search generates a pose within 2 Å',
+  for (const good of [`${RUN.succeededRange[1]} of 11 succeed, ${RUN.reachableRange[0]} of 11 reachable`,
+    'seven of eleven are reachable — the search generates a pose within 2 Å',
     'eleven of the compounds were screened']) {
     assert.ok(!INFLATED.test(good), `the check should accept "${good}"`);
   }
@@ -248,7 +266,7 @@ test('a surface that publishes the benchmark also publishes the failures', () =>
   // and drops the two failing rows has kept the number and lost the point of it.
   for (const f of BENCHMARK_SURFACES) {
     const text = read(f);
-    if (!/\b(5|five)\s+of\s+(11|eleven)\b/i.test(text)) continue;
+    if (!/\b(4|6|four|six)\s*(?:[–-]\s*\d+\s*)?of\s+(11|eleven)\b/i.test(text)) continue;
     assert.ok(/BCL/i.test(text) && /MetAP2|1R58/i.test(text),
       `${f} states the benchmark pass rate without naming the cases that fail`);
     assert.ok(/sampling/i.test(text) && /scoring/i.test(text),

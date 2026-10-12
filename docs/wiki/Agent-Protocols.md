@@ -44,8 +44,8 @@ A signed JSON-LD AgentFacts document at `/.well-known/agent-facts.json`, followi
 agent fetches it, learns what this workspace can do and under what terms, and verifies the signature.
 
 The document carries the capability list, the terms, and — deliberately — **the benchmark caveat**. An agent
-that discovers this service is told in the discovery document itself that the docking benchmark is 5 of 11
-within 2 Å, with 9 of 11 reachable. A capability claim that omits its own error rate is how an agent ends up
+that discovers this service is told in the discovery document itself that the docking benchmark gives 4–6 of 11
+within 2 Å across three runs, with a spread wider than any improvement yet attempted. A capability claim that omits its own error rate is how an agent ends up
 trusting a number it should not, and discovery is the only place the agent is guaranteed to look.
 
 That field is also where a stale figure does the most damage, and it was stale. For ten iterations after

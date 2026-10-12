@@ -38,32 +38,45 @@ extract the ligand, dock it back, and measure RMSD to where it really sat.
 
 `evals/redock.mjs` defines eleven cases. The last recorded run:
 
-**5 of 11 succeed. 9 of 11 are reachable.**
+**4–6 of 11 within 2 Å across three runs. 6–9 of 11 reachable. Median top-pose RMSD 1.75–4.27 Å.**
 
-| Case | PDB | Ranked | Best found | Failure mode |
+Three runs, three different answers. The spread is not a detail — it is the result. At the current
+search budget (12 Monte Carlo runs × 3000 steps) this benchmark **cannot resolve a one- or two-case effect**,
+and a one- or two-case effect is the size of every scoring and search change in the roadmap.
+
+| Run | Pass | Reachable | Median | Scoring / sampling failures |
 | --- | --- | --- | --- | --- |
-| CDK5 · roscovitine analogue | 1UNL | 6.00 Å | **1.29 Å** | scoring |
-| GSK-3β · indirubin-3-monoxime | 1Q41 | 6.82 Å | **0.54 Å** | scoring |
-| Carbonic anhydrase II · celecoxib | 1OQ5 | 7.50 Å | **1.63 Å** | scoring |
-| β-II tryptase | 2BM2 | 5.22 Å | **1.60 Å** | scoring |
-| BCL-X<sub>L</sub> · ABT-737 | 2YXJ | 4.59 Å | 3.86 Å | sampling |
-| MetAP2 · A-357300 | 1R58 | 3.25 Å | 3.02 Å | sampling |
+| Recorded earlier | 5 / 11 | 9 / 11 | — | 4 / 2 |
+| 12 Oct, unseeded | 6 / 11 | 7 / 11 | 1.75 Å | 1 / 4 |
+| 12 Oct, seeded 20261012 | 4 / 11 | 6 / 11 | 4.27 Å | 2 / 5 |
 
-### The failure mode is ranking, not search
+The scoring-versus-sampling split **inverts** between runs. The earlier figure said four of six failures were
+ranking failures, which is what the roadmap has steered by since iteration 19 and what the rescoring work of
+iteration 20 was aimed at. Today's runs say one of five, then two of seven. We do not know whether ranking or
+search is the larger problem, and nothing here is evidence either way.
 
-Read the two right-hand columns together. In four of the six failures the search **did** generate a pose
-within 2 Å of the crystal — 0.54 Å in the GSK-3β case — and the scoring function ranked something wrong
-above it. Only two cases are genuine sampling failures, where no good pose was produced at all.
+**So no single number is published as the benchmark result**, and no scoring or search improvement can be
+validated against this benchmark as configured. Quoting one run — including the most flattering, which would
+be 6 of 11 — would be reading noise as a result. The figure of record, with every run behind it, is
+`evals/benchmark-runs.json`.
 
-That is why "reachable" is the more useful number. Perfect ranking over poses the search is *already*
-producing would take the benchmark from 45% to 82% with no change to the search whatsoever. The bottleneck
-is in the energy terms.
+Reproduce the seeded run with `NODE_USE_ENV_PROXY=1 node evals/redock.mjs --seed 20261012`. The next step is
+to raise the search budget until a repeat reproduces itself, then report a mean and spread over several
+seeds.
 
-It is worth saying what this cost. Iterations 7, 8 and 10 of the build loop invested in the search —
-rigid-body refinement, torsional refinement, binding-mode clustering — while this diagnosis was already
-recorded in the repository. The refinement work is correct and the binding-mode work addresses ranking
-directly, but the ordering was driven by a superseded four-case benchmark rather than by this one. See
-iteration 19 in `docs/ROADMAP_LOOP.md`.
+### Which cases fail
+
+Across the three runs the failing set is not stable, which is the clearest symptom of the problem. Cases
+failing in at least one run: GSK-3β (1Q41), BCL-X<sub>L</sub> (2YXJ), carbonic anhydrase II (1OQ5), MetAP2
+(1R58), β-II tryptase (2BM2), CDK5 (1UNL), thrombin (1OYT) and p38 MAP kinase (1YWR). Only three cases —
+MAO-B (2V5Z), the oestrogen receptor (3ERT) and the vitamin D receptor (1S19) — pass in every run.
+
+### The one failure that reproduces
+
+GSK-3β (1Q41) is a ranking failure in all three runs: the search finds a pose at 0.33–0.36 Å and the scorer
+ranks one near 6.8 Å above it. That single case is the only part of the ranking diagnosis that survives
+repetition, and one case out of eleven is a lead to investigate, not a mandate for where the engineering
+goes.
 
 ### The four-case set this replaced
 

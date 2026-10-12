@@ -16,15 +16,31 @@ rather than the strongest.
 Re-docking crystal ligands blind: pull each one out of its structure, dock it back, and measure RMSD to
 where it really sat. `evals/redock.mjs` defines eleven cases.
 
-**5 of 11 succeed. 9 of 11 are reachable.**
+**4–6 of 11 within 2 Å across three runs. 6–9 of 11 reachable. Median top-pose RMSD 1.75–4.27 Å.**
 
-"Reachable" is the more useful number: in nine of eleven cases the search *generates* a pose within 2 Å. Of
-the six failures, **four are scoring failures** — the crystal pose was found and the scoring function ranked
-something wrong above it, in one case ranking a 0.54 Å pose below a 6.82 Å one. Only two are sampling
-failures. Perfect ranking over poses already being produced would take the benchmark from 45% to 82% with no
-change to the search at all.
+Three runs, three different answers. The spread is not a detail — it is the result. At the current
+search budget (12 Monte Carlo runs × 3000 steps) this benchmark **cannot resolve a one- or two-case effect**,
+and a one- or two-case effect is the size of every scoring and search change in the roadmap.
 
-That is a diagnosis, not just a score: **the next work belongs in the energy terms, not the search.**
+| Run | Pass | Reachable | Median | Scoring / sampling failures |
+| --- | --- | --- | --- | --- |
+| Recorded earlier | 5 / 11 | 9 / 11 | — | 4 / 2 |
+| 12 Oct, unseeded | 6 / 11 | 7 / 11 | 1.75 Å | 1 / 4 |
+| 12 Oct, seeded 20261012 | 4 / 11 | 6 / 11 | 4.27 Å | 2 / 5 |
+
+The scoring-versus-sampling split **inverts** between runs. The earlier figure said four of six failures were
+ranking failures, which is what the roadmap has steered by since iteration 19 and what the rescoring work of
+iteration 20 was aimed at. Today's runs say one of five, then two of seven. We do not know whether ranking or
+search is the larger problem, and nothing here is evidence either way.
+
+**So no single number is published as the benchmark result**, and no scoring or search improvement can be
+validated against this benchmark as configured. Quoting one run — including the most flattering, which would
+be 6 of 11 — would be reading noise as a result. The figure of record, with every run behind it, is
+`evals/benchmark-runs.json`.
+
+Reproduce the seeded run with `NODE_USE_ENV_PROXY=1 node evals/redock.mjs --seed 20261012`. The next step is
+to raise the search budget until a repeat reproduces itself, then report a mean and spread over several
+seeds.
 
 ![Re-docking benchmark: eleven cases, RMSD to the crystallographic pose](chart-redock.png)
 
@@ -41,16 +57,23 @@ nothing staged. GitHub does not play video inside a wiki page, so the image abov
 the repository, where it plays. [More frames and the longer
 walkthrough](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/tree/enterprise-hardening-and-ingestion/docs) sit alongside it.
 
-The six failures, named: CDK5 (1UNL), GSK-3β (1Q41), carbonic anhydrase II (1OQ5) and β-II tryptase (2BM2)
-are **scoring** failures — a good pose was found and ranked below a bad one. BCL-X<sub>L</sub> (2YXJ) and
-MetAP2 (1R58) are **sampling** failures, where no good pose was generated at all.
+> **The film predates this measurement.** `docs/pitch.mp4` was rendered before 12 October 2026 and its benchmark slide still shows a single figure, 5 of 11 with 9 of 11 reachable. That figure is superseded by the range above. The film cannot be re-rendered on this machine right now: `ffmpeg` links `libx265.216.dylib` and the installed x265 no longer provides it, so the assembly step aborts. `brew reinstall ffmpeg` repairs it. The figures table in `scripts/make_pitch_video.py` has already been corrected, so the next successful render is right.
+
+
+The cases that fail, across runs: GSK-3β (1Q41), BCL-X<sub>L</sub> (2YXJ), carbonic anhydrase II (1OQ5),
+MetAP2 (1R58), β-II tryptase (2BM2), CDK5 (1UNL), thrombin (1OYT) and p38 (1YWR) each fail in at least one
+of the three runs — which is itself the point: the set is not stable. Case-by-case detail for every run is
+in `evals/benchmark-runs.json`. GSK-3β (1Q41) is the one case
+that fails the same way in all three — a 0.33–0.36 Å pose found and ranked near 6.8 Å — and is the
+only ranking failure that reproduces.
 
 Treat a score from this tool as a filter for ranking, never as an affinity prediction, and never in units —
 see [Docking and Scoring](Docking-and-Scoring).
 
-These figures are carried forward from the last run with network access and are re-measured by
-`node evals/redock.mjs`, which fetches structures from the RCSB. The four-case table published here until iteration 19 is **superseded**. `evals/redock.mjs` now defines eleven cases, and the figure above is the last recorded run of it, published in `docs/WIKI.md` and `docs/pitch.html`. Neither set can be re-measured here, because the benchmark fetches structures from the RCSB and the network is blocked.
-
+Re-measured 12 October 2026, the first time in this build loop the benchmark could be run at all —
+the sandbox's network restriction lifted. Before that date these pages carried a single figure
+carried forward from an earlier run, and before iteration 19 a four-case figure that was superseded
+outright. Both are now replaced by a range, because a range is what the measurement supports.
 ## What is in it
 
 | | |

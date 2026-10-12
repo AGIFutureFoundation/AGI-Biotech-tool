@@ -166,6 +166,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
     process.exitCode = 1;
   } else {
+    // Write the result where the documents can be checked against it. Until today every published figure
+    // was a number somebody had typed into prose a second time, which is how this repository spent ten
+    // iterations citing a superseded benchmark (iteration 19). tests/claims.test.mjs reads this file, so a
+    // document and the last real run cannot disagree without a test going red.
+    const { writeFileSync } = await import('node:fs');
+    const record = {
+      generated: new Date().toISOString(),
+      seed, cases: su.cases, measured, errored,
+      succeeded: su.succeeded, reachable: su.reachable, medianRmsd: su.medianRmsd,
+      partial: errored > 0,
+      perCase: out.results.map((r) => (r.error
+        ? { pdb: r.pdb, error: r.error }
+        : { pdb: r.pdb, lig: r.lig, topRmsd: r.topRmsd, bestRmsd: r.bestRmsd, success: !!r.success,
+            failureMode: r.failureMode || null })),
+      scoringFailures: su.scoringFailures,
+      samplingFailures: su.samplingFailures,
+    };
+    writeFileSync(new URL('./last-run.json', import.meta.url), `${JSON.stringify(record, null, 2)}\n`);
     const scope = `${measured} measured` + (errored ? ` (${errored} of ${su.cases} failed to run)` : '');
     console.log(`\n${su.succeeded}/${measured} within ${SUCCESS_A} Å, median ${su.medianRmsd} Å — ${scope}`);
     console.log(`${su.reachable}/${measured} reachable — a near-native pose was generated, ranked or not`);

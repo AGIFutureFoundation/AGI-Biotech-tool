@@ -9,15 +9,16 @@ limits section buried at the bottom of a long document is a limits section nobod
 to kcal/mol, a ΔG or a K<sub>d</sub>, and do not compare scores across different targets. See
 [Docking and Scoring](Docking-and-Scoring).
 
-**Pose prediction works on under half the benchmark.** 5 of 11 within 2 Å; 9 of 11 are reachable. Compact
-ligands in deep rigid pockets are placed well; long flexible ligands in shallow grooves are not. Four of the
-six failures — CDK5, GSK-3β, carbonic anhydrase II, β-II tryptase — are *scoring* failures, where a good
-pose was found and ranked below a bad one; BCL-X<sub>L</sub> and MetAP2 are *sampling* failures. Eleven
-cases still cannot generalise, and re-docking is the easy version of the problem — cross-docking has not
-been measured. Carried forward, not re-measured: the eval needs the structure databases.
+**The benchmark cannot currently resolve its own changes.** Three runs of the eleven-case re-docking
+benchmark give 4, 5 and 6 cases within 2 Å, with 6 to 9 reachable and a median top-pose RMSD between 1.75
+and 4.27 Å. The scoring-versus-sampling split inverts between runs. At the current search budget the
+run-to-run spread is larger than any improvement the roadmap has attempted, so **no scoring or search change
+can be validated here**, and no single pass rate is published. See `evals/benchmark-runs.json`.
 
-(An earlier version of this page gave 2 of 4 within 2 Å and a 2.54 Å median. That four-case set is
-superseded; those four are now four of the eleven.)
+**We do not know whether ranking or search is the bigger problem.** The claim that it was ranking, which the
+roadmap steered by from iteration 19, does not survive re-measurement. Only GSK-3β fails the same way in
+every run. Eleven cases cannot settle it, and re-docking is the easy version of the problem — cross-docking
+has not been measured.
 
 **There is no internal-strain term.** The score sees protein-ligand contacts only. A conformer that folds
 onto itself is not penalised, which is why refinement polishes a conformer rather than generating one.

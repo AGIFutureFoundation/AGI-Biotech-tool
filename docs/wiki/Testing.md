@@ -102,7 +102,7 @@ video rendering. Of note:
 
 | Figure | Command | Status |
 | --- | --- | --- |
-| Re-docking: 5 of 11 succeed, 9 of 11 reachable | `node evals/redock.mjs` | **Needs the network** |
+| Re-docking: **4–6 of 11** across three runs, 6–9 reachable | `NODE_USE_ENV_PROXY=1 node evals/redock.mjs --seed 20261012` | measured 12 Oct 2026; the spread is the finding |
 | MD throughput: approximately 27 ns/day on Apple GPU | OpenMM benchmark | Needs the server |
 
 **The six failures are named, because a pass rate is only meaningful next to the cases it excludes:**

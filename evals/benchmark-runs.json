@@ -1,0 +1,52 @@
+{
+  "cases": 11,
+  "threshold": 2.0,
+  "headline": "4-6 of 11 within 2 A across 3 runs",
+  "succeededRange": [
+    4,
+    6
+  ],
+  "reachableRange": [
+    6,
+    9
+  ],
+  "medianRange": [
+    1.75,
+    4.27
+  ],
+  "runs": [
+    {
+      "label": "recorded earlier (another session, pre-12 Oct)",
+      "seed": null,
+      "succeeded": 5,
+      "reachable": 9,
+      "medianRmsd": null,
+      "scoring": 4,
+      "sampling": 2,
+      "note": "figure the roadmap steered by from iteration 19"
+    },
+    {
+      "label": "12 Oct 2026, unseeded",
+      "seed": null,
+      "succeeded": 6,
+      "reachable": 7,
+      "medianRmsd": 1.75,
+      "scoring": 1,
+      "sampling": 4,
+      "note": "assembled from one run of seven cases plus four re-run individually after transient fetch failures"
+    },
+    {
+      "label": "12 Oct 2026, seeded 20261012",
+      "seed": 20261012,
+      "succeeded": 4,
+      "reachable": 6,
+      "medianRmsd": 4.27,
+      "scoring": 2,
+      "sampling": 5,
+      "note": "single clean reproducible run; NODE_USE_ENV_PROXY=1 node evals/redock.mjs --seed 20261012"
+    }
+  ],
+  "finding": "The run-to-run spread exceeds the size of any change this project has tried to measure. Across three runs the pass rate spans 4-6 of 11, the reachable count 6-9 of 11, and the median top-pose RMSD 1.75-4.27 A. The scoring-versus-sampling split inverts between runs (4 scoring/2 sampling, then 1/4, then 2/5). At 12 Monte Carlo runs by 3000 steps this benchmark cannot resolve a one- or two-case effect, which is the magnitude of every scoring or search change in the roadmap.",
+  "consequence": "No single number should be published as the benchmark result, and no scoring or search improvement can be validated against this benchmark as currently configured. Quoting one run - including the most flattering - would be reading noise as a result.",
+  "nextStep": "Raise the search budget until a repeat run reproduces itself, then report mean and spread over several seeds rather than a single figure. Until that is done the honest published form is a range."
+}

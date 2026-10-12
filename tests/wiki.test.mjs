@@ -94,7 +94,12 @@ test('the benchmark figure is stated honestly wherever it appears', async () => 
   // may overstate the pass rate, and a four-case figure is allowed only where it is explicitly
   // labelled as superseded history.
   const { CASES } = await import('../evals/redock.mjs');
-  const SUCCESS = 5, REACHABLE = 9;
+  // Read from the runs file, not from digits typed here. This check has now outlived two figures -- the
+  // four-case set and then the single eleven-case number -- and each time the stale constant was what had
+  // to be edited before a correction could land. A range, because three runs gave three answers.
+  const RUNS = JSON.parse(read('../../evals/benchmark-runs.json'));
+  const [SUCCESS_LO, SUCCESS_HI] = RUNS.succeededRange;
+  const [REACH_LO, REACH_HI] = RUNS.reachableRange;
 
   const stated = [];
   for (const f of files) {
@@ -102,9 +107,14 @@ test('the benchmark figure is stated honestly wherever it appears', async () => 
       const where = `${f}:${i + 1}`;
 
       // Nothing may claim a better pass rate than was measured, in digits or in words.
-      assert.ok(!/\b(6|7|8|9|10|11|six|seven|eight|nine|ten|eleven)\s+of\s+(11|eleven)\b[^.]{0,40}(within|succeed)/i
-        .test(line) || /reachable/i.test(line),
-        `${where} overstates the benchmark: ${line.trim()}`);
+      for (const m of line.matchAll(/\b(\d+)\s+of\s+(?:11|eleven)\b[^.]{0,40}(?:within|succeed)/gi)) {
+        if (/reachable|generat/i.test(m[0])) continue;
+        // A range like "4-6 of 11" is the published form; only its upper end is a claim.
+        const rangeEnd = /(\d+)\s*[\u2013-]\s*(\d+)\s+of/.exec(line);
+        const claimed = rangeEnd ? Number(rangeEnd[2]) : Number(m[1]);
+        assert.ok(claimed <= SUCCESS_HI,
+          `${where} claims ${claimed} of 11 within 2 A; the best measured run was ${SUCCESS_HI}: ${line.trim()}`);
+      }
 
       // A four-case figure is history. It may appear only on a line that says so.
       if (/\b(\d|two|three|four)\s+of\s+(4|four)\b/i.test(line)) {
@@ -112,18 +122,19 @@ test('the benchmark figure is stated honestly wherever it appears', async () => 
           `${where} cites the four-case benchmark as if current: ${line.trim()}`);
       }
 
-      if (new RegExp(`\\b${SUCCESS} of ${CASES.length}\\b`).test(line)) stated.push({ f, i, line });
+      if (new RegExp(`\\b(${SUCCESS_LO}|${SUCCESS_HI})\\s*(?:[\u2013-]\\s*\\d+\\s*)?of\\s+${CASES.length}\\b`).test(line)) stated.push({ f, i, line });
     }
   }
 
   assert.ok(stated.length >= 2,
-    `the ${SUCCESS} of ${CASES.length} result should appear on Home and on the docking page`);
+    `the ${SUCCESS_LO}-${SUCCESS_HI} of ${CASES.length} result should appear on Home and on the docking page`);
 
   // Where a page gives the reachable figure it must be the measured one.
   for (const f of files) {
     for (const m of pages[f].matchAll(/\b(\d+)\s+of\s+11\s+are\s+reachable/gi)) {
-      assert.equal(Number(m[1]), REACHABLE,
-        `${f} says ${m[1]} of 11 reachable; the measurement is ${REACHABLE}`);
+      const n = Number(m[1]);
+      assert.ok(n >= REACH_LO && n <= REACH_HI,
+        `${f} says ${m[1]} of 11 reachable; the measured range is ${REACH_LO}-${REACH_HI}`);
     }
   }
 

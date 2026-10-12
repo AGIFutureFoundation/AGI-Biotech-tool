@@ -131,16 +131,18 @@ FIGURES = {
     # This table held the superseded four-case set long after evals/redock.mjs was
     # widened to eleven, so a re-render republished a retired figure -- into a film
     # embedded at the top of a brief that elsewhere calls that figure superseded.
+    # Re-measured 12 October 2026, when the benchmark first became runnable in this
+    # environment. Three runs gave three answers, so the slide now shows the RUNS and
+    # their spread rather than a single failure table: the spread is the finding. A
+    # table of six named failures implied a stable set, and the set is not stable.
+    # evals/benchmark-runs.json is the figure of record.
     "benchmark": [
-        ("CDK5 · 1UNL", "6.00 Å", "1.29 Å", "scoring", False),
-        ("GSK-3β · 1Q41", "6.82 Å", "0.54 Å", "scoring", False),
-        ("Carbonic anhydrase II · 1OQ5", "7.50 Å", "1.63 Å", "scoring", False),
-        ("β-II tryptase · 2BM2", "5.22 Å", "1.60 Å", "scoring", False),
-        ("BCL-XL · 2YXJ", "4.59 Å", "3.86 Å", "sampling", False),
-        ("MetAP2 · 1R58", "3.25 Å", "3.02 Å", "sampling", False),
+        ("Recorded earlier", "5 / 11", "9 / 11", "4 scoring / 2 sampling", False),
+        ("12 Oct, unseeded", "6 / 11", "7 / 11", "1 scoring / 4 sampling", False),
+        ("12 Oct, seeded", "4 / 11", "6 / 11", "2 scoring / 5 sampling", False),
     ],
-    "benchmark_headers": ["Failure", "Ranked", "Best found", "Mode"],
-    "benchmark_line": "5 of 11 within 2 Å · 9 of 11 reachable",
+    "benchmark_headers": ["Run", "Within 2 Å", "Reachable", "Failure split"],
+    "benchmark_line": "4–6 of 11 across three runs · the spread is the finding",
     "md_ns_per_day": "27", "frame_ms": "7.4", "missense_h46": "0.98",
 }
 
@@ -381,7 +383,7 @@ def slide_limits():
     img = gradient_bg(); d = ImageDraw.Draw(img)
     eyebrow(d, "Honest limits")
     headline(d, "What this is not, yet", size=72)
-    items = ["Docking is triage, not prediction. 5 of 11 re-docking cases within 2 Å.",
+    items = ["Docking is triage, not prediction. 4–6 of 11 re-docking cases within 2 Å, across runs.",
              "Interactive physics is coarse by design. The all-atom OpenMM backend is the one to quote.",
              "Payments do not settle. The 402 challenge is real; the transfer is not implemented.",
              "A hash chain is not a blockchain. It makes tampering detectable; it reaches no consensus.",

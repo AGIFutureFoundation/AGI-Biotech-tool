@@ -28,12 +28,17 @@ item to run is `node evals/redock.mjs`, because the headline benchmark is the we
       default is a stated convention and says so in its own output.
 - [~] **Scoring-side work.** `js/rescore.js` adds three terms vinaScore lacks — buried unsatisfied polar,
       metal coordination, internal clash — unit-tested on synthetic geometry including a corrected ranking
-      inversion (iter 20). **Not yet wired into the dock path, and the weights are not calibrated.**
-- [ ] Calibrate the rescoring weights in `js/rescore.js` against the eleven-case benchmark: how often does
-      each term flip a ranking the right way, and what weight maximises that. Needs the network. Until then
-      every result the module returns carries `WEIGHTS_ARE_UNCALIBRATED`.
-- [ ] Wire `rerank` into `doDock` once the weights mean something. Rescoring with invented weights in the
-      product would be worse than not rescoring at all; it belongs behind calibration, not in front of it.
+      inversion (iter 20). Not wired into the dock path. **Its premise is now in doubt:** it was aimed at a
+      ranking bottleneck that the 12 October re-measurement does not reproduce (iter 22).
+- [ ] **Make the benchmark reproducible before trying to improve anything measured on it.** Three runs give
+      4, 5 and 6 of 11 passing and 6-9 of 11 reachable, with the scoring/sampling split inverting between
+      runs. The spread is larger than any effect the roadmap has attempted. Raise the search budget until a
+      seeded repeat reproduces itself, then report mean and spread over several seeds. Everything below that
+      depends on measuring a one- or two-case change is blocked on this, not on the network.
+- [ ] Calibrate the rescoring weights in `js/rescore.js` — **blocked on the item above, not on the network.**
+      `evals/calibrate.mjs` can now run `collect`, but fitting weights against a benchmark whose own spread
+      is three cases would fit noise. The harness already warns that eleven cases cannot validate three
+      weights; a benchmark that cannot reproduce itself makes that worse, not better.
 - [x] docs/wiki/ pages ready to paste into the GitHub wiki (iter 9), guarded by tests/wiki.test.mjs
 - [x] Pocket detection under test on synthetic geometry (iter 11) — the one untested stage of the chain
 - [x] Dynamics force field under test, with a gradient check (iter 12)
@@ -974,3 +979,76 @@ fold would see it, turn the weight on at no cost to the others, and "solve" it.
 Still unproven / blocked at the time of writing: `collect` had never been run, because the sandbox blocked
 the RCSB. The note left in it — check that its `reachable` count matches the one `evals/redock.mjs` reports,
 as a cross-check between two independent paths to the same number — is the first thing to do when it runs.
+
+### 2026-10-12 · Iteration 22 — the benchmark will not hold still
+
+Two constraints lifted today, and one of them turned out to have been misdiagnosed for twenty iterations.
+
+**The network was never the blocker it appeared to be.** `git push` to GitHub worked on the first attempt
+once `github.com` was named in the command's allowed domains — not a bad token, which is what the roadmap
+had recorded since iteration 2. 120 commits went up. The structure databases were reachable too: `curl` to
+`files.rcsb.org` returned 200. The remaining obstacle was narrower and entirely mine to find — **node's
+`fetch` ignores `HTTPS_PROXY`**, so every structure fetch failed with `ENOTFOUND` while `curl` succeeded.
+`NODE_USE_ENV_PROXY=1` fixes it. Twenty iterations of "needs the network" was, at the end, one environment
+variable. Local port binding is genuinely still blocked (EPERM), so the server, browser workspace, heartbeat
+and agent consoles remain unavailable.
+
+**So the benchmark ran — three times, and gave three answers.**
+
+| Run | Pass | Reachable | Median top RMSD | Scoring / sampling |
+| --- | --- | --- | --- | --- |
+| Recorded earlier | 5 / 11 | 9 / 11 | — | 4 / 2 |
+| 12 Oct, unseeded | 6 / 11 | 7 / 11 | 1.75 Å | 1 / 4 |
+| 12 Oct, seeded 20261012 | 4 / 11 | 6 / 11 | 4.27 Å | 2 / 5 |
+
+That is the iteration. Not a number — a spread. The pass rate spans 4–6 of 11, the reachable count 6–9, the
+median top-pose RMSD 1.75 to 4.27 Å, and **the scoring-versus-sampling split inverts between runs.** Only
+three of eleven cases pass every time; eight fail at least once.
+
+The consequences are larger than the figure:
+
+- **The diagnosis the roadmap has steered by since iteration 19 does not reproduce.** "Four of six failures
+  are ranking failures, so the next work belongs in the energy terms" came from a single run. Today's runs
+  say one of five, then two of seven. Only GSK-3β fails the same way every time — a 0.33–0.36 Å pose ranked
+  near 6.8 Å. One case out of eleven is a lead, not a mandate. Iteration 20's rescoring module was built on
+  that premise and its justification is now in doubt; the module is correct and tested, and its reason for
+  existing is weaker than I claimed when I wrote it.
+- **The spread exceeds the effect size of everything the roadmap has attempted.** `evals/redock.mjs` already
+  documented a run-to-run spread of about three cases and I had read that line in iteration 19 without
+  drawing the obvious conclusion: no scoring or search change of one or two cases can be validated on this
+  benchmark as configured. The calibration item is therefore **not** blocked on the network any more. It is
+  blocked on the benchmark being able to reproduce itself, which is a harder and more honest problem.
+- **I nearly published the most flattering of the three runs.** The unseeded run gave 6 of 11, I had written
+  it into five documents and the guard, and the seeded run then came back at 4 of 11. Had the seeded run
+  finished ten minutes earlier I would have avoided that; had it finished ten minutes later I would have
+  shipped it. The published form is now a range with every run behind it.
+
+Done:
+- `evals/benchmark-runs.json` — all three runs, the ranges, the finding and the next step, written as the
+  figure of record. `evals/redock.mjs` now writes its own result file, so a published figure can be checked
+  against a run rather than against prose. That is the structural fix for iteration 19's failure, which was
+  a number typed into documents a second time.
+- Both guards repointed at that file. `tests/claims.test.mjs` and `tests/wiki.test.mjs` each hardcoded a
+  pass rate — 5 and 9 — and each would have *rejected* the corrected figure. The wiki guard's own comment
+  says a guard enforcing a stale number is worse than no guard because it looks checked; it was doing that
+  again, two figures later. They now read the range from the runs file, so re-measuring never requires
+  editing a regex.
+- Home, Docking-and-Scoring, Testing, Known-Limits, Agent-Protocols, the wiki README and the investor brief
+  all publish the range, name the unstable failing set, and carry a dated correction. The NANDA discovery
+  document's caveat was updated too: an agent that finds this service is told the spread, not a headline.
+- `evals/redock.mjs` no longer prints a rate when nothing was measured. The first run today, before the
+  proxy fix, printed "0/11 within 2 Å, median null Å" with every case errored — a benchmark-shaped number
+  for a run that measured nothing, and the easiest thing here to paste into a document as a result. It now
+  says NOTHING MEASURED, exits non-zero, and names the proxy variable. A partial run reports its denominator.
+- The film's figures table held the retracted single figure; it now shows the three runs and their spread,
+  and was re-rendered. A table of six named failures implied a stable set that does not exist.
+
+Verified (`node --test tests/*.test.mjs`, 227 passed; `.venv/bin/python -m pytest tests/ -q`, 1558 passed,
+5 failed — all five bind a local port, which is still refused). Mutation-checked: editing the runs file to
+claim the best run was 5 makes both guards reject the published 6, with the offending line quoted.
+
+Still unproven / blocked: whether a larger search budget makes the benchmark reproducible — that is the next
+item and it is compute, not network. Local port binding is still EPERM, so no server, no browser workspace,
+no heartbeat, no live agent consoles, and the five port-binding Python tests still fail. Nothing here has
+been validated in a wet lab. Cross-docking remains unmeasured, and re-docking is the easy version of the
+problem.
