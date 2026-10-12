@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # 3.12 only, deliberately no matrix. This is a deployed application
       # pinned to one interpreter, not a library that has to support a range:
@@ -36,7 +36,7 @@ jobs:
       # so a matrix would multiply runtime and wheel-availability flakiness to
       # produce a failure nobody would act on. Revisit if this repo ever
       # becomes something other people pip-install.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
@@ -83,9 +83,9 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
 
