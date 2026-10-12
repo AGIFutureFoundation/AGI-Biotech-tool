@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the 110-second pitch video from designed slides, with no browser and no network.
+"""Render the two-minute pitch video from designed slides, with no browser and no network.
 
 The workspace can film itself (see js/recorder.js), but that needs the app running in a browser. This
 path needs only Pillow, RDKit and ffmpeg: it draws each slide as a 1920x1080 frame, depicts real
@@ -415,7 +415,7 @@ SLIDES = [slide_title, slide_problem, slide_three_ways, slide_molecules, slide_b
 
 
 # ----------------------------------------------------------------------------- assembly
-def build(out, seconds=110, fps=30):
+def build(out, seconds=120, fps=30):
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is required")
     n = len(SLIDES)
@@ -446,7 +446,12 @@ def build(out, seconds=110, fps=30):
         filt.append(f"{prev}[{i}:v]xfade=transition=fade:duration={fade}:offset={offset:.3f}{label}")
         prev = label
     subprocess.run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(filt), "-map", "[out]",
-                    "-c:v", "libx264", "-preset", "slow", "-crf", "21", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
+                    # CRF 26, not 21. These are static 1080p slides -- flat panels, no grain, no
+    # motion beyond a slow zoom -- so the extra bitrate buys nothing visible and
+    # cost 14 MB in a git repository, which then failed to push (HTTP 408) and is
+    # carried in every clone forever. Checked the text-heavy benchmark slide at 26
+    # against 21 frame by frame before changing it.
+    "-c:v", "libx264", "-preset", "slow", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
                    check=True)
     shutil.rmtree(tmp, ignore_errors=True)
     probe = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration,size", "-of", "json", out],
@@ -459,6 +464,6 @@ def build(out, seconds=110, fps=30):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(ROOT, "docs", "pitch.mp4"))
-    ap.add_argument("--seconds", type=float, default=110)
+    ap.add_argument("--seconds", type=float, default=120)
     a = ap.parse_args()
     build(a.out, a.seconds)

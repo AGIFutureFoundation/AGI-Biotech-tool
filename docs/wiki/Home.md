@@ -34,9 +34,9 @@ is the four scoring failures, and it is the whole argument for working on the en
 
 ## Watch it run
 
-[![A 110-second cut of the workspace](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/media/frame-38s.jpg)](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/pitch.mp4)
+[![A two-minute cut of the workspace](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/media/frame-38s.jpg)](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/blob/enterprise-hardening-and-ingestion/docs/pitch.mp4)
 
-A 110-second silent cut, rendered offline from the same figures as the rest of this wiki — no narration,
+A two-minute silent cut, rendered offline from the same figures as the rest of this wiki — no narration,
 nothing staged. GitHub does not play video inside a wiki page, so the image above is a link to the file in
 the repository, where it plays. [More frames and the longer
 walkthrough](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/tree/enterprise-hardening-and-ingestion/docs) sit alongside it.
