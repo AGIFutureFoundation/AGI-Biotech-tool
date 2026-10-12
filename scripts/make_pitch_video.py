@@ -297,9 +297,11 @@ def slide_benchmark():
     body(d, "Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. "
             "Under 2 Å is the usual bar.", y + 20, size=30)
     top = y + 110
-    plate(d, [160, top, 1760, top + 380])
+    plate(d, [160, top, 1760, top + 250])   # three runs, not the old six-row failure table
     hdr = FIGURES["benchmark_headers"]
-    xs = [200, 980, 1240, 1540]
+    # The failure-split column is 352px of text; at the old x=1540 it ran 132px
+    # past the plate edge at 1760. Measured, not eyeballed.
+    xs = [200, 760, 1010, 1270]
     for h, x in zip(hdr, xs):
         d.text((x, top + 26), h.upper(), font=font("mono", 20), fill=FAINT)
     d.line([180, top + 70, 1740, top + 70], fill=LINE, width=2)
@@ -308,11 +310,18 @@ def slide_benchmark():
         for (val, x) in zip(row[:4], xs):
             colour = BAD if val == "sampling" else (WARN if val == "scoring" else INK)
             d.text((x, yy), val, font=font("mono", 26) if x > 400 else font("body", 26), fill=colour)
-    d.text((160, top + 408), FIGURES["benchmark_line"], font=font("display_b", 44), fill=INK)
-    body(d, "In four of the six the search found a pose under 2 Å and the ranking put something wrong above "
-            "it — 0.54 Å in one case. Perfect ranking over poses we already produce takes this from 45% to "
-            "82%. Published rather than buried, because serious customers run their own controls.",
-         top + 472, size=26, width=1600)
+    d.text((160, top + 288), FIGURES["benchmark_line"], font=font("display_b", 44), fill=INK)
+    # The prose here used to argue the single-run diagnosis -- "four of the six
+    # are ranking failures, perfect ranking takes us from 45% to 82%". The table
+    # above now withdraws exactly that: the scoring/sampling split inverts
+    # between runs, so the slide would have shown a corrected table over prose
+    # restating the figure it corrects.
+    body(d, "Three runs, three answers. Only three of the eleven cases pass every time, and the "
+            "scoring-versus-sampling split inverts between runs — so the diagnosis we steered by, that "
+            "ranking is the bottleneck, does not reproduce. The spread is wider than any improvement we "
+            "have attempted, which means nothing can be validated here until the benchmark can repeat "
+            "itself. Published rather than buried, because serious customers run their own controls.",
+         top + 352, size=26, width=1600)
     brand(d)
     return img
 

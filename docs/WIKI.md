@@ -73,23 +73,24 @@ Eleven crystal ligands are pulled out of their structures and docked back blind.
 with four cases each result was worth 25 points, and those four suited a shape-and-hydrophobicity
 score.
 
-### Which half is broken
+### The runs disagree
 
 ![Reachable ceiling](media/chart-ceiling.svg)
 
-| Case | Ranked | Best found | Failure mode |
-| --- | --- | --- | --- |
-| 1UNL · CDK5 | 6.00 Å | **1.29 Å** | scoring |
-| 1Q41 · GSK-3β | 6.82 Å | **0.54 Å** | scoring |
-| 1OQ5 · carbonic anhydrase | 7.50 Å | **1.63 Å** | scoring |
-| 2BM2 · tryptase | 5.22 Å | **1.60 Å** | scoring |
-| 2YXJ · BCL-XL | 4.59 Å | 3.86 Å | sampling |
-| 1R58 · MetAP2 | 3.25 Å | 3.02 Å | sampling |
+| Run | Within 2 Å | Reachable | Median RMSD | Failure split |
+| --- | --- | --- | --- | --- |
+| recorded earlier | **5 / 11** | 9 / 11 | — | 4 scoring / 2 sampling |
+| 12 Oct 2026, unseeded | **6 / 11** | 7 / 11 | 1.75 Å | 1 scoring / 4 sampling |
+| 12 Oct 2026, seeded 20261012 | **4 / 11** | 6 / 11 | 4.27 Å | 2 scoring / 5 sampling |
 
-Nine of eleven cases are **reachable** — the search generates a pose within 2 Å. Four of the six
-failures are poses it found and the scoring function ranked below something wrong. Perfect ranking
-over poses already being produced would take the benchmark from 45% to 82% with no change to the
-search.
+Across three runs the pass rate spans **4–6 of 11**, reachability **6–9 of 11**, and the median
+top-pose RMSD **1.75–4.27 Å**. Only three of the eleven cases pass every time, and the
+scoring-versus-sampling split inverts between runs.
+
+This section previously read the single-run split as a diagnosis — four of six failures were ranking
+failures, so perfect ranking would take the benchmark from 45% to 82% and the next work belonged in
+the energy terms. Re-measurement withdrew it. The spread is wider than any improvement attempted, so
+no scoring or search change can be validated against this benchmark until it repeats itself.
 
 ### What the benchmark cannot tell you
 
@@ -236,8 +237,10 @@ The key is read from the environment and nowhere else — a test asserts no publ
 
 ## 8. Where the next work belongs
 
-1. **Scoring, not search.** Nine of eleven cases are reachable; the ranking is what fails. Now
-   measurable, because runs are seedable.
+1. **Make the benchmark repeat itself.** Across three runs the pass rate spans 4–6 of 11 and the
+   scoring-versus-sampling split inverts, so the "scoring, not search" conclusion this list used to
+   lead with does not reproduce. Until the variance is under the effect size of a change, no scoring
+   or search work can be validated here. Runs are seedable now, which is what makes that tractable.
 2. **A wider benchmark.** Eleven cases cannot resolve anything below a three-case swing. The Astex
    Diverse Set is 85.
 3. **One live MetaMask signature** would move the wallet layer from `interop_verified: false` to

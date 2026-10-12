@@ -57,7 +57,7 @@ nothing staged. GitHub does not play video inside a wiki page, so the image abov
 the repository, where it plays. [More frames and the longer
 walkthrough](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/tree/enterprise-hardening-and-ingestion/docs) sit alongside it.
 
-> **The film predates this measurement.** `docs/pitch.mp4` was rendered before 12 October 2026 and its benchmark slide still shows a single figure, 5 of 11 with 9 of 11 reachable. That figure is superseded by the range above. The film cannot be re-rendered on this machine right now: `ffmpeg` links `libx265.216.dylib` and the installed x265 no longer provides it, so the assembly step aborts. `brew reinstall ffmpeg` repairs it. The figures table in `scripts/make_pitch_video.py` has already been corrected, so the next successful render is right.
+> **The film carries the current figures.** `docs/pitch.mp4` was re-rendered on 12 October 2026 and its benchmark slide shows all three runs and the 4–6 of 11 range, not the single figure it used to lead with. `ffmpeg` on the build machine links `libx265.216.dylib` while the installed x265 provides `.217`; `brew reinstall ffmpeg` is the real repair, and until then `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/Cellar/x265/4.2/lib` in front of the render command works.
 
 
 The cases that fail, across runs: GSK-3β (1Q41), BCL-X<sub>L</sub> (2YXJ), carbonic anhydrase II (1OQ5),

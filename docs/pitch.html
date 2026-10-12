@@ -107,21 +107,20 @@ footer a{margin-right:16px}
 
 <section><div class="wrap">
   <h2>The docking benchmark, reported honestly</h2>
-  <p class="sub">Eleven crystal ligands pulled from their structures and docked back blind. The benchmark
-  separates the two ways a case fails, because they call for opposite work.</p>
+  <p class="sub">Eleven crystal ligands pulled from their structures and docked back blind, three times over.
+  The three runs disagree, and that disagreement is the finding.</p>
   <table>
-    <tr><th>Case</th><th>Ranked</th><th>Best found</th><th>Why it failed</th></tr>
-    <tr><td>1UNL &middot; CDK5</td><td class="num bad">6.00 Å</td><td class="num good">1.29 Å</td><td>scoring</td></tr>
-    <tr><td>1Q41 &middot; GSK-3β</td><td class="num bad">6.82 Å</td><td class="num good">0.54 Å</td><td>scoring</td></tr>
-    <tr><td>1OQ5 &middot; carbonic anhydrase</td><td class="num bad">7.50 Å</td><td class="num good">1.63 Å</td><td>scoring</td></tr>
-    <tr><td>2BM2 &middot; tryptase</td><td class="num bad">5.22 Å</td><td class="num good">1.60 Å</td><td>scoring</td></tr>
-    <tr><td>2YXJ &middot; BCL-XL</td><td class="num bad">4.59 Å</td><td class="num bad">3.86 Å</td><td>sampling</td></tr>
-    <tr><td>1R58 &middot; MetAP2</td><td class="num bad">3.25 Å</td><td class="num bad">3.02 Å</td><td>sampling</td></tr>
+    <tr><th>Run</th><th>Within 2 Å</th><th>Reachable</th><th>Median RMSD</th><th>Failure split</th></tr>
+    <tr><td>recorded earlier</td><td class="num">5 / 11</td><td class="num">9 / 11</td><td class="num">&mdash;</td><td>4 scoring / 2 sampling</td></tr>
+    <tr><td>12 Oct 2026, unseeded</td><td class="num">6 / 11</td><td class="num">7 / 11</td><td class="num">1.75 Å</td><td>1 scoring / 4 sampling</td></tr>
+    <tr><td>12 Oct 2026, seeded 20261012</td><td class="num">4 / 11</td><td class="num">6 / 11</td><td class="num">4.27 Å</td><td>2 scoring / 5 sampling</td></tr>
   </table>
-  <p class="sub" style="margin-top:22px"><b>5 of 11 succeed; 9 of 11 are reachable.</b> In four failures the
-  search found the crystal pose and the scoring function ranked something wrong above it. Perfect ranking over
-  poses already being produced would take this from 45% to 82% — so the next work belongs in the energy terms,
-  not the search. That is a measurement, not an intuition.</p>
+  <p class="sub" style="margin-top:22px"><b>4–6 of 11 within 2 Å across three runs; 6–9 of 11 reachable;
+  median top-pose RMSD 1.75–4.27 Å.</b> Only three of the eleven cases pass every time, and the
+  scoring-versus-sampling split inverts between runs. This page previously argued from one run that ranking was
+  the bottleneck and the next work belonged in the energy terms; re-measuring withdrew that. The spread is wider
+  than any improvement attempted, so the next work is making the benchmark repeat itself. That is a measurement
+  too — and a less flattering one than the version it replaces.</p>
 </div></section>
 
 <section><div class="wrap"><div class="honest">

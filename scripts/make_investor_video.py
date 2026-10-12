@@ -132,10 +132,12 @@ def slide_benchmark():
             colour = BAD if val == "sampling" else (WARN if val == "scoring" else INK)
             d.text((x, yy), val, font=font("mono", 25) if x > 400 else font("body", 25), fill=colour)
     d.text((160, top + 382), FIGURES["benchmark_line"], font=font("display_b", 42), fill=INK)
-    body(d, "In four of the six failures the search found a pose under 2 Å and the ranking put something "
-            "wrong above it — 0.54 Å in one case. We publish the failures because the "
-            "first thing a serious buyer does is run their own controls, and a number that collapses on "
-            "contact costs more than it ever earned.", top + 446, size=28, width=1600)
+    # Was the single-run diagnosis: "four of the six failures are ranking failures". Re-measurement
+    # withdrew it -- the split inverts between runs -- so the slide now shows the spread instead.
+    body(d, "Three runs, three answers. Only three of the eleven cases pass every time and the "
+            "scoring-versus-sampling split inverts, so the diagnosis we steered by does not reproduce. "
+            "We publish that because the first thing a serious buyer does is run their own controls, and "
+            "a number that collapses on contact costs more than it ever earned.", top + 446, size=28, width=1600)
     brand(d)
     return img
 
@@ -196,8 +198,8 @@ def slide_ask():
     eyebrow(d, "The ask", y=250)
     headline(d, "Fund the scoring function", y=300, size=86)
     body(d, "The benchmark is the ceiling on everything else we sell. Capital goes to the search and rescoring "
-            "work that closes the gap between the 5 of 11 we rank correctly and the 9 of 11 the search "
-            "already reaches, hardware testing on Quest and Vision Pro, "
+            "work that makes the benchmark repeat itself — across three runs it spans 4–6 of 11, wider "
+            "than any improvement attempted — plus hardware testing on Quest and Vision Pro, "
             "and wiring payment settlement.", 450, size=34, width=1540, color=INK)
     plate(d, [160, 660, 1240, 840])
     d.text((200, 692), "x@agifuturefoundation.org", font=font("mono", 44), fill=ACCENT)
@@ -256,7 +258,7 @@ CARDS = [
     ("biodao.blockchain", "Drug discovery an AI agent can run, pay for, and be held to.", ACCENT),
     ("22 typed tools", "Every action a scientist can take, an agent can call.", INK),
     ("33 offline tests", "Written this week. Each verified by a command in the repo.", INK),
-    ("5 of 11", "Our docking benchmark. We publish the failures too.", WARN),
+    ("4–6 of 11", "Our docking benchmark across three runs. The spread is the finding.", WARN),
     ("14 databases", "Public. No account, no key, anywhere in the stack.", INK),
     ("x@agifuturefoundation.org", "ALS · Parkinson's · paediatric orthopaedics.", ACCENT),
 ]

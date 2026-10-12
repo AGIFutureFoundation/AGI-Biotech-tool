@@ -125,6 +125,7 @@ test('the whitepaper states the Python result honestly, failures included', () =
 const BENCHMARK_SURFACES = [
   'docs/WHITE_PAPER.md', 'docs/wiki/Home.md', 'docs/wiki/Docking-and-Scoring.md', 'docs/wiki/Testing.md',
   'docs/progress-report.html', 'docs/investor-brief.html', 'docs/pitchdeck.html', 'docs/whitepaper.html',
+  'docs/pitch.html', 'docs/WIKI.md', 'scripts/make_pitch_video.py', 'scripts/make_investor_video.py',
 ];
 
 // An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four
@@ -261,16 +262,25 @@ test('the quoted-phrase exemption is narrow enough to be useless as a loophole',
     'an unquoted claim is never exempt');
 });
 
-test('a surface that publishes the benchmark also publishes the failures', () => {
-  // The honest version of this figure is the table, not the headline. A page that says "2 of 4 within 2 Å"
-  // and drops the two failing rows has kept the number and lost the point of it.
+test('a surface that publishes the benchmark also publishes what the number costs', () => {
+  // The honest version of this figure is never the bare headline. What counts as the rest of it changed in
+  // iteration 22, and this check had to change with it.
+  //
+  // It used to require every surface to name BCL-XL and MetAP2 and to split scoring from sampling, because
+  // that was the diagnosis. Re-measurement withdrew both: the failing set is not stable across runs and the
+  // scoring/sampling split inverts. So the old form of this check had become a guard enforcing a retracted
+  // claim — the same failure as the "2 of 4" guard it was written alongside, which kept a superseded figure
+  // alive for ten iterations by demanding it.
+  //
+  // The rule underneath survives: publish the cost of the number. Today that cost is the variance, so a
+  // surface must show the spread or say the runs disagree. A page may still name failures, but naming them
+  // is no longer sufficient on its own, because a fixed list implies a stability the measurement denies.
   for (const f of BENCHMARK_SURFACES) {
     const text = read(f);
-    if (!/\b(4|6|four|six)\s*(?:[–-]\s*\d+\s*)?of\s+(11|eleven)\b/i.test(text)) continue;
-    assert.ok(/BCL/i.test(text) && /MetAP2|1R58/i.test(text),
-      `${f} states the benchmark pass rate without naming the cases that fail`);
-    assert.ok(/sampling/i.test(text) && /scoring/i.test(text),
-      `${f} should distinguish the sampling failures from the scoring failures — that is the diagnosis`);
+    if (!/\b(\d+|four|five|six)\s*(?:[–-]\s*\d+\s*)?of\s+(11|eleven)\b/i.test(text)) continue;
+    assert.ok(SPREAD.test(text) || SAYS_IT_IS_ONE_RUN.test(text),
+      `${f} states the benchmark pass rate without the variance behind it: the runs disagree ` +
+      `(${RUN.succeededRange.join('-')} of ${RUN.cases}), and a figure published without that reads as settled`);
   }
 });
 
@@ -316,4 +326,74 @@ test('the whitepaper records what the tests found, not only that they pass', () 
   }
   assert.match(WHITEPAPER, /removed from its \*end\*|removed from its end/i,
     'and the hash-chain truncation limit, which was documented rather than fixed');
+});
+
+
+// A single run presented as the result, when the finding is that the runs disagree.
+//
+// This is the gap the existing checks left open, and it is subtle enough to be worth stating plainly. The
+// overstatement check rejects anything above succeededRange[1]; the reachability check requires a figure
+// inside reachableRange. "5 of 11 succeed, 9 of 11 are reachable" satisfies both — 5 is not an
+// overstatement and 9 is in range — and yet it is exactly the claim iteration 22 withdrew. Three runs gave
+// 5, 6 and 4; the spread IS the finding, so publishing any one of them as the answer misrepresents the
+// measurement even when the number itself is one that was measured.
+//
+// So the rule is not about the value. A line may give the range, or give one run and say it is one run.
+// What it may not do is state a bare figure as the result.
+// Either measured range written as "lo-hi". The first version knew only the pass-rate range and so
+// rejected "6-9 of 11 reachable" -- correct range notation, wrong range -- on the wiki's own front page.
+const SPREAD = new RegExp(
+  `(${RUN.succeededRange[0]}\\s*[-–—]\\s*${RUN.succeededRange[1]}`
+  + `|${RUN.reachableRange[0]}\\s*[-–—]\\s*${RUN.reachableRange[1]})`);
+// Phrasings that make a single figure honest: it is named as one run, or the text is describing a stale
+// artifact rather than publishing a claim. "predates" and "still shows" earn their place -- the wiki's own
+// warning that the film is out of date quotes the figure in order to warn about it.
+const SAYS_IT_IS_ONE_RUN =
+  /\b(one run|a single run|across \d+ runs|three runs|per run|unseeded|seeded|run-to-run|spread|range|recorded earlier|previously|superseded|withdrawn|does not reproduce|at the time|predates|still shows|out of date|rendered before)\b/i;
+
+test('no surface publishes one run as if it were the benchmark result', () => {
+  // No trailing "within|succeed" requirement. A first version had one, and the investor film slipped
+  // straight past it with "the 5 of 11 we rank correctly" and a social card reading just "5 of 11" --
+  // the same mistake as the superseded-figure regex that needed "within 2" after the number. On these
+  // surfaces "N of 11" is the benchmark; there is nothing else here with eleven of anything.
+  const rate = new RegExp(`\\b(\\d+|${WORDS.join('|')})\\s+of\\s+(${RUN.cases}|${WORDS[RUN.cases]})\\b`, 'gi');
+
+  // Checked per SENTENCE, not per line. Three separate checks in this suite have now produced a false
+  // positive by testing a line: prose wraps wherever the column runs out, so a qualifier and the figure it
+  // qualifies routinely land on different lines. Home.md's "Quoting one run — including the most
+  // flattering, which would be 6 of 11 — would be reading noise" was flagged as publishing 6 of 11, when it
+  // says the precise opposite; "one run" was simply on the line above. A claim is a sentence, so that is
+  // the unit.
+  const lineOf = (text, idx) => text.slice(0, idx).split('\n').length;
+
+  for (const f of BENCHMARK_SURFACES) {
+    if (f === 'docs/progress-report.html') continue;   // a dated log; see above
+    const text = read(f);
+    // Sentence-ish: split on terminators, keeping offsets so the message can still name a line.
+    let cursor = 0;
+    for (const piece of text.split(/(?<=[.!?])\s+|\n{2,}/)) {
+      const at = text.indexOf(piece, cursor);
+      cursor = at + piece.length;
+      for (const m of piece.matchAll(rate)) {
+        const n = /^\d+$/.test(m[1]) ? Number(m[1]) : WORDS.indexOf(m[1].toLowerCase());
+        if ((n === RUN.succeededRange[0] || n === RUN.succeededRange[1]) && SPREAD.test(piece)) continue;
+        assert.ok(SPREAD.test(piece) || SAYS_IT_IS_ONE_RUN.test(piece),
+          `${f}:${lineOf(text, at)} states "${m[0].trim()}" as the result. The runs disagree ` +
+          `(${RUN.succeededRange.join('-')} of ${RUN.cases}), so give the range or say which run it was: ` +
+          `${piece.replace(/\s+/g, ' ').trim().slice(0, 140)}`);
+      }
+    }
+  }
+});
+
+test('the one-run check accepts a range and a labelled run, and rejects a bare figure', () => {
+  const bare = '**5 of 11 within 2 Å; 9 of 11 reachable.**';
+  const ranged = '**4-6 of 11 within 2 Å across three runs.**';
+  const labelled = 'The run recorded earlier was 5 of 11 within 2 Å.';
+
+  const rate = new RegExp(`\\b(\\d+)\\s+of\\s+(${RUN.cases})\\b[^.]{0,40}(within|succeed)`, 'i');
+  assert.ok(rate.test(bare) && !SPREAD.test(bare) && !SAYS_IT_IS_ONE_RUN.test(bare),
+    'a bare single figure must be rejected');
+  assert.ok(SPREAD.test(ranged), 'the range notation must be accepted');
+  assert.ok(SAYS_IT_IS_ONE_RUN.test(labelled), 'a figure labelled as one run must be accepted');
 });

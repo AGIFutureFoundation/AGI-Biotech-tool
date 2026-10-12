@@ -137,23 +137,23 @@
     <section class="slide">
       <div class="n">03 · EVIDENCE</div>
       <h2>What the numbers actually say</h2>
-      <p>Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. Under 2 Å is the usual bar. Eleven cases; the six failures are below, with what the scorer ranked first against the best pose the search produced.</p>
+      <p>Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. Under 2 Å is the usual bar. Eleven cases, run three times — and the three runs disagree, which is the result worth showing.</p>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Failure</th><th>Ranked</th><th>Best found</th><th>Mode</th></tr></thead>
+          <thead><tr><th>Run</th><th>Within 2 Å</th><th>Reachable</th><th>Median RMSD</th><th>Failure split</th></tr></thead>
           <tbody>
-            <tr><td>CDK5 · 1UNL</td><td class="num">6.00 Å</td><td class="num">1.29 Å</td><td>scoring</td></tr>
-            <tr><td>GSK-3&beta; · 1Q41</td><td class="num">6.82 Å</td><td class="num">0.54 Å</td><td>scoring</td></tr>
-            <tr><td>Carbonic anhydrase II · 1OQ5</td><td class="num">7.50 Å</td><td class="num">1.63 Å</td><td>scoring</td></tr>
-            <tr><td>&beta;-II tryptase · 2BM2</td><td class="num">5.22 Å</td><td class="num">1.60 Å</td><td>scoring</td></tr>
-            <tr><td>BCL-XL · 2YXJ</td><td class="num">4.59 Å</td><td class="num">3.86 Å</td><td class="fail">sampling</td></tr>
-            <tr><td>MetAP2 · 1R58</td><td class="num">3.25 Å</td><td class="num">3.02 Å</td><td class="fail">sampling</td></tr>
+            <tr><td>recorded earlier</td><td class="num">5 / 11</td><td class="num">9 / 11</td><td class="num">—</td><td>4 scoring / 2 sampling</td></tr>
+            <tr><td>12 Oct 2026, unseeded</td><td class="num">6 / 11</td><td class="num">7 / 11</td><td class="num">1.75 Å</td><td>1 scoring / 4 sampling</td></tr>
+            <tr><td>12 Oct 2026, seeded 20261012</td><td class="num">4 / 11</td><td class="num">6 / 11</td><td class="num">4.27 Å</td><td>2 scoring / 5 sampling</td></tr>
           </tbody>
         </table>
       </div>
-      <p><strong>5 of 11 within 2 Å; 9 of 11 reachable.</strong> Four of the six failures are ranking failures, not
-        search failures — the pose was found and scored below a worse one. Good enough to triage a library; not good
-        enough to predict affinity. Published, because serious customers run their own controls.</p>
+      <p><strong>4–6 of 11 within 2 Å across three runs; 6–9 of 11 reachable.</strong> Only three of the eleven
+        cases pass every time, and the scoring-versus-sampling split inverts between runs — so the diagnosis this
+        deck previously led with, that ranking is the bottleneck, does not reproduce. The spread is wider than any
+        improvement we have attempted, which means nothing can be validated against this benchmark until it repeats
+        itself. Published, because serious customers run their own controls — and the most flattering run is the one
+        we would otherwise have shipped.</p>
     </section>
 
     <section class="slide">
