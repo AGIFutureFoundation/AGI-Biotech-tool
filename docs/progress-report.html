@@ -93,8 +93,10 @@
       was done, which command verified it, and what stayed unproven. Claims that were not measured in that
       iteration are not repeated as if they were.</p>
     <div class="meta">
-      <span class="tag">iteration 20</span>
-      <span class="tag on">208 JavaScript tests passing</span>
+      <span class="tag">iteration 22</span>
+      <span class="tag on">227 JavaScript tests passing</span>
+      <span class="tag on">benchmark re-measured at last</span>
+      <span class="tag off">and it will not hold still</span>
       <span class="tag off">benchmark figure corrected</span>
       <span class="tag on">1438 Python tests passing</span>
       <span class="tag on">110 s and 120 s films published</span>
@@ -107,6 +109,41 @@
 <section>
   <div class="wrap">
     <div class="eyebrow">Iterations</div>
+    <div class="iter">
+      <div class="when">12 Oct<br>iter 22</div>
+      <div>
+        <h3>The benchmark will not hold still</h3>
+        <p>Two constraints lifted. <code>git push</code> worked on the first attempt once github.com was named
+          in the command's allowed domains — not the bad token the roadmap had recorded since iteration 2;
+          120 commits went up. The databases were reachable too, and the real obstacle was narrower and mine
+          to find: <strong>node's fetch ignores HTTPS_PROXY</strong>, so every structure fetch failed while
+          curl succeeded. <code>NODE_USE_ENV_PROXY=1</code> fixes it. Twenty iterations of "needs the network"
+          came down to one environment variable.</p>
+        <ul class="checks">
+          <li>So the benchmark ran — three times, and gave three answers: 5/11, 6/11, 4/11 passing;
+            9/11, 7/11, 6/11 reachable; median 1.75 Å then 4.27 Å</li>
+          <li class="no">The scoring-versus-sampling split <strong>inverts</strong> between runs: 4/2, then
+            1/4, then 2/5. Only three of eleven cases pass every time</li>
+          <li class="no">The diagnosis the roadmap steered by since iteration 19 — ranking is the bottleneck —
+            came from one run and does not reproduce. Only GSK-3β fails the same way every time. Iteration
+            20's rescoring module was built on that premise and its justification is weaker than I claimed</li>
+          <li class="no">The spread exceeds the effect size of everything attempted, so no one- or two-case
+            improvement can be validated here. Calibration is now blocked on the benchmark reproducing
+            itself, not on the network</li>
+          <li>I nearly published the most flattering run: 6 of 11 was written into five documents and the
+            guard before the seeded run came back at 4 of 11</li>
+          <li>Both guards hardcoded 5 and 9 and would have <em>rejected</em> the corrected figure. They now
+            read the range from the runs file the eval writes — the structural fix for iteration 19</li>
+          <li>The eval no longer prints a rate when nothing was measured; before the proxy fix it printed
+            "0/11 within 2 Å" with every case errored</li>
+          <li>227 JavaScript tests and 1558 Python tests passing; mutation-checked both guards</li>
+          <li class="no">The film's figures are corrected but it could not be re-rendered: ffmpeg on this
+            machine links a libx265 the installed x265 no longer provides</li>
+          <li class="no">Local port binding is still refused, so no server, browser workspace, heartbeat or
+            live agent consoles</li>
+        </ul>
+      </div>
+    </div>
     <div class="iter">
       <div class="when">6 Oct<br>iter 20</div>
       <div>
@@ -620,15 +657,17 @@
         </tbody>
       </table>
     </div>
-    <p style="margin-top:12px"><strong>5 of 11 succeed; 9 of 11 are reachable.</strong> Four of the six
-      failures are <em>scoring</em> failures: the search found a pose within 2 Å and the ranking put something
-      wrong above it. Perfect ranking over poses already produced would take the benchmark from 45% to 82%
-      with no change to the search, so the next work belongs in the energy terms.</p>
-    <p style="margin-top:10px"><strong>Correction, iteration 19.</strong> This section previously carried a
-      four-case table at 2 of 4 within 2 Å, median 2.54 Å. <code>evals/redock.mjs</code> was widened to eleven
-      cases before this build loop began, and those four are four of the eleven; this page and four others had
-      continued citing the superseded set. The earlier timeline entries below are left exactly as written —
-      a log that gets rewritten is not a log — so they still show the old figure as it stood at the time.</p>
+    <p style="margin-top:12px"><strong>4–6 of 11 within 2 Å across three runs. 6–9 reachable. Median
+      1.75–4.27 Å.</strong> Re-measured 12 October 2026 — the first time in this build loop the benchmark
+      could be run at all. Three runs, three answers, and the scoring-versus-sampling split inverts between
+      them. The spread is larger than any improvement this project has attempted to measure, so no single
+      number is published and no scoring or search change can currently be validated here. Only three of
+      eleven cases pass every time. Figure of record: <code>evals/benchmark-runs.json</code>.</p>
+    <p style="margin-top:10px"><strong>Correction, 12 October 2026.</strong> This section previously showed
+      a single run at 5 of 11 with 9 of 11 reachable, and before iteration 19 a four-case figure that was
+      superseded outright. The earlier single figure is withdrawn, along with the claim built on it that
+      ranking rather than search is the bottleneck. The timeline entries below are left as written — a log
+      that gets rewritten is not a log — so earlier entries still show the figures as they stood.</p>
   </div>
 </section>
 
