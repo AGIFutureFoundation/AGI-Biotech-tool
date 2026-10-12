@@ -14,9 +14,14 @@ assets/scenes/
 # a 210 MB master in git made the repo unpushable to GitHub, which caps a
 # single file at 100 MB. They are build output, not source.
 docs/*.mp4
-# ...except the 14 MB shareable cut, which is well under GitHub's 100 MB
-# per-file cap and is what the whitepaper and wiki embed. The 210 MB
-# master is what made this repository unpushable and stays out.
+# ...except the shareable cuts (2-14 MB each), which are well under GitHub's
+# 100 MB per-file cap and are what the whitepaper, deck and wiki embed. The
+# 210 MB master is what made this repository unpushable and stays out.
+#
+# Keep these small. A 14 MB pitch.mp4 failed to push with HTTP 408 -- a
+# transfer timeout, not the size cap -- and the renderer now encodes the final
+# concatenation at CRF 26 rather than 21, which halves it with no visible
+# difference on static 1080p slides.
 !docs/biodao-walkthrough.mp4
 !docs/walkthrough-share.mp4
 .keys/
@@ -24,3 +29,10 @@ docs/*.mp4
 !docs/investor.mp4
 !docs/investor-web.mp4
 !docs/investor-vertical.mp4
+
+# Generated repository analysis. `.enola/` is a tool's snapshot of this repo --
+# an extractor cache, a facts dump and a rollover copy of the previous run,
+# 3.3 MB of it. Every byte is derived from the source beside it and regenerated
+# by re-running the tool, so committing it adds weight to every clone to
+# preserve an answer that is stale the moment anything changes.
+.enola/
