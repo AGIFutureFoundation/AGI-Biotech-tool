@@ -929,3 +929,48 @@ Still unproven / blocked, and this is the main thing:
   claims on geometry built to exercise it; they say nothing about how often any of them matters on real
   structures. The benchmark was not re-measured; 5 of 11 and 9 of 11 stand as recorded by another session's
   run. Five Python failures remain in `tests/test_server_lifecycle.py`; all five bind a local port.
+
+### 2026-10-06 · Iteration 21 — the calibration harness, built before the data existed
+
+Every open queue item needed the network or a package install, so this iteration took the part of the
+blocked work that did not. Calibrating the rescoring weights needs the benchmark; the *harness* that would
+do the calibrating does not, and writing it now meant that when the network returned the job would be one
+command rather than a design problem. (It returned on 12 October — see iteration 22.)
+
+Done: `evals/calibrate.mjs`. The split that makes it work: docking a case and computing its rescoring terms
+is expensive and needs the RCSB, but it happens once, and what comes out is per case a list of poses each
+carrying its RMSD to the crystal, its base `vinaScore`, and its term counts. Searching weight space over
+that is pure arithmetic. So `collect` needs the network and everything after it does not, including
+re-running a sweep later with different candidates.
+
+`tests/calibrate.test.mjs`, sixteen cases, verified offline (`node --test tests/calibrate.test.mjs`).
+Dumps are built so the right answer follows from the construction: a term that genuinely separates
+near-native poses from decoys, and a term that is pure noise.
+
+**What the tests changed about the module's own claims.** The first draft said leave-one-out
+cross-validation was the answer to fitting three weights against eleven cases. Measuring it said otherwise.
+Feeding the harness eleven cases of pure-noise term counts — term values from a seeded PRNG, no relation to
+which pose is near-native, and a base score that solves none of them — produced in-sample "gains" of 1, 3,
+4, 3 and 6 cases out of eleven across five seeds, and leave-one-out reported 0, 0, 4, 1 and 6. So
+leave-one-out is usually more pessimistic and **sometimes is not**: on this few cases the same weight set
+often wins in every fold. The warning the module returns now says leave-one-out is not a guarantee, and
+that the honest output of the harness is a hypothesis to test on cases outside the benchmark rather than a
+validated weight set. I set out to show cross-validation protects against overfitting and measured that, at
+this sample size, it does not.
+
+Also verified: the argmin per case is deterministic so a sweep is reproducible; the candidate grid is a
+stable product; the ranking prefers the *smaller* correction when two do equally well, so the harness does
+not drift toward large weights that happen to tie; `reachable` is reported as the ceiling any rescoring can
+reach and does not move with the weights; and the in-sample and out-of-sample figures are returned together
+so they cannot be quoted apart.
+
+One gap found by mutation and closed. Replacing the fold split with the whole dump — a leak that would make
+leave-one-out report in-sample numbers under an out-of-sample label — broke **no test**. The discriminator
+added for it: ten cases solvable by a metal weight and indifferent to the clash weight, plus one case
+solvable only with the clash weight on. Fitting on the ten never turns the clash weight on, because it ties
+on solved count and the smaller-correction tiebreak rejects it, so the held-out case must fail; a leaking
+fold would see it, turn the weight on at no cost to the others, and "solve" it.
+
+Still unproven / blocked at the time of writing: `collect` had never been run, because the sandbox blocked
+the RCSB. The note left in it — check that its `reachable` count matches the one `evals/redock.mjs` reports,
+as a cross-check between two independent paths to the same number — is the first thing to do when it runs.

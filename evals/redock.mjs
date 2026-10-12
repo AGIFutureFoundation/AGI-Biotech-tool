@@ -153,8 +153,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       + `score ${String(r.topScore).padStart(6)} (crystal ${r.crystalScore})  ${r.success ? 'PASS' : 'fail'}  ${r.seconds}s`);
   }
   const su = out.summary;
-  console.log(`\n${su.succeeded}/${su.cases} within ${SUCCESS_A} Å, median ${su.medianRmsd} Å`);
-  console.log(`${su.reachable}/${su.cases} reachable — a near-native pose was generated, ranked or not`);
+  // A run where every case errored used to print "0/11 within 2 Å", which is a benchmark-shaped number for
+  // a run that measured nothing — the most misleading thing this script could emit, and easy to paste into
+  // a document as a result. A rate is only reported when there is something to rate.
+  const errored = out.results.filter((r) => r.error).length;
+  const measured = su.cases - errored;
+  if (!measured) {
+    console.log(`\nNOTHING MEASURED: all ${su.cases} cases failed to run. This is not a benchmark result.`);
+    if (/fetch failed|ENOTFOUND/i.test(out.results.map((r) => r.error || '').join(' '))) {
+      console.log("Structures could not be fetched. node's fetch ignores HTTPS_PROXY unless you set "
+        + 'NODE_USE_ENV_PROXY=1 — try `NODE_USE_ENV_PROXY=1 node evals/redock.mjs`.');
+    }
+    process.exitCode = 1;
+  } else {
+    const scope = `${measured} measured` + (errored ? ` (${errored} of ${su.cases} failed to run)` : '');
+    console.log(`\n${su.succeeded}/${measured} within ${SUCCESS_A} Å, median ${su.medianRmsd} Å — ${scope}`);
+    console.log(`${su.reachable}/${measured} reachable — a near-native pose was generated, ranked or not`);
+    if (errored) console.log('A partial run is not comparable with a full one; re-run before quoting it.');
+  }
   if (su.scoringFailures.length) {
     console.log(`\nscoring failures (${su.scoringFailures.length}) — the pose was found and mis-ranked:`);
     for (const f of su.scoringFailures) console.log(`  ${f}`);
