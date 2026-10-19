@@ -465,10 +465,46 @@ Remaining, ordered by what unblocks the most:
 
    So the work is statistical rather than a bug hunt: run every case over K
    seeds and publish the per-case pass fraction, which
-   `node evals/redock.mjs --seeds K` now does. Eleven cases also cannot resolve
-   anything below a roughly three-case swing, so a wider set — the Astex
-   Diverse Set is 85 — is the other half of it. Structures are cached and
+   `node evals/redock.mjs --seeds K` now does. Structures are cached and
    committed, so this no longer needs the network.
+
+   **That has now been run, and the instrument is worse than the ad-hoc figure
+   suggested.** Ten seeds, uniform settings, every case
+   (`evals/ensemble-run.json`):
+
+   | | mean | range | always pass | never | unsettled |
+   |---|---|---|---|---|---|
+   | 3 seeds | 4.67 | 4–5 | 3 | 4 | 4 |
+   | 10 seeds | 4.60 | **2–6** | 2 | 3 | 6 |
+
+   The mean barely moved and the range doubled, which is the finding: the mean
+   is the robust statistic here and the range is not, so a small ensemble
+   reports a tidier benchmark than the one that exists. 2V5Z passed all three
+   seeds of the first ensemble and was recorded as settled; across ten it
+   passes nine, with a top pose ranging 0.97–9.65 Å. Three draws had missed the
+   bad one — the same error as publishing a single run, one level up.
+
+   Stated precisely, because the precise version is what makes the next step
+   obvious: **nine of the eleven cases move across seeds by more than the 2 Å
+   threshold that decides pass from fail.** The measurement noise exceeds the
+   decision boundary on 82% of the set. An instrument in that state cannot
+   validate anything, and no amount of re-running changes it — the ensemble
+   measures the distribution accurately, and the distribution is too wide.
+
+   Two routes out, and they are testable rather than matters of opinion. The
+   first is search effort: the per-case spread should narrow as runs and steps
+   increase, and whether it narrows *enough* at a cost worth paying is one
+   experiment away. The second is a wider set, since eleven cases cannot
+   resolve anything below a roughly three-case swing — the Astex Diverse Set
+   is 85.
+
+   One case is worth naming separately. **1Q41 moved 0.01 Å across all ten
+   seeds** while failing by 6.8 Å: a perfectly reproducible failure, immune to
+   the variance that defeats measurement everywhere else on this list, and
+   therefore the one target where a scoring change can be evaluated today.
+   1R58 has the same character at 1.45 Å. By contrast 2YXJ fails while
+   wandering 9.8 Å, which is a search that never converged and which no
+   rescoring will touch.
 2. **Broaden receptor coverage.**
    Structural scoring needs a curated receptor
    and pocket definition per target; today that curation is narrow, and the
