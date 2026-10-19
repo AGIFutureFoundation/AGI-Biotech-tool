@@ -99,7 +99,10 @@ def passages(path):
         m = re.match(r"##+\s*(.+)", block)
         if not m:
             continue
-        heading = clean(m.group(1))
+        # Strip the source document's own numbering. WHITE_PAPER.md numbers its
+        # sections, so slides read "5. Roadmap" — a number that means something
+        # inside that document and nothing on a slide between two wiki pages.
+        heading = re.sub(r"^\d+(\.\d+)*\.?\s+", "", clean(m.group(1)))
         rest = block[m.end():]
 
         rest = re.sub(r"```.*?```", "", rest, flags=re.S)       # code fences
