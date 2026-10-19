@@ -389,6 +389,50 @@ validate across workers.
 Both servers default to binding `127.0.0.1`. Reaching a headset over Wi-Fi
 requires passing `--host 0.0.0.0` deliberately.
 
+### Can we run this inside our own network?
+
+Yes, and that answer is new. Until 19 October 2026 the brief offered a
+workspace "behind your own firewall" and there was no way to put it there: no
+container, no deployment artefact, nothing but a README and a virtualenv on one
+developer's laptop. That gap is worth naming rather than quietly closing,
+because it is the same class of problem as a figure nobody re-measured.
+
+```
+docker build -t biodao .
+docker run --rm -p 8000:8000 biodao          # http://localhost:8000
+docker run --rm biodao make verify           # the gate, inside the image
+```
+
+The image was built and exercised before this entry was written, not written
+and hoped for. Inside it: RDKit parses a molecule, OpenMM imports, the 85-module
+import gate passes, the server answers 200 on `/` and `/api/health`, the process
+runs as uid 10001 rather than root, and Docker's own healthcheck reports
+healthy.
+
+**What it does not do.** It bakes no `JWT_SECRET`. `server/auth.py` warns when
+that variable is unset, and the warning tells you how to set it; an `ENV` line
+in the image would silence that warning for every deployment and give them all
+the same signing key, which is worse than the missing-secret state it resembles
+because nothing complains about it. Set it yourself:
+
+```
+docker run -e JWT_SECRET="$(openssl rand -hex 32)" -p 8000:8000 biodao
+```
+
+It also ships no signing identity. `.keys/` is excluded from the build context,
+so the Ed25519 key each deployment uses for OML-style result fingerprints is
+generated on first run and belongs to that deployment, not to us.
+
+**Air-gapped.** The eleven benchmark structures are committed and included in
+the image, so `node evals/redock.mjs` runs with no network at all. The live
+database clients obviously need egress; everything they reach is listed in
+`scripts/check_egress.py` and checked by `make egress`, so the set of hosts to
+allow through a firewall is enumerated rather than discovered in production.
+
+**What is still missing.** There is no Helm chart, no Terraform, no multi-replica
+story and no load benchmark to size one from (see the next question). A single
+container behind your own reverse proxy is what exists today.
+
 ### Do you have a throughput or load benchmark?
 
 No, and there is now no harness that could be mistaken for one.
