@@ -282,6 +282,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`always pass: ${e.alwaysPass.join(', ') || 'none'}`);
     console.log(`never pass : ${e.neverPass.join(', ') || 'none'}`);
     console.log(`unsettled  : ${e.unsettled.join(', ') || 'none'}  <- where the benchmark has no opinion`);
+
+    // Persisted, not just printed. An ensemble costs K full runs; leaving the
+    // result in scrollback means the next person pays for it again, and a
+    // figure nobody can reread is how this repository ended up publishing a
+    // number assembled by hand from three runs made at different times.
+    //
+    // Written beside benchmark-runs.json rather than over it: promoting an
+    // ensemble to the figure of record is a decision, and the hand-assembled
+    // history it would replace should not be destroyed by a command that was
+    // only asked to measure.
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(new URL('./ensemble-run.json', import.meta.url),
+      `${JSON.stringify({ generated: new Date().toISOString(), searchSettings: { runs: 12, steps: 3000 }, ...e }, null, 2)}\n`);
+    console.log('\nwritten to evals/ensemble-run.json');
   } else {
   const out = await runAll(cases, { seed });
   for (const r of out.results) {

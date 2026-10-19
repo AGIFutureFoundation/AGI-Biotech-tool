@@ -451,18 +451,36 @@ described the repository as worse than it now is:
 
 Remaining, ordered by what unblocks the most:
 
-1. **Broaden receptor coverage.**
+1. **Give the benchmark enough power to decide anything.** This is first
+   because it gates items 2 and 4 and every scoring or search change the
+   project might attempt. Across three runs the pass rate spans 4–6 of 11, a
+   spread wider than any improvement made so far, so an improvement and a lucky
+   seed are currently indistinguishable.
+
+   What this is *not* is flakiness. A seeded run reproduces bit for bit
+   (`tests/redock-reproducibility.test.mjs`): the same seed returned the same
+   RMSD and the same score on repeat, and a different seed returned a different
+   one. There is no nondeterminism to hunt. One seed is one draw from a wide
+   distribution, and the benchmark was reporting that draw as an integer.
+
+   So the work is statistical rather than a bug hunt: run every case over K
+   seeds and publish the per-case pass fraction, which
+   `node evals/redock.mjs --seeds K` now does. Eleven cases also cannot resolve
+   anything below a roughly three-case swing, so a wider set — the Astex
+   Diverse Set is 85 — is the other half of it. Structures are cached and
+   committed, so this no longer needs the network.
+2. **Broaden receptor coverage.**
    Structural scoring needs a curated receptor
    and pocket definition per target; today that curation is narrow, and the
    scorer raises rather than falling back when it is missing.
-2. **Retire the remaining `SyntheticValue` fields** by attaching real models —
+3. **Retire the remaining `SyntheticValue` fields** by attaching real models —
    ADMET, selectivity, synthetic accessibility — or by deleting the fields. Each
    retirement is independently verifiable: the field stops printing
    `[SYNTHETIC]`.
-3. **Run `make citations` on a schedule.** Panel citations are verified against
+4. **Run `make citations` on a schedule.** Panel citations are verified against
    live sources, which means they can rot. A monthly scheduled run converts
    silent rot into a failing build.
-4. **Independent replication of the port.** The Vina port is checked against
+5. **Independent replication of the port.** The Vina port is checked against
    `js/dock.js`; both could be wrong together. Comparison against a real Vina
    install on a standard benchmark set would close that.
 
