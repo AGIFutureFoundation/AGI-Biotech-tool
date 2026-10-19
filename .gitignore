@@ -29,6 +29,7 @@ docs/*.mp4
 !docs/investor.mp4
 !docs/investor-web.mp4
 !docs/investor-vertical.mp4
+!docs/overview.mp4
 
 # Generated repository analysis. `.enola/` is a tool's snapshot of this repo --
 # an extractor cache, a facts dump and a rollover copy of the previous run,
