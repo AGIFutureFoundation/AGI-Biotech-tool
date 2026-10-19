@@ -638,7 +638,7 @@ corrections to numbers that had drifted since it was written.
 | 42 Python and 16 JavaScript test files | `ls tests/*.py \| wc -l; ls tests/*.mjs \| wc -l` |
 | 86 modules import cleanly | `make imports` |
 | 28 of 30 JS modules reachable from the app; 2 staged, 0 dead | `make reachable` |
-| 27,440 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
+| 27,443 lines of Python | `cat server/*.py scripts/*.py \| wc -l` |
 | 30 JS modules | `ls js/*.js \| wc -l` |
 | 11 live database endpoints | `grep -n "^PUBCHEM\|^EUTILS\|..." server/db_clients.py \| wc -l` |
 | 250/354/207/190/263 checks passed; 1,264 total, 0 failures; 5 panels | `make citations` *carried forward — needs the network* |
