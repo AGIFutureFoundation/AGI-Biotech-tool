@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-19T18:10:37.557Z",
+  "generated": "2026-10-19T19:35:08.513Z",
   "searchSettings": {
     "runs": 12,
     "steps": 3000
@@ -8,7 +8,14 @@
   "seeds": [
     1,
     2,
-    3
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
   ],
   "perSeed": [
     {
@@ -22,26 +29,54 @@
     {
       "seed": 3,
       "succeeded": 4
+    },
+    {
+      "seed": 4,
+      "succeeded": 5
+    },
+    {
+      "seed": 5,
+      "succeeded": 4
+    },
+    {
+      "seed": 6,
+      "succeeded": 2
+    },
+    {
+      "seed": 7,
+      "succeeded": 4
+    },
+    {
+      "seed": 8,
+      "succeeded": 6
+    },
+    {
+      "seed": 9,
+      "succeeded": 6
+    },
+    {
+      "seed": 10,
+      "succeeded": 5
     }
   ],
   "succeededRange": [
-    4,
-    5
+    2,
+    6
   ],
-  "meanSucceeded": 4.67,
+  "meanSucceeded": 4.6,
   "alwaysPass": [
-    "2V5Z",
     "3ERT",
     "1S19"
   ],
   "neverPass": [
     "2YXJ",
-    "1YWR",
     "1Q41",
     "1R58"
   ],
   "unsettled": [
+    "2V5Z",
     "1OYT",
+    "1YWR",
     "1UNL",
     "1OQ5",
     "2BM2"
@@ -50,156 +85,156 @@
     {
       "pdb": "2V5Z",
       "lig": "SAG",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 1,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.9,
       "rmsdRange": [
         0.97,
-        1.69
+        9.65
       ],
-      "settled": true,
-      "rmsdSpread": 0.72,
-      "character": "consistent"
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 8.68
     },
     {
       "pdb": "2YXJ",
       "lig": "N3C",
-      "seedsRun": 3,
-      "measured": 3,
+      "seedsRun": 10,
+      "measured": 10,
       "passFraction": 0,
       "rmsdRange": [
-        4.08,
+        2.33,
         12.13
       ],
       "settled": true,
-      "rmsdSpread": 8.05,
-      "character": "erratic"
+      "character": "erratic",
+      "rmsdSpread": 9.8
     },
     {
       "pdb": "1OYT",
       "lig": "FSN",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 0.667,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.7,
       "rmsdRange": [
-        1.33,
-        4.23
+        0.95,
+        7.03
       ],
       "settled": false,
-      "rmsdSpread": 2.9,
-      "character": "erratic"
+      "character": "erratic",
+      "rmsdSpread": 6.08
     },
     {
       "pdb": "3ERT",
       "lig": "OHT",
-      "seedsRun": 3,
-      "measured": 3,
+      "seedsRun": 10,
+      "measured": 10,
       "passFraction": 1,
       "rmsdRange": [
-        1.44,
-        1.49
+        1.38,
+        1.73
       ],
       "settled": true,
-      "rmsdSpread": 0.05,
-      "character": "consistent"
+      "character": "consistent",
+      "rmsdSpread": 0.35
     },
     {
       "pdb": "1YWR",
       "lig": "LI9",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 0,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
       "rmsdRange": [
-        4,
+        1.68,
         6.41
       ],
-      "settled": true,
-      "rmsdSpread": 2.41,
-      "character": "erratic"
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 4.73
     },
     {
       "pdb": "1UNL",
       "lig": "RRC",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 0.333,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.1,
       "rmsdRange": [
         1.47,
-        2.21
+        6.13
       ],
       "settled": false,
-      "rmsdSpread": 0.74,
-      "character": "consistent"
+      "character": "erratic",
+      "rmsdSpread": 4.66
     },
     {
       "pdb": "1Q41",
       "lig": "IXM",
-      "seedsRun": 3,
-      "measured": 3,
+      "seedsRun": 10,
+      "measured": 10,
       "passFraction": 0,
       "rmsdRange": [
         6.81,
         6.82
       ],
       "settled": true,
-      "rmsdSpread": 0.01,
-      "character": "consistent"
+      "character": "consistent",
+      "rmsdSpread": 0.01
     },
     {
       "pdb": "1S19",
       "lig": "MC9",
-      "seedsRun": 3,
-      "measured": 3,
+      "seedsRun": 10,
+      "measured": 10,
       "passFraction": 1,
       "rmsdRange": [
         0.65,
         1.32
       ],
       "settled": true,
-      "rmsdSpread": 0.67,
-      "character": "consistent"
+      "character": "consistent",
+      "rmsdSpread": 0.67
     },
     {
       "pdb": "1OQ5",
       "lig": "CEL",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 0.333,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
       "rmsdRange": [
-        1.52,
-        6.56
+        1.43,
+        7.26
       ],
       "settled": false,
-      "rmsdSpread": 5.04,
-      "character": "erratic"
+      "character": "erratic",
+      "rmsdSpread": 5.83
     },
     {
       "pdb": "2BM2",
       "lig": "PM2",
-      "seedsRun": 3,
-      "measured": 3,
-      "passFraction": 0.333,
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
       "rmsdRange": [
-        1.98,
-        4.64
+        1.11,
+        4.95
       ],
       "settled": false,
-      "rmsdSpread": 2.66,
-      "character": "erratic"
+      "character": "erratic",
+      "rmsdSpread": 3.84
     },
     {
       "pdb": "1R58",
       "lig": "AO5",
-      "seedsRun": 3,
-      "measured": 3,
+      "seedsRun": 10,
+      "measured": 10,
       "passFraction": 0,
       "rmsdRange": [
-        3.02,
-        3.41
+        2.4,
+        3.85
       ],
       "settled": true,
-      "rmsdSpread": 0.39,
-      "character": "consistent"
+      "character": "consistent",
+      "rmsdSpread": 1.45
     }
   ]
 }
