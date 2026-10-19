@@ -1,0 +1,205 @@
+{
+  "generated": "2026-10-19T18:10:37.557Z",
+  "searchSettings": {
+    "runs": 12,
+    "steps": 3000
+  },
+  "cases": 11,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "perSeed": [
+    {
+      "seed": 1,
+      "succeeded": 5
+    },
+    {
+      "seed": 2,
+      "succeeded": 5
+    },
+    {
+      "seed": 3,
+      "succeeded": 4
+    }
+  ],
+  "succeededRange": [
+    4,
+    5
+  ],
+  "meanSucceeded": 4.67,
+  "alwaysPass": [
+    "2V5Z",
+    "3ERT",
+    "1S19"
+  ],
+  "neverPass": [
+    "2YXJ",
+    "1YWR",
+    "1Q41",
+    "1R58"
+  ],
+  "unsettled": [
+    "1OYT",
+    "1UNL",
+    "1OQ5",
+    "2BM2"
+  ],
+  "perCase": [
+    {
+      "pdb": "2V5Z",
+      "lig": "SAG",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 1,
+      "rmsdRange": [
+        0.97,
+        1.69
+      ],
+      "settled": true,
+      "rmsdSpread": 0.72,
+      "character": "consistent"
+    },
+    {
+      "pdb": "2YXJ",
+      "lig": "N3C",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0,
+      "rmsdRange": [
+        4.08,
+        12.13
+      ],
+      "settled": true,
+      "rmsdSpread": 8.05,
+      "character": "erratic"
+    },
+    {
+      "pdb": "1OYT",
+      "lig": "FSN",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0.667,
+      "rmsdRange": [
+        1.33,
+        4.23
+      ],
+      "settled": false,
+      "rmsdSpread": 2.9,
+      "character": "erratic"
+    },
+    {
+      "pdb": "3ERT",
+      "lig": "OHT",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 1,
+      "rmsdRange": [
+        1.44,
+        1.49
+      ],
+      "settled": true,
+      "rmsdSpread": 0.05,
+      "character": "consistent"
+    },
+    {
+      "pdb": "1YWR",
+      "lig": "LI9",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0,
+      "rmsdRange": [
+        4,
+        6.41
+      ],
+      "settled": true,
+      "rmsdSpread": 2.41,
+      "character": "erratic"
+    },
+    {
+      "pdb": "1UNL",
+      "lig": "RRC",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0.333,
+      "rmsdRange": [
+        1.47,
+        2.21
+      ],
+      "settled": false,
+      "rmsdSpread": 0.74,
+      "character": "consistent"
+    },
+    {
+      "pdb": "1Q41",
+      "lig": "IXM",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0,
+      "rmsdRange": [
+        6.81,
+        6.82
+      ],
+      "settled": true,
+      "rmsdSpread": 0.01,
+      "character": "consistent"
+    },
+    {
+      "pdb": "1S19",
+      "lig": "MC9",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 1,
+      "rmsdRange": [
+        0.65,
+        1.32
+      ],
+      "settled": true,
+      "rmsdSpread": 0.67,
+      "character": "consistent"
+    },
+    {
+      "pdb": "1OQ5",
+      "lig": "CEL",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0.333,
+      "rmsdRange": [
+        1.52,
+        6.56
+      ],
+      "settled": false,
+      "rmsdSpread": 5.04,
+      "character": "erratic"
+    },
+    {
+      "pdb": "2BM2",
+      "lig": "PM2",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0.333,
+      "rmsdRange": [
+        1.98,
+        4.64
+      ],
+      "settled": false,
+      "rmsdSpread": 2.66,
+      "character": "erratic"
+    },
+    {
+      "pdb": "1R58",
+      "lig": "AO5",
+      "seedsRun": 3,
+      "measured": 3,
+      "passFraction": 0,
+      "rmsdRange": [
+        3.02,
+        3.41
+      ],
+      "settled": true,
+      "rmsdSpread": 0.39,
+      "character": "consistent"
+    }
+  ]
+}

@@ -175,6 +175,23 @@ export async function runEnsemble(cases = CASES, { seeds = [1, 2, 3, 4, 5], ...o
       // A case that passes every seed and a case that passes none are both
       // settled; the ones in between are where the benchmark has no opinion.
       settled: measured.length ? passes === 0 || passes === measured.length : false,
+      // How the case behaves ACROSS seeds, which is the diagnosis that survives
+      // the variance problem.
+      //
+      // The old scoring-versus-sampling label was read off one run and inverted
+      // between runs, so it could not be trusted. This one uses the spread
+      // itself as the signal: if the top pose lands in nearly the same place
+      // every time, the search is doing its job and the scorer reliably prefers
+      // the wrong pose -- a reproducible, debuggable failure. If the answer
+      // moves around by more than the thing being measured, the search is not
+      // converging and no amount of rescoring will help.
+      //
+      // The cut is SUCCESS_A rather than a number fitted to these eleven cases:
+      // a spread wider than the success threshold means the result moves by
+      // more than the distance that decides pass or fail.
+      character: !rmsds.length ? null
+        : (rmsds[rmsds.length - 1] - rmsds[0]) < SUCCESS_A ? 'consistent' : 'erratic',
+      rmsdSpread: rmsds.length ? +(rmsds[rmsds.length - 1] - rmsds[0]).toFixed(2) : null,
     };
   });
 
@@ -282,6 +299,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`always pass: ${e.alwaysPass.join(', ') || 'none'}`);
     console.log(`never pass : ${e.neverPass.join(', ') || 'none'}`);
     console.log(`unsettled  : ${e.unsettled.join(', ') || 'none'}  <- where the benchmark has no opinion`);
+
+    // The actionable half. A case that always fails AND lands in the same place
+    // every time is a reproducible defect with a short debugging loop; one that
+    // always fails while wandering is a search that never converged.
+    const reproducible = e.perCase.filter((c) => c.passFraction === 0 && c.character === 'consistent');
+    const wandering = e.perCase.filter((c) => c.passFraction === 0 && c.character === 'erratic');
+    if (reproducible.length) {
+      console.log(`\nreproducible failures — same wrong answer every seed, so debuggable:`);
+      for (const c of reproducible) console.log(`  ${c.pdb}/${c.lig}  ${c.rmsdRange.join('–')} Å  (spread ${c.rmsdSpread} Å)`);
+    }
+    if (wandering.length) {
+      console.log(`\nnon-converging — the answer moves by more than the ${SUCCESS_A} Å threshold:`);
+      for (const c of wandering) console.log(`  ${c.pdb}/${c.lig}  ${c.rmsdRange.join('–')} Å  (spread ${c.rmsdSpread} Å)`);
+    }
 
     // Persisted, not just printed. An ensemble costs K full runs; leaving the
     // result in scrollback means the next person pays for it again, and a
