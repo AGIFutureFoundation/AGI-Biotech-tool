@@ -26,7 +26,16 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
+// Entities are decoded before matching. These checks read raw files, so an
+// HTML surface writing "2&ndash;6 of 11" looked to the range check like no
+// range at all and got flagged for publishing a bare figure -- a false positive
+// against a page that was doing exactly the right thing. The markdown surfaces
+// use literal en dashes and never hit it, which is why it survived until a
+// landing page did it the HTML way.
+const ENTITIES = { '&ndash;': '\u2013', '&mdash;': '\u2014', '&minus;': '\u2212',
+                   '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"' };
+const decode = (t) => t.replace(/&(ndash|mdash|minus|nbsp|amp|lt|gt|quot);/g, (m) => ENTITIES[m]);
+const read = (rel) => decode(readFileSync(join(ROOT, rel), 'utf8'));
 const WHITEPAPER = read('docs/WHITE_PAPER.md');
 
 const lineCount = (files) => files.reduce((n, f) => n + read(f).split('\n').length, 0) - files.length
@@ -126,6 +135,9 @@ const BENCHMARK_SURFACES = [
   'docs/WHITE_PAPER.md', 'docs/wiki/Home.md', 'docs/wiki/Docking-and-Scoring.md', 'docs/wiki/Testing.md',
   'docs/progress-report.html', 'docs/investor-brief.html', 'docs/pitchdeck.html', 'docs/whitepaper.html',
   'docs/pitch.html', 'docs/WIKI.md', 'scripts/make_pitch_video.py', 'scripts/make_investor_video.py',
+  // The landing page. It stated 'scores are estimates' without ever giving the number -- the one
+  // user-facing surface that did not, and the one a reader meets before they trust a result.
+  'home.html',
 ];
 
 // An inflated pass rate, in digits or in words. The investor brief spells its numbers out — "Two of four
