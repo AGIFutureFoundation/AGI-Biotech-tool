@@ -1,9 +1,9 @@
 # Local compute server. Only the standard library is strictly required; each package
 # below switches on one feature and the app degrades gracefully without it.
-rdkit>=2024.3          # 3D conformers, descriptors, SMILES validation
+rdkit>=2026.9.1          # 3D conformers, descriptors, SMILES validation
 pypdf>=4.0             # reading compound PDFs server-side
-openmm>=8.1            # all-atom molecular dynamics
-pdbfixer>=1.9          # repairs structures before simulation
+openmm>=8.6.1            # all-atom molecular dynamics
+pdbfixer>=1.12.0          # repairs structures before simulation
 # google-cloud-bigquery>=3.0   # optional: AlphaFold metadata queries on Google public datasets
 
 # Required, not optional: server/auth.py fails to import without it.
