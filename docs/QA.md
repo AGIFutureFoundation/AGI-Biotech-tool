@@ -10,6 +10,42 @@ therapeutic claim.
 
 ---
 
+## Contents
+
+- **[About trusting the platform at all](#about-trusting-the-platform-at-all)**
+  - [Your own documentation was wrong last week. Why should I believe this?](#your-own-documentation-was-wrong-last-week-why-should-i-believe-this)
+  - [What stops this from happening again in six months?](#what-stops-this-from-happening-again-in-six-months)
+- **[About the data](#about-the-data)**
+  - [How do I know your target data is right?](#how-do-i-know-your-target-data-is-right)
+  - [A passing verifier proves nothing if it can't fail. Can it?](#a-passing-verifier-proves-nothing-if-it-cant-fail-can-it)
+  - [What happens when a database is down?](#what-happens-when-a-database-is-down)
+  - [Is `make citations` hitting the network or the cache?](#is-make-citations-hitting-the-network-or-the-cache)
+  - [Where do the compounds come from, and can I trust the structures?](#where-do-the-compounds-come-from-and-can-i-trust-the-structures)
+- **[About the science](#about-the-science)**
+  - [Is `vina_like_score` a binding affinity?](#is-vina_like_score-a-binding-affinity)
+  - [You ported a scoring function. How do I know the port is correct?](#you-ported-a-scoring-function-how-do-i-know-the-port-is-correct)
+  - [Why not just install AutoDock Vina?](#why-not-just-install-autodock-vina)
+  - [Have any of these compounds been made or tested?](#have-any-of-these-compounds-been-made-or-tested)
+  - [What is actually computed versus placeholder?](#what-is-actually-computed-versus-placeholder)
+  - [Your repurposing engine recovered 5 of 7. Isn't that weak?](#your-repurposing-engine-recovered-5-of-7-isnt-that-weak)
+  - [What does the repurposing score mean numerically?](#what-does-the-repurposing-score-mean-numerically)
+  - [Does the platform calculate doses?](#does-the-platform-calculate-doses)
+  - [Does it assert drug combinations or synergy?](#does-it-assert-drug-combinations-or-synergy)
+- **[About the engineering](#about-the-engineering)**
+  - [One of your tests is marked xfail. What's broken?](#one-of-your-tests-is-marked-xfail-whats-broken)
+  - [Is anything currently broken?](#is-anything-currently-broken)
+  - [How do you handle secrets and authentication?](#how-do-you-handle-secrets-and-authentication)
+  - [Can we run this inside our own network?](#can-we-run-this-inside-our-own-network)
+  - [Do you have a throughput or load benchmark?](#do-you-have-a-throughput-or-load-benchmark)
+  - [What does the content-addressed store actually give me?](#what-does-the-content-addressed-store-actually-give-me)
+  - [Why is CI split into two workflows?](#why-is-ci-split-into-two-workflows)
+  - [Why does everything insist on `.venv/bin/python`?](#why-does-everything-insist-on-venvbinpython)
+- **[About scope and licensing](#about-scope-and-licensing)**
+  - [What is the licence?](#what-is-the-licence)
+  - [Is this a product?](#is-this-a-product)
+  - [How narrow is the coverage, really?](#how-narrow-is-the-coverage-really)
+  - [What would change your mind about this platform?](#what-would-change-your-mind-about-this-platform)
+
 ## About trusting the platform at all
 
 ### Your own documentation was wrong last week. Why should I believe this?
