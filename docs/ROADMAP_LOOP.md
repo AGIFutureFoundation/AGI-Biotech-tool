@@ -1001,7 +1001,8 @@ and agent consoles remain unavailable.
 | 12 Oct, unseeded | 6 / 11 | 7 / 11 | 1.75 Å | 1 / 4 |
 | 12 Oct, seeded 20261012 | 4 / 11 | 6 / 11 | 4.27 Å | 2 / 5 |
 
-That is the iteration. Not a number — a spread. The pass rate spans 4–6 of 11, the reachable count 6–9, the
+That is the iteration. Not a number — a spread. Ten seeds later the pass rate spans 2–6 of 11 (three
+seeds had said 4–6), the reachable count 6–9, the
 median top-pose RMSD 1.75 to 4.27 Å, and **the scoring-versus-sampling split inverts between runs.** Only
 three of eleven cases pass every time; eight fail at least once.
 

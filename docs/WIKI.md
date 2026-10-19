@@ -83,7 +83,8 @@ score.
 | 12 Oct 2026, unseeded | **6 / 11** | 7 / 11 | 1.75 Å | 1 scoring / 4 sampling |
 | 12 Oct 2026, seeded 20261012 | **4 / 11** | 6 / 11 | 4.27 Å | 2 scoring / 5 sampling |
 
-Across three runs the pass rate spans **4–6 of 11**, reachability **6–9 of 11**, and the median
+Across ten seeds the pass rate spans **2–6 of 11** with a mean of 4.6. Reachability **6–9 of 11** and
+the median are carried forward from three earlier runs; the
 top-pose RMSD **1.75–4.27 Å**. Only three of the eleven cases pass every time, and the
 scoring-versus-sampling split inverts between runs.
 
@@ -237,7 +238,7 @@ The key is read from the environment and nowhere else — a test asserts no publ
 
 ## 8. Where the next work belongs
 
-1. **Make the benchmark repeat itself.** Across three runs the pass rate spans 4–6 of 11 and the
+1. **Make the benchmark repeat itself.** Across ten seeds the pass rate spans 2–6 of 11 and the
    scoring-versus-sampling split inverts, so the "scoring, not search" conclusion this list used to
    lead with does not reproduce. Until the variance is under the effect size of a change, no scoring
    or search work can be validated here. Runs are seedable now, which is what makes that tractable.

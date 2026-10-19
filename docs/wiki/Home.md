@@ -16,7 +16,9 @@ rather than the strongest.
 Re-docking crystal ligands blind: pull each one out of its structure, dock it back, and measure RMSD to
 where it really sat. `evals/redock.mjs` defines eleven cases.
 
-**4–6 of 11 within 2 Å across three runs. 6–9 of 11 reachable. Median top-pose RMSD 1.75–4.27 Å.**
+**2–6 of 11 within 2 Å across ten seeds; mean 4.6.** Reachability 6–9 of 11 and median top-pose RMSD
+1.75–4.27 Å are carried forward from the three earlier ad-hoc runs — the ensemble aggregates pass
+fractions, not those.
 
 Three runs, three different answers. The spread is not a detail — it is the result. At the current
 search budget (12 Monte Carlo runs × 3000 steps) this benchmark **cannot resolve a one- or two-case effect**,
@@ -57,7 +59,7 @@ nothing staged. GitHub does not play video inside a wiki page, so the image abov
 the repository, where it plays. [More frames and the longer
 walkthrough](https://github.com/AGIFutureFoundation/AGI-Biotech-tool/tree/enterprise-hardening-and-ingestion/docs) sit alongside it.
 
-> **The film carries the current figures.** `docs/pitch.mp4` was re-rendered on 12 October 2026 and its benchmark slide shows all three runs and the 4–6 of 11 range, not the single figure it used to lead with. `ffmpeg` on the build machine links `libx265.216.dylib` while the installed x265 provides `.217`; `brew reinstall ffmpeg` is the real repair, and until then `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/Cellar/x265/4.2/lib` in front of the render command works.
+> **The film carries the current figures.** `docs/pitch.mp4` was re-rendered on 12 October 2026 and its benchmark slide shows the three runs recorded at the time. It predates the ten-seed ensemble of 19 October, so it shows 4–6 of 11 where the current figure is 2–6; it is re-rendered when the next render runs. `ffmpeg` on the build machine links `libx265.216.dylib` while the installed x265 provides `.217`; `brew reinstall ffmpeg` is the real repair, and until then `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/Cellar/x265/4.2/lib` in front of the render command works.
 
 
 The cases that fail, across runs: GSK-3β (1Q41), BCL-X<sub>L</sub> (2YXJ), carbonic anhydrase II (1OQ5),

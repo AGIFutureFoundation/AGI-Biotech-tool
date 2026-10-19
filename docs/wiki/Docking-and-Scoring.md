@@ -38,7 +38,8 @@ extract the ligand, dock it back, and measure RMSD to where it really sat.
 
 `evals/redock.mjs` defines eleven cases. The last recorded run:
 
-**4–6 of 11 within 2 Å across three runs. 6–9 of 11 reachable. Median top-pose RMSD 1.75–4.27 Å.**
+**2–6 of 11 within 2 Å across ten seeds; mean 4.6.** Reachability 6–9 of 11 and median top-pose RMSD
+1.75–4.27 Å are carried forward from the three earlier ad-hoc runs.
 
 Three runs, three different answers. The spread is not a detail — it is the result. At the current
 search budget (12 Monte Carlo runs × 3000 steps) this benchmark **cannot resolve a one- or two-case effect**,

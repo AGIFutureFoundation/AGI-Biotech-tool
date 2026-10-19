@@ -121,6 +121,41 @@ class Identity:
 IDENTITY = Identity()
 
 
+def _benchmark_caveat() -> str:
+    """The benchmark caveat, read from the eval's own output rather than retyped.
+
+    This field is the one place an agent is guaranteed to look before trusting a
+    score, and it has been wrong twice. It said "2 of 4 ... median 2.54 A" for
+    ten iterations after the eval was widened to eleven cases, and then "5 of 11
+    ... four of the six failures are ranking failures" after that single run was
+    withdrawn and its diagnosis with it. Both times a human had typed the number
+    into this file and nothing connected it back to a measurement.
+
+    So it is no longer typed here. evals/benchmark-runs.json is written by the
+    eval and checked by tests/claims.test.mjs; this reads it. A re-measurement
+    updates what agents are told without anyone remembering to.
+    """
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "evals", "benchmark-runs.json")
+    base = "Docking scores are an unvalidated empirical estimate. "
+    try:
+        with open(path) as fh:
+            run = json.load(fh)
+        lo, hi = run["succeededRange"]
+        cases = run["cases"]
+        unsettled = len(run.get("unsettled", []))
+        return (f"{base}Benchmark: {lo}-{hi} of {cases} re-docking cases within "
+                f"{run['threshold']} A, measured across {len(run.get('perSeed', []))} seeds. "
+                f"{unsettled} of {cases} cases are unsettled -- their result moves across seeds by "
+                f"more than the threshold that decides pass from fail, so the benchmark cannot "
+                f"currently validate a change. Not a binding prediction.")
+    except (OSError, ValueError, KeyError):
+        # Never invent a figure. A service that cannot read its own measurement
+        # says so rather than serving a remembered number.
+        return (f"{base}The benchmark figure could not be read from this deployment, so none is "
+                f"quoted here. Not a binding prediction.")
+
+
 def agent_facts(base_url, tools, pricing):
     """A signed description of this agent: who it is, what it does, how to reach it.
 
@@ -152,10 +187,7 @@ def agent_facts(base_url, tools, pricing):
         # eval was widened to eleven cases -- a retired figure, signed and served
         # to every agent that discovered this service, in the one field whose
         # entire purpose is to stop an agent trusting a number it should not.
-        "limits": {"note": "Docking scores are an unvalidated empirical estimate. Benchmark: 5 of 11 "
-                           "re-docking cases within 2 A; 9 of 11 are reachable, so four of the six "
-                           "failures are ranking failures rather than search failures. "
-                           "Not a binding prediction."},
+        "limits": {"note": _benchmark_caveat()},
     }
     facts["proof"] = IDENTITY.sign_json(facts)
     return facts

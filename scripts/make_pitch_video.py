@@ -136,13 +136,17 @@ FIGURES = {
     # their spread rather than a single failure table: the spread is the finding. A
     # table of six named failures implied a stable set, and the set is not stable.
     # evals/benchmark-runs.json is the figure of record.
+    # Ten seeds, from evals/benchmark-runs.json. The table used to hold the
+    # three ad-hoc runs, which were measured at different times with different
+    # settings; these are one uniform ensemble.
     "benchmark": [
-        ("Recorded earlier", "5 / 11", "9 / 11", "4 scoring / 2 sampling", False),
-        ("12 Oct, unseeded", "6 / 11", "7 / 11", "1 scoring / 4 sampling", False),
-        ("12 Oct, seeded", "4 / 11", "6 / 11", "2 scoring / 5 sampling", False),
+        ("pass rate", "2–6 of 11", "mean 4.6", "10 seeds", False),
+        ("always pass", "2 of 11", "3ERT, 1S19", "", False),
+        ("never pass", "3 of 11", "2YXJ, 1Q41, 1R58", "", False),
+        ("unsettled", "6 of 11", "noise exceeds the 2 Å threshold", "", False),
     ],
-    "benchmark_headers": ["Run", "Within 2 Å", "Reachable", "Failure split"],
-    "benchmark_line": "4–6 of 11 across three runs · the spread is the finding",
+    "benchmark_headers": ["", "Count", "Detail", "Over"],
+    "benchmark_line": "2–6 of 11 across ten seeds · the spread is the finding",
     "md_ns_per_day": "27", "frame_ms": "7.4", "missense_h46": "0.98",
 }
 
@@ -297,7 +301,7 @@ def slide_benchmark():
     body(d, "Re-docking: take a drug out of the crystal it was solved in, dock it back blind, measure the miss. "
             "Under 2 Å is the usual bar.", y + 20, size=30)
     top = y + 110
-    plate(d, [160, top, 1760, top + 250])   # three runs, not the old six-row failure table
+    plate(d, [160, top, 1760, top + 300])   # four summary rows at 46px pitch from top+96
     hdr = FIGURES["benchmark_headers"]
     # The failure-split column is 352px of text; at the old x=1540 it ran 132px
     # past the plate edge at 1760. Measured, not eyeballed.
@@ -310,18 +314,18 @@ def slide_benchmark():
         for (val, x) in zip(row[:4], xs):
             colour = BAD if val == "sampling" else (WARN if val == "scoring" else INK)
             d.text((x, yy), val, font=font("mono", 26) if x > 400 else font("body", 26), fill=colour)
-    d.text((160, top + 288), FIGURES["benchmark_line"], font=font("display_b", 44), fill=INK)
+    d.text((160, top + 326), FIGURES["benchmark_line"], font=font("display_b", 44), fill=INK)
     # The prose here used to argue the single-run diagnosis -- "four of the six
     # are ranking failures, perfect ranking takes us from 45% to 82%". The table
     # above now withdraws exactly that: the scoring/sampling split inverts
     # between runs, so the slide would have shown a corrected table over prose
     # restating the figure it corrects.
-    body(d, "Three runs, three answers. Only three of the eleven cases pass every time, and the "
-            "scoring-versus-sampling split inverts between runs — so the diagnosis we steered by, that "
-            "ranking is the bottleneck, does not reproduce. The spread is wider than any improvement we "
-            "have attempted, which means nothing can be validated here until the benchmark can repeat "
-            "itself. Published rather than buried, because serious customers run their own controls.",
-         top + 352, size=26, width=1600)
+    body(d, "Ten seeds, uniform settings. Nine of the eleven cases move across seeds by more than the "
+            "2 Å threshold that decides pass from fail, so the measurement noise exceeds the decision "
+            "boundary and no scoring or search change can be validated here yet. Three seeds had reported "
+            "4–6 and called three cases settled; ten report 2–6 with 6 unsettled. "
+            "Published rather than buried, because serious customers run their own controls.",
+         top + 390, size=26, width=1600)
     brand(d)
     return img
 
@@ -392,7 +396,7 @@ def slide_limits():
     img = gradient_bg(); d = ImageDraw.Draw(img)
     eyebrow(d, "Honest limits")
     headline(d, "What this is not, yet", size=72)
-    items = ["Docking is triage, not prediction. 4–6 of 11 re-docking cases within 2 Å, across runs.",
+    items = ["Docking is triage, not prediction. 2–6 of 11 re-docking cases within 2 Å, across ten seeds.",
              "Interactive physics is coarse by design. The all-atom OpenMM backend is the one to quote.",
              "Payments do not settle. The 402 challenge is real; the transfer is not implemented.",
              "A hash chain is not a blockchain. It makes tampering detectable; it reaches no consensus.",

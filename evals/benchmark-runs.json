@@ -1,10 +1,24 @@
 {
   "cases": 11,
   "threshold": 2.0,
-  "headline": "4-6 of 11 within 2 A across 3 runs",
+  "headline": "2-6 of 11 within 2 A across 10 seeds",
+  "method": "Ten seeds, uniform settings (12 Monte Carlo runs x 3000 steps), every case, one command: node evals/redock.mjs --seeds 10. Structures are committed, so this needs no network and reruns identically.",
   "succeededRange": [
-    4,
+    2,
     6
+  ],
+  "meanSucceeded": 4.6,
+  "perSeed": [
+    5,
+    5,
+    4,
+    5,
+    4,
+    2,
+    4,
+    6,
+    6,
+    5
   ],
   "reachableRange": [
     6,
@@ -13,6 +27,187 @@
   "medianRange": [
     1.75,
     4.27
+  ],
+  "carriedForward": {
+    "fields": [
+      "reachableRange",
+      "medianRange"
+    ],
+    "from": "the three ad-hoc runs recorded before 19 October 2026",
+    "why": "runEnsemble aggregates per-case pass fraction and RMSD range; it does not aggregate reachability or a median across seeds. These are NOT ten-seed figures."
+  },
+  "alwaysPass": [
+    "3ERT",
+    "1S19"
+  ],
+  "neverPass": [
+    "2YXJ",
+    "1Q41",
+    "1R58"
+  ],
+  "unsettled": [
+    "2V5Z",
+    "1OYT",
+    "1YWR",
+    "1UNL",
+    "1OQ5",
+    "2BM2"
+  ],
+  "perCase": [
+    {
+      "pdb": "2V5Z",
+      "lig": "SAG",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.9,
+      "rmsdRange": [
+        0.97,
+        9.65
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 8.68
+    },
+    {
+      "pdb": "2YXJ",
+      "lig": "N3C",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0,
+      "rmsdRange": [
+        2.33,
+        12.13
+      ],
+      "settled": true,
+      "character": "erratic",
+      "rmsdSpread": 9.8
+    },
+    {
+      "pdb": "1OYT",
+      "lig": "FSN",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.7,
+      "rmsdRange": [
+        0.95,
+        7.03
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 6.08
+    },
+    {
+      "pdb": "3ERT",
+      "lig": "OHT",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 1,
+      "rmsdRange": [
+        1.38,
+        1.73
+      ],
+      "settled": true,
+      "character": "consistent",
+      "rmsdSpread": 0.35
+    },
+    {
+      "pdb": "1YWR",
+      "lig": "LI9",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
+      "rmsdRange": [
+        1.68,
+        6.41
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 4.73
+    },
+    {
+      "pdb": "1UNL",
+      "lig": "RRC",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.1,
+      "rmsdRange": [
+        1.47,
+        6.13
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 4.66
+    },
+    {
+      "pdb": "1Q41",
+      "lig": "IXM",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0,
+      "rmsdRange": [
+        6.81,
+        6.82
+      ],
+      "settled": true,
+      "character": "consistent",
+      "rmsdSpread": 0.01
+    },
+    {
+      "pdb": "1S19",
+      "lig": "MC9",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 1,
+      "rmsdRange": [
+        0.65,
+        1.32
+      ],
+      "settled": true,
+      "character": "consistent",
+      "rmsdSpread": 0.67
+    },
+    {
+      "pdb": "1OQ5",
+      "lig": "CEL",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
+      "rmsdRange": [
+        1.43,
+        7.26
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 5.83
+    },
+    {
+      "pdb": "2BM2",
+      "lig": "PM2",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0.3,
+      "rmsdRange": [
+        1.11,
+        4.95
+      ],
+      "settled": false,
+      "character": "erratic",
+      "rmsdSpread": 3.84
+    },
+    {
+      "pdb": "1R58",
+      "lig": "AO5",
+      "seedsRun": 10,
+      "measured": 10,
+      "passFraction": 0,
+      "rmsdRange": [
+        2.4,
+        3.85
+      ],
+      "settled": true,
+      "character": "consistent",
+      "rmsdSpread": 1.45
+    }
   ],
   "runs": [
     {
@@ -46,7 +241,8 @@
       "note": "single clean reproducible run; NODE_USE_ENV_PROXY=1 node evals/redock.mjs --seed 20261012"
     }
   ],
-  "finding": "The run-to-run spread exceeds the size of any change this project has tried to measure. Across three runs the pass rate spans 4-6 of 11, the reachable count 6-9 of 11, and the median top-pose RMSD 1.75-4.27 A. The scoring-versus-sampling split inverts between runs (4 scoring/2 sampling, then 1/4, then 2/5). At 12 Monte Carlo runs by 3000 steps this benchmark cannot resolve a one- or two-case effect, which is the magnitude of every scoring or search change in the roadmap.",
-  "consequence": "No single number should be published as the benchmark result, and no scoring or search improvement can be validated against this benchmark as currently configured. Quoting one run - including the most flattering - would be reading noise as a result.",
-  "nextStep": "Raise the search budget until a repeat run reproduces itself, then report mean and spread over several seeds rather than a single figure. Until that is done the honest published form is a range."
+  "supersededNote": "The three runs under 'runs' are the earlier ad-hoc measurements, kept as history. They were made at different times with different settings and are no longer the figure of record.",
+  "finding": "Nine of eleven cases move across seeds by more than the 2 A threshold that decides pass from fail: the measurement noise exceeds the decision boundary on 82% of the set.",
+  "consequence": "No scoring or search change can be validated against this benchmark as configured. A small ensemble understates this: three seeds reported 4-5 and called three cases settled; ten report 2-6 with six unsettled.",
+  "nextStep": "Reduce variance (more search effort per case) or widen the set, and re-measure. 1Q41 is the exception worth working on now: 0.01 A spread across ten seeds while failing by 6.8 A, so a scoring change there is visible rather than lost in noise."
 }

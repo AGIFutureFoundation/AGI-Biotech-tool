@@ -218,8 +218,7 @@
         </tbody>
       </table>
     </div>
-    <p style="margin-top:14px"><strong>4–6 of 11 within 2 Å across three runs; 6–9 of 11 reachable; median
-      top-pose RMSD 1.75–4.27 Å.</strong> Only three of the eleven cases pass every time, and the
+    <p style="margin-top:14px"><strong>2–6 of 11 within 2 Å across ten seeds; mean 4.6.</strong> Only three of the eleven cases pass every time, and the
       scoring-versus-sampling split inverts between runs. An earlier version of this page argued from a single run
       that the bottleneck was ranking and the next work belonged in the energy terms; that diagnosis does not
       reproduce. The
@@ -292,7 +291,7 @@
     <div class="phase">
       <div class="when">Next · 4 weeks</div>
       <div><h3>Scoring that passes its own benchmark</h3>
-        <p>Make the benchmark repeat itself first. Across three runs it spans 4–6 of 11, wider than any
+        <p>Make the benchmark repeat itself first. Across ten seeds it spans 2–6 of 11, wider than any
           improvement attempted so far, so no scoring or search change can currently be validated against it.
           Variance reduction comes before the rescoring work, and the per-run figures ship with every release
           rather than a single number quoted selectively.</p></div>
@@ -323,8 +322,8 @@
     <div class="eyebrow">Honest limits</div>
     <h2>What this is not, yet</h2>
     <ul class="limits">
-      <li><strong>Docking is triage, not prediction.</strong> 4–6 of 11 re-docking cases within 2 Å across three
-        runs, and the runs disagree. Treat scores as a ranking and run your own controls on targets you care
+      <li><strong>Docking is triage, not prediction.</strong> 2–6 of 11 re-docking cases within 2 Å across ten
+        seeds, and the seeds disagree. Treat scores as a ranking and run your own controls on targets you care
         about.</li>
       <li><strong>Interactive physics is coarse by design.</strong> Harmonic terms, an elastic-network backbone, no
         explicit water. The all-atom OpenMM backend is the one to quote.</li>

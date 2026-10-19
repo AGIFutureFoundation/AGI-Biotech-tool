@@ -388,7 +388,7 @@ test('no surface publishes one run as if it were the benchmark result', () => {
 
 test('the one-run check accepts a range and a labelled run, and rejects a bare figure', () => {
   const bare = '**5 of 11 within 2 Å; 9 of 11 reachable.**';
-  const ranged = '**4-6 of 11 within 2 Å across three runs.**';
+  const ranged = `**${RUN.succeededRange.join('-')} of 11 within 2 Å across ten seeds.**`;
   const labelled = 'The run recorded earlier was 5 of 11 within 2 Å.';
 
   const rate = new RegExp(`\\b(\\d+)\\s+of\\s+(${RUN.cases})\\b[^.]{0,40}(within|succeed)`, 'i');
