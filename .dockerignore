@@ -1,0 +1,27 @@
+# The build context is sent to the daemon in full before anything runs, so what
+# is excluded here is mostly about build time -- and this repository carries
+# about 55 MB of video and a 1.8 MB .git that would travel on every build.
+.git
+.venv
+.enola
+__pycache__
+*.pyc
+.pytest_cache
+node_modules
+
+# Rendered films and media. Build output, not source: scripts/make_pitch_video.py
+# regenerates them, and docs/ alone is most of the context.
+docs/*.mp4
+docs/media
+
+# Never: the local signing key and any real environment file.
+.keys
+.env
+.env.*
+!.env.example
+
+# Benchmark structures are NOT excluded. They are 4.5 MB and they are what makes
+# `node evals/redock.mjs` runnable without the network, which is the whole point
+# of having committed them. An image that has to reach the RCSB to run the
+# benchmark cannot run it in an air-gapped deployment, which is exactly where
+# the customers this image exists for would run it.
