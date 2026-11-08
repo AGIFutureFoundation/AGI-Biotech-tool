@@ -1,10 +1,12 @@
-# Research — Bio Research Expansion (Batch 1)
+# Research — Bio Research Expansion (Batches 1–2)
 
 Research briefs, deep-dives, and reference material for the AGI-Biotech-tool
 program: ALS, cancer, Alzheimer's, toxicity screening, psychedelic research,
 BioDAO/genomic data-sharing, compound entries, patent verification, and the
 SMILES/SMARTS reference. Staged from the local bio research expansion package
-on 2026-11-07.
+on 2026-11-07. Batch 2 adds the validated compound library, the raw SMILES
+inventory and its validation scripts, the DacomiLertib compound entry, and
+ALS / Parkinson's / BioDAO / DeSci briefs.
 
 ## Honesty frame
 
@@ -41,3 +43,15 @@ before citing them externally.
 - [patent-status-verification.md](patent-status-verification.md) — Patent status verification
 - [patent-placement-index.md](patent-placement-index.md) — Patent placement index
 - [brief-4dmt-delivery-economics.md](brief-4dmt-delivery-economics.md) — Brief: 4D Molecular Therapeutics (FDMT) delivery technology and economics comparable
+
+## Batch 2 (2026-11-07)
+
+- [validated-compound-library.md](validated-compound-library.md) — Validated compound library: 336 RDKit-validated structures (validation date 2026-11-07)
+- [raw-smiles-inventory.md](raw-smiles-inventory.md) — Raw SMILES inventory harvested from three source PDFs (unvalidated ground truth for the library)
+- [validate_library.py](validate_library.py) — Rebuilds the validated library from the raw SMILES inventory (RDKit 2026.09.1; prints to stdout, writes no files)
+- [make_table.py](make_table.py) — Generates the validated-library markdown table rows from the rebuild output
+- [compound-dacomilertib.md](compound-dacomilertib.md) — Compound entry: DacomiLertib (BCL-XL inhibitor, cancer — HYPOTHETICAL / UNVERIFIED, from a ChatGPT conversation export)
+- [brief-als-agi183.md](brief-als-agi183.md) — Enhancement brief: ALS — AGI-183 + AAV6-hSyn-MCL1 (from als_4_8.pdf)
+- [brief-biodao-genomic-compounds.md](brief-biodao-genomic-compounds.md) — Enhancement brief: BioDAO / Genomic Go + AGI compounds
+- [brief-parkinsons-gaucher.md](brief-parkinsons-gaucher.md) — Program brief: Parkinson's / Gaucher / lysosomal therapeutics (US20190092789A1)
+- [notebooklm-videos-als-desci.md](notebooklm-videos-als-desci.md) — NotebookLM videos: ALS / DeSci frame-derived notes
