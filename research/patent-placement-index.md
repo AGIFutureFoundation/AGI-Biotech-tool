@@ -1,0 +1,34 @@
+# Patent Placement Index — Bio Research Expansion Package
+
+**Purpose:** the placement record so the lab loop can mirror it in the dossier and sites. One row per patent: number, title, category, status, and the package file + section where its write-up lives.
+**Verification date:** 2026-11-07 PST. Statuses are as verified in `patent-status-verification.md` (same directory) — read that file for sources, caveats, and open items.
+**Placement checked:** 2026-11-07 PST, by direct read/grep of the package directory `~/workspace/your_files/bio-research-expansion/`.
+
+## Placement table
+
+| Patent | Title | Category | Verified status (2026-11-07) | Package file + section | Placement state |
+|---|---|---|---|---|---|
+| JP6062995B2 | A new therapeutic approach to treat Alzheimer's disease | Alzheimer's / drug-combination repurposing | **Could not verify — needs live-browser agent (J-PlatPat)**. Brief says "Expired — Fee Related", anticipated expiry 2030-10-29; neither confirmed. | `brief-alzheimers.md` — whole brief (title line 1; patent table; §7.3; gate-0 FTO item) | **LANDED — confirmed present.** Brief already carries the patent as its subject and already records (line 47) that live verification was not achieved on 2026-11-07. No placement action needed; the J-PlatPat gate-0 check is still open. |
+| US 8,512,957 B2 | Toxicity typing using liver stem cells | Safety screening / liver-stem-cell toxicity profiling | **Expired — fee related, effective 2025-08-20** (11.5-year maintenance fee unpaid; revival window open to ~Aug 2027) | `brief-toxicity-screening.md` — safety-screening brief | **LANDED — confirmed present.** File exists (318 lines after inspiration merge, 2026-11-07). Status line CORRECTED 2026-11-07 to "Expired — fee related, effective 2025-08-20; revival possible to ~Aug 2027" (the earlier draft's "anticipated expiration 2021-06-14" was a Google miscalculation — removed from the status section and the references). Grep-confirmed for `8512957` / `Snodgrass`. |
+| US 2022/0251662 A1 | Metastasis specific splice variants of Mena and uses thereof in diagnosis, prognosis and treatment of tumors | Cancer DAO / MENA metastasis biomarker | **Abandoned 2024-09-10** (failure to respond to office action); never granted. Family patents US 8,603,738 (active to 2030-01-28) and US 9,719,142 (active to 2028-07-27) confirmed. | `brief-cancer-dao.md` — **§7 "MENA metastasis biomarker programme — new pillar"** (lines 161+) | **LANDED — confirmed present.** §7 exists and covers the application, its chain, and the granted family patents (line 177 chain; line 182 family-status summary). It already states the application is abandoned and the two B2 patents are granted. Note: the section was described to this worker as "being written by a parallel worker" — it is present now, so treat as landed, but re-check the section once the parallel worker confirms its pass is complete. |
+| US 8,918,278 B2 | Method and system for modeling and processing vehicular traffic data and information and applying thereof | SmartCiti.X / transportation / Locator.X — traffic modeling + prediction | **Expired — lifetime per Google Patents (anticipated 2021-08-28); exact date/PTA NOT verified; conflicting USPTO fee record.** Term base is 2001-08-28, **not** the brief's Nov 2025 date. | `traffic-modeling-smartciti.md` — SmartCiti/transport staging note | **LANDED — confirmed present.** File exists (28,692 B). Uses the corrected term base (2001-08-28 → 2021-08-28), corrects the Nov 2025 estimate explicitly, records the conflicting fee record (2022-04-05 payment, 2026-08-10 reminder) with the verifier's hedge and the Patent Center confirmation still pending. |
+
+## Placement rules for the lab loop (mirror these when copying to dossier/sites)
+
+1. **Do not present any of these four patents as "free to use" on the basis of expiry/abandonment alone.** Each write-up must carry its status with the caveats in `patent-status-verification.md` — revival windows (US 8,512,957 B2 to ~Aug 2027), live family members (Mena: US 8,603,738 / US 9,719,142), and unresolved items (JP6062995B2 register check; US 8,918,278 B2 PTA/fee conflict).
+2. **JP6062995B2:** keep the brief's gate-0 wording — J-PlatPat check + family sweep before any work assumes FTO. Do not quote "Expired — Fee Related" as verified.
+3. **US 8,512,957 B2:** once `brief-toxicity-screening.md` lands, its status line must read "Expired — fee related, effective 2025-08-20; revival possible to ~Aug 2027" — not "expired" bare.
+4. **US 2022/0251662 A1:** every mention must say the 2022 publication is an **abandoned application, not a granted patent**, and must name the two active granted family patents (US 8,603,738 to 2030-01-28; US 9,719,142 to 2028-07-27). Do not quote the granted patents' claims — claim scope was not verified.
+5. **US 8,918,278 B2:** use the corrected term base (earliest non-provisional 2001-08-28; anticipated expiry 2021-08-28) — **delete the "~Nov 8 2025 (PTA 0 days)" date wherever it appears** (MEMORY.md traffic-patent entry included). Note the conflicting fee record and the pending Patent Center confirmation.
+6. **Categories stay separate:** traffic (Feldman) is SmartCiti/transport staging, **not** a bio page. The RFID wallet patent (US 2019/0034917 A1, Intel) is **not** in this set — it belongs to the payments/x402 track, not the bio package.
+
+## Re-verification checklist (after parallel workers land)
+
+- [x] `brief-toxicity-screening.md` exists; grep for `8512957` / `Snodgrass`; confirm its status line matches §2 of `patent-status-verification.md`. — DONE 2026-11-07: file exists (318 lines); status line corrected to "Expired — fee related, effective 2025-08-20; revival possible to ~Aug 2027". The 2021-06-14 figure now appears only inside the correction notes, flagged as a Google miscalculation not to be quoted.
+- [x] `brief-cancer-dao.md` §7 confirmed final by the parallel worker; re-grep for `2022/0251662` / `9,719,142` / `8,603,738`. — DONE 2026-11-07: §7 present (lines 161+), inspiration Section 3 merged; grep-confirmed with punctuated forms — application stated abandoned, both granted family patents named with adjusted expirations (2028-07-27, 2030-01-28), claim scope stated unverified.
+- [x] `traffic-modeling-smartciti.md` created; grep for `8918278` / `Feldman`; confirm it uses the 2001-08-28 term base and notes the PTA/fee conflict. — DONE 2026-11-07: file exists (28,692 B); term base corrected; fee-record conflict recorded with verifier's hedge.
+- [ ] `brief-alzheimers.md` unchanged as the JP6062995B2 home (no action unless the J-PlatPat check lands, in which case update its line-47 verification note).
+
+## Companion file
+
+Full verification record (sources, dates, legal-events tables, conflicts, open items for the live-browser agent): `patent-status-verification.md` in this same directory.
