@@ -1,7 +1,7 @@
 # Psychedelic Research Program Brief
 
 **Program:** Bio Research Expansion — Psychedelic Research Section
-**Status:** STAGED RESEARCH BRIEF ONLY — local staging, not published, not a treatment offer
+**Status:** Published research brief in this repo's `research/` folder — not a treatment offer
 **As-of date:** 2026-11-07
 **Author:** Research + brief writer (subagent), Firecrawl + web research conducted 2026-11-07
 

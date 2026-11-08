@@ -1,6 +1,6 @@
 # Compound Entry — DacomiLertib (BCL-XL inhibitor, cancer — HYPOTHETICAL / UNVERIFIED)
 
-**Staging only — local compound-library validation entry. Do NOT publish, push, deploy, email, or share.**
+**Published:** compound-library validation entry in this repo's `research/` folder.
 **Validation date: 7 November 2026. Primary source: `~/workspace/user/files/DacomiLertib_effectively_binds_to_BCL-XL__thereby_promoting_apoptosis.pdf` — a ChatGPT conversation export (macOS Notes export, created 2026-08-22, 182 pages, 748,384 B).**
 **Status: HYPOTHETICAL / UNVERIFIED candidate entry. Not a stocked compound, not a priced job, not a library holding, not a measured result.**
 

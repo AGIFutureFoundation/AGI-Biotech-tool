@@ -1,6 +1,6 @@
 # Bio References Inventory — Mike's computer (read-only sweep)
 
-**Built:** 2026-11-07 (evening PST), by the bio-research inventory worker. **Read-only task: nothing was edited, pushed, deployed, published, or sent.** Staging only.
+**Built:** 2026-11-07 (evening PST), by the bio-research inventory worker. **Read-only task: nothing was edited, pushed, deployed, published, or sent during the inventory sweep.** Published in this repo's `research/` folder as a research brief.
 **Scope searched:** `~/workspace`, `~/memory`, `~/workspace/user/files`, site trees under `~/workspace/your_files/hostinger-email/sites/`, plus the staged articles, agent sites, WAVE/Fellowship/Foundation trees, `~/workspace/your_files/bio-research-expansion/`, interactive builds, homepage redesigns, org wikis, corporate paperwork, worlds-3d, and the Gmail cache.
 **Method:** `grep -ri` (case-insensitive, files-with-matches) per term. Counts below = **files containing the term**, not mention counts. "ALS" was matched with word boundaries (`\bALS\b`) so "also" etc. are excluded; remaining ALS hits are the ALS Researcher agent / $ALS token / amyotrophic lateral sclerosis. "Perch" hits were context-checked: every bio-area hit is Google's Perch model (no fish/perch-seating false positives found in the counted files).
 **Terms:** bioacoustics, biodao, biota, genomic, genome, compound, cancer, ALS, birdnet, perch, naturelm, xeno-canto, macaulay, watkins, cetacean, curable, biopharma.

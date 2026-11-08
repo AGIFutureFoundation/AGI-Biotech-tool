@@ -1,6 +1,6 @@
 # Brief: 4D Molecular Therapeutics (Nasdaq: FDMT) — Delivery-Technology Reference and Economics Comparable
 
-**Status:** Local staging brief only. Not published, not sent, not a filing.
+**Status:** Published research brief in this repo's `research/` folder — not a filing.
 **Source document:** 4D Molecular Therapeutics, "4D Molecular Therapeutics Reports Full Year 2022 Financial Results and Operational Highlights," March 15, 2023 (GlobeNewswire press release, 4 pages, including Statements of Operations and Balance Sheet Data). All figures below are taken from that document unless explicitly labelled otherwise.
 **Prepared:** 2026-11-07, bio research expansion program.
 **Companion source for the delivery relevance section:** ALS paper, "Synergistic Neuroprotection in ALS: Akt/Bad Phosphorylation as a Predictive Biomarker for BCL-2 Family Therapy" (`als_4_8.pdf`) — AGI-183 (BCL-XL stabilizer) + AAV6-hSyn-MCL1 in iPSC-derived TDP-43 Q331K motor neurons.

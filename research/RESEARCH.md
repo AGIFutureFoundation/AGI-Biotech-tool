@@ -1,6 +1,6 @@
 # Bio Research Expansion — Consolidated Research Report
 
-**Staging only — local file. Do NOT publish, push, deploy, email, or share.**
+**Published:** research file in this repo's `research/` folder.
 **Research date: 7 November 2026.**
 **Evidence base (only):** `research-wave.md`, `research-biodao-genomic-als-cancer.md`, `githubs.md`, `inventory-bio.md` — all in `~/workspace/your_files/bio-research-expansion/`. No other source was used except where a primary source is cited inside those files and is reproduced here with its URL and as-of date.
 

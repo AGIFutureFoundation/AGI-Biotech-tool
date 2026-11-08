@@ -1,6 +1,6 @@
 # Program Brief — GONSTEAD.X (W3 Series 13)
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026 (checked 2026-11-08 01:05 UTC).**
 **Source document:** `~/workspace/user/files/Upper_body_positioning_device_for_non-operative_spinal_treatment_apparatus.pdf` (13 pp, all pictures; title page + claims p. 2 rendered and read; full text cross-checked against Google Patents).
 **Applies to:** the Gonstead.X program (W3 Series 13 — proposed, not formed) and the staged Foundation site S13 page. A later worker should be able to apply this brief without re-researching: every item below gives the exact fact, its source, and its as-of date.
@@ -156,4 +156,4 @@ The patent covers a **hand-held remote control for a non-surgical spinal treatme
 
 ---
 
-*Local staging only. Do NOT publish, push, deploy, email, or share. W3 Series 13 is proposed, not formed. No clinical or efficacy claims are made in this brief.*
+*Published in this repo's `research/` folder as a research brief. W3 Series 13 is proposed, not formed. No clinical or efficacy claims are made in this brief.*

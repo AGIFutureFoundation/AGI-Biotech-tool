@@ -1,6 +1,6 @@
 # Inspiration Layer — Three Bio Patents
 
-**Staging only — local file. Do NOT publish, push, deploy, email, or share.**
+**Published:** research file in this repo's `research/` folder.
 **Research date: 7 November 2026.**
 **Purpose:** the inspiration layer for the bio research expansion program. Each section below is a
 standalone merge block for one subpage brief. The coordinator merges each section into its target

@@ -1,6 +1,6 @@
 # Safety-Screening Brief — Hepatotoxicity Screening by Liver-Stem-Cell Molecular Profiling
 
-**Status:** STAGED DRAFT — local staging only. Not published, not sent.
+**Status:** Published research brief in this repo's `research/` folder.
 **Program:** Bio research expansion — safety-screening layer for the whole compound library.
 **Subject:** U.S. Patent 8,512,957 B2, "Toxicity Typing Using Liver Stem Cells" (Snodgrass / Vistagen Therapeutics).
 

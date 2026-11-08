@@ -1,6 +1,6 @@
 # Enhancement Brief — Cancer
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `RESEARCH.md` §4 (which consolidates `research-biodao-genomic-als-cancer.md`, `githubs.md`, `inventory-bio.md`).**
 **Applies to:** any future cancer page, article, or series content on the Foundation site, and to the existing pages that mention cancer only in passing. A later worker should be able to apply this brief without re-researching: every item below gives the exact fact, its source URL, and its as-of date.
 

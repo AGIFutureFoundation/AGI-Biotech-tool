@@ -1,6 +1,6 @@
 # Raw SMILES Inventory — Bio Research Expansion
 
-**Staging only — local harvest, no validation, no publication.**
+**Published:** research brief in this repo's `research/` folder — raw harvest, no validation (see `validated-compound-library.md`).
 Extracted 2026-11-07 (PST) by the bio extraction worker from three source PDFs (read-only).
 Method: `pdftotext -layout <pdf> -` to stdout only; parsed in memory with Python stdlib.
 No SMILES was chemically validated here — that is the RDKit worker's job. No structure was

@@ -1,6 +1,6 @@
 # Alzheimer's Program Brief — Pharnext JP6062995B2
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026.**
 **Source document (read in full): `~/workspace/user/files/A_new_therapeutic_approach_to_treat_Alzheimer_s_disease.pdf` (61 pages) — a Google Patents printout of JP6062995B2, machine-translated from Japanese.**
 **Cross-check source: `~/workspace/user/files/als_4_8.pdf` — "Synergistic Neuroprotection in ALS: Akt/Bad Phosphorylation as a Predictive Biomarker for BCL-2 Family Therapy" (AGI-183 + AAV6-hSyn-MCL1 computational-model paper).**

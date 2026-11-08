@@ -1,6 +1,6 @@
 # Enhancement Brief — BioDAO / Genomic Go + AGI Compounds
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `RESEARCH.md` §2 (which consolidates `research-biodao-genomic-als-cancer.md`, `githubs.md`, `inventory-bio.md`).**
 **Applies to:** the Foundation site bio-series pages and articles (S4 Curable.X, S5 BioPharma.Go, S18 BioDAO.blockchain, S27 Genomic DAO, S28 Genome.Blockchain), `projects/biodao-tools.html`, the Biota articles where they name BioDAO (S18), and any future BioDAO / Genomic DAO / compound-library page. A later worker should be able to apply this brief without re-researching: every item below gives the exact fact, its source URL, and its as-of date.
 
@@ -204,7 +204,7 @@ From `inventory-bio.md` §§2, 5, 8–9 (paths included):
 
 ## 6. NotebookLM video — "Science, Unchained" (ALS / DeSci explainer, appended 2026-11-07)
 
-**Source video:** `~/workspace/user/media_library/video/46/4652134ce265e7bc177b276f934b690d772b7cf867180d9b8f80f957b2bcfc66.mp4` — NotebookLM, 6m 35s, 1280x720, 21 MB. **Frame-derived notes only — no transcript exists** (Whisper not installed in this environment; checked 2026-11-07). Full scene-by-scene notes: `notebooklm-videos-als-desci.md` in this directory. **Staging only — do NOT publish, push, deploy, email, or share.**
+**Source video:** `~/workspace/user/media_library/video/46/4652134ce265e7bc177b276f934b690d772b7cf867180d9b8f80f957b2bcfc66.mp4` — NotebookLM, 6m 35s, 1280x720, 21 MB. **Frame-derived notes only — no transcript exists** (Whisper not installed in this environment; checked 2026-11-07). Full scene-by-scene notes: `notebooklm-videos-als-desci.md` in this directory. **Published in this repo's `research/` folder as a research brief.**
 
 ### What the video shows (on-screen text only; narration not captured)
 

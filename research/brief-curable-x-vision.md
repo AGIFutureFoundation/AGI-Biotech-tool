@@ -1,6 +1,6 @@
 # Curable.X — Vision / Narrative Brief
 
-**Status: LOCAL STAGING ONLY — do not publish, deploy, push, or send.**
+**Status: Published research brief in this repo's `research/` folder.**
 **Type: Vision / narrative layer — a story and framing document, NOT evidence of a built system.**
 
 ## Source

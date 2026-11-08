@@ -1,6 +1,6 @@
 # Parkinson's / Gaucher / Lysosomal Program Brief — Lysosomal Therapeutics US20190092789A1
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026.**
 **Source document (read in full): `~/workspace/user/files/US20190092789A1.pdf` (24 pages) — US Patent Application Publication US 2019/0092789 A1, "Heterocyclic Pyrimidinone Compounds and Their Use in the Treatment of Medical Disorders," Skerlj et al., applicant/assignee Lysosomal Therapeutics Inc. (Cambridge, MA). Text extracted in full with `pdftotext` (1,539 lines); chemical structures in the PDF are images and were not individually readable from text.**
 

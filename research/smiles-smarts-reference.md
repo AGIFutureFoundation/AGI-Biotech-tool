@@ -1,7 +1,6 @@
 # SMILES / SMARTS Reference — Compound Library Canonical Reference
 
-**Status:** LOCAL STAGING ONLY — reference document for the compound-library
-validation subpage. Not published, not deployed, not sent anywhere.
+**Status:** Published — reference document for the compound-library validation subpage, in this repo's `research/` folder.
 
 **Source manual (read in full, 57 pages):**
 `~/workspace/user/files/SMART__Molecular_Language.pdf` — *SMILES, SMARTS and

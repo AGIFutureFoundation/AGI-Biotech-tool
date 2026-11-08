@@ -1,6 +1,6 @@
 # Reimbursement Annex — Psychedelic-Assisted Therapy Coding Landscape
 
-**Status:** STAGED DRAFT — local staging only. Not published, not sent, not a billing or coverage determination.
+**Status:** Published research brief in this repo's `research/` folder — not a billing or coverage determination.
 **Program:** Bio research expansion — psychedelic research section.
 **Purpose:** A faithful extraction of the coding structure in the source guide, so the lab and its advisors can see what the reimbursement landscape looks like *if* a psychedelic-assisted therapy model ever reaches a billable, lawful clinical setting. This annex describes codes. It does not promise payment, coverage, or legality.
 

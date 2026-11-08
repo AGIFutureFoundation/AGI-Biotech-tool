@@ -1,6 +1,6 @@
 # Enhancement Brief — ALS
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `RESEARCH.md` §3 (which consolidates `research-biodao-genomic-als-cancer.md`, `githubs.md`, `inventory-bio.md`).**
 **Applies to:** the staged ALS articles, the ALS agent site, the ALS interactive components, the staged ALS homepage, and the ALS series-adjacent pages (Molecular S11). A later worker should be able to apply this brief without re-researching: every item below gives the exact fact, its source URL, and its as-of date.
 

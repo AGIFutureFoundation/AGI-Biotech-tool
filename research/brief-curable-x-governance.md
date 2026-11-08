@@ -1,6 +1,6 @@
 # Curable.X — Governance / Design Brief
 
-**Status: LOCAL STAGING ONLY — do not publish, deploy, push, or send.**
+**Status: Published research brief in this repo's `research/` folder.**
 **Type: Governance / design source — a strategy proposal, NOT an implemented system. Nothing in this brief is built.**
 
 ## Source

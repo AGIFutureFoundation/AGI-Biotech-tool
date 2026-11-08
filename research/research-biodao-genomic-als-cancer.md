@@ -1,6 +1,6 @@
 # Bio Research Expansion — BioDAO / Genomic Go / AGI Compounds / ALS / Cancer
 
-**Staging only — local research file. Not published, not sent, not a live-site edit.**
+**Published:** research file in this repo's `research/` folder. Not a live-site edit.
 **Research date: 7 November 2026. All figures are as-of the source date given; verify again before any public use.**
 **Scope note:** "AGI Compounds" = the ALS Researcher agent's compound library (Virtuals, $ALS, not graduated). Its jobs, per the task brief: compound_library_snapshot $10/24h, compound_research_report $25/48h, compound_data_access $50/24h, compound_lookup $2/30min, library_growth_report $15/48h, compound_screening_pack $150/72h. The ALS agent is "not a medical device" — nothing in this file claims diagnosis, treatment, or cure for ALS, cancer, or any disease.
 **W3 series named here (S4 Curable.X, S5 BioPharma.Go, S18 BioDAO, S27 Genomic DAO, S28 Genome.Blockchain) are PROPOSED, not formed.** ALS has no series number. AURA Maternal is a separate project and is not folded into this work.

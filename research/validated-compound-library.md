@@ -1,6 +1,6 @@
 # Validated Compound Library — Bio Research Expansion
 
-**Staging only — local validation output. Do NOT publish, push, deploy, email, or share.**
+**Published:** validation output in this repo's `research/` folder.
 **Validation date: 7 November 2026. Validator: RDKit validation worker (subagent).**
 **Rebuilt 2026-11-07 (second pass): the §3 table in the first pass was defective
 (MW/formula/LogP mismatches, sort breaks, duplicate canonicals, spurious tail

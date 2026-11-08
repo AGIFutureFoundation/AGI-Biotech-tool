@@ -1,6 +1,6 @@
 # Enhancement Brief — Cancer DAO: a research agenda from the BCL-2 bridge (als_4_8.pdf)
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `~/workspace/user/files/als_4_8.pdf` — "Synergistic Neuroprotection in ALS: Akt/Bad Phosphorylation as a Predictive Biomarker for BCL-2 Family Therapy", authors x@agicorp.network and Bios (bios@bio.xyz). PDF 1,053,308 B, created 2026-04-08, LaTeX via pandoc.**
 **Applies to:** any future Cancer DAO page, article, or series content on the Foundation site, and to the existing pages that mention Cancer DAO only as a world/name. Complements (does NOT replace) `brief-cancer.md`, which covers the open cancer data (TCGA/GDC, cBioPortal, SEER, ClinicalTrials.gov, FDA approvals) — this brief adds a second, distinct content pillar: the BCL-2 family therapeutics agenda that follows from the ALS paper. A later worker should be able to apply this brief without re-reading the paper: every item below gives the exact paper-grounded fact and its location in the paper.**
 
@@ -160,7 +160,7 @@ These items are **new-page specifications** for when Mike approves a Cancer DAO 
 
 ## 7. MENA metastasis biomarker programme — new pillar (added 2026-11-07)
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `~/workspace/user/files/frank_gerter.pdf` — US Patent Application Publication US 2022/0251662 A1, "Metastasis Specific Splice Variants of Mena and Uses Thereof in Diagnosis, Prognosis and Treatment of Tumors", Condeelis et al., applicants Albert Einstein College of Medicine / MIT / IFO-Regina Elena Cancer Institute, published 11 August 2022, inventor Frank Gertler (among four inventors). PDF 2,257,070 B, 25 pages (12 drawing sheets + specification + sequence listing).**
 **Applies to:** any future Cancer DAO page, article, or series content on the Mena metastasis biomarker. This is the **third** Cancer DAO content pillar, alongside the open-data pillar (`brief-cancer.md`) and the BCL-2 pillar (§§2–6 above). It does NOT duplicate either: no BCL-2 content and no open-data figures are restated here. A later worker should be able to apply this section without re-reading the application: every item below gives the exact application-grounded fact and its location in the application, plus the peer-reviewed verification for each key claim.
 

@@ -1,6 +1,6 @@
 # NotebookLM Videos — ALS / DeSci: Frame-Derived Notes
 
-**Staging only — local notes. Do NOT publish, push, deploy, email, or share.**
+**Published:** research notes in this repo's `research/` folder.
 **Research date: 7 November 2026.**
 **Sources (local files only):**
 - Video 1: `~/workspace/user/media_library/video/dd/dd7b675cc59a9a9c9409d9129379213a9e1be8552cae1dcf18e9bae66d4478ed.mp4` — 7m 23s (443.0s), 1280x720, 47 MB.

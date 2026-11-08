@@ -1,7 +1,7 @@
 # Patent Status Verification — Bio Research Expansion Package
 
 **Verification date:** 2026-11-07 PST (Google Patents pages crawled 2026-11-08 00:57–01:02 UTC)
-**Verifier:** patent-status verification worker (local staging only)
+**Verifier:** patent-status verification worker (published research brief)
 **Scope:** four patents in the bio research expansion / SmartCiti patent set
 **Status of this file:** staging record for the lab loop. This is a verification record, **not a legal opinion and not a freedom-to-operate (FTO) clearance**. No patent in this file may be treated as free to use on the strength of this file alone — see "The expired ≠ free to use rule" below.
 

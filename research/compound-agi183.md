@@ -1,6 +1,6 @@
 # Compound Entry — AGI-183
 
-**Staging only — local compound-library entry. Do NOT publish, push, deploy, email, or share.**
+**Published:** compound-library entry in this repo's `research/` folder.
 **Research date: 7 November 2026. Primary source: `~/workspace/user/files/als_4_8.pdf` — "Synergistic Neuroprotection in ALS: Akt/Bad Phosphorylation as a Predictive Biomarker for BCL-2 Family Therapy", authors x@agicorp.network and Bios (bios@bio.xyz), created 2026-04-08.**
 **Status: CANDIDATE entry. Not a stocked compound, not a priced job, not a library holding. The ALS compound library has no data file (see `brief-als.md` §1) — this entry is a brief for the library work, not library data.**
 

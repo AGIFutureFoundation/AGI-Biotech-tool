@@ -1,6 +1,6 @@
 # Enhancement Brief — ALS: AGI-183 + AAV6-hSyn-MCL1 (from als_4_8.pdf)
 
-**Staging only — local brief. Do NOT publish, push, deploy, email, or share.**
+**Published:** research brief in this repo's `research/` folder.
 **Research date: 7 November 2026. Evidence: `~/workspace/user/files/als_4_8.pdf` — "Synergistic Neuroprotection in ALS: Akt/Bad Phosphorylation as a Predictive Biomarker for BCL-2 Family Therapy", authors x@agicorp.network and Bios (bios@bio.xyz). PDF 1,053,308 B, created 2026-04-08, LaTeX via pandoc.**
 **Applies to:** the staged ALS articles, the ALS agent site, the ALS interactive components, and the staged ALS homepage. Complements (does NOT replace) `brief-als.md`, which covers the compound-library jobs table, the "not a medical device" line, Answer ALS / Neuromine, ALS TDI, Project MinE / NEALS, ChEMBL / PubChem / DrugBank, repo links, the series-number correction, and `als-02` honesty. A later worker should be able to apply this brief without re-reading the paper: every item below gives the exact paper-grounded fact and its location in the paper.**
 
@@ -182,7 +182,7 @@ These are **new content items** for the ALS pages. They complement `brief-als.md
 
 ## 8. NotebookLM video — "A New Strategy Against ALS" (appended 2026-11-07)
 
-**Source video:** `~/workspace/user/media_library/video/dd/dd7b675cc59a9a9c9409d9129379213a9e1be8552cae1dcf18e9bae66d4478ed.mp4` — NotebookLM, 7m 23s, 1280x720, 47 MB. **Frame-derived notes only — no transcript exists** (Whisper not installed in this environment; checked 2026-11-07). Full scene-by-scene notes: `notebooklm-videos-als-desci.md` in this directory. **Staging only — do NOT publish, push, deploy, email, or share.**
+**Source video:** `~/workspace/user/media_library/video/dd/dd7b675cc59a9a9c9409d9129379213a9e1be8552cae1dcf18e9bae66d4478ed.mp4` — NotebookLM, 7m 23s, 1280x720, 47 MB. **Frame-derived notes only — no transcript exists** (Whisper not installed in this environment; checked 2026-11-07). Full scene-by-scene notes: `notebooklm-videos-als-desci.md` in this directory. **Published in this repo's `research/` folder as a research brief.**
 
 ### What the video shows (on-screen text only; narration not captured)
 
